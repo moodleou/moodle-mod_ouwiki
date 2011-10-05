@@ -242,10 +242,11 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $output .= html_writer::start_tag('div', array('class' => 'ouw_byheading'));
 
         if ($subwiki->canedit && !$locked) {
-            $output .= html_writer::tag('a', get_string(
-                    $xhtmlid ? 'editsection' : 'editpage', 'ouwiki'),
-                    array('href' => $CFG->wwwroot.'/mod/ouwiki/edit.php?id='.$cm->id.'&page='.
-                    $pagename.($xhtmlid ? '&section='.$xhtmlid : '')));
+            $str = $xhtmlid ? 'editsection' : 'editpage';
+            $output .= html_writer::tag('a', get_string($str, 'ouwiki'), array(
+                    'href' => $CFG->wwwroot.'/mod/ouwiki/edit.php?id='.$cm->id.'&page='.
+                        $pagename.($xhtmlid ? '&section='.$xhtmlid : ''),
+                    'class' => 'ouw_' . $str));
         }
 
         // output the annotate link if using annotation system

@@ -34,7 +34,7 @@ function ouwiki_add_instance($data, $mform) {
     $cmid = $data->coursemodule;
     $context = get_context_instance(CONTEXT_MODULE, $cmid);
 
-    if ($formdata = $mform->get_data()) {
+    if ($formdata = $data) {
         // Set up null values
         $nullvalues = array('editbegin', 'editend', 'timeout');
         foreach ($nullvalues as $nullvalue) {
@@ -43,8 +43,8 @@ function ouwiki_add_instance($data, $mform) {
             }
         }
 
-        if (strlen(preg_replace('/(<.*?>)|(&.*?;)|\s/', '', $formdata->introeditor['text'])) == 0) {
-            unset($formdata->introeditor['text']);
+        if (strlen(preg_replace('/(<.*?>)|(&.*?;)|\s/', '', $formdata->intro)) == 0) {
+            unset($formdata->intro);
         }
 
         // Create record

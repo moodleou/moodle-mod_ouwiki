@@ -336,7 +336,8 @@
 }
 
 #page-mod-ouwiki-view .ouw_editsection,
-#page-mod-ouwiki-view .ouw_annotate {
+#page-mod-ouwiki-view .ouw_annotate,
+#page-mod-ouwiki-view .ouw_editpage {
     margin-right:1em;
 }
 
