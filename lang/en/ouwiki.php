@@ -263,6 +263,7 @@ $string['pagenameisstartpage'] = 'The page name is the same as the start page. U
 
 $string['ouwiki:lock'] = 'Allowed to lock and unlock pages';
 $string['ouwiki:annotate'] = 'Allowed to annotate';
+$string['ouwiki:deletepage'] = 'Delete pages';
 $string['orphanedannotations'] = 'Lost annotations';
 $string['annotationsystem'] = 'Annotation system';
 $string['addannotation'] = 'Add annotation';
