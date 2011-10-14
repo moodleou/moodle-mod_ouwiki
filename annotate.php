@@ -299,7 +299,7 @@ document.write('<p><div id=\"ouw_countdown\"></div>$countdowntext<span id=\"ouw_
 }
 
 print get_string('advice_annotate', 'ouwiki');
-$data = $ouwikioutput->ouwiki_print_page($subwiki, $cm, $pageversion, false, 'annotate');
+$data = $ouwikioutput->ouwiki_print_page($subwiki, $cm, $pageversion, false, 'annotate', $ouwiki->enablewordcount);
 echo $data[0];
 $annotations = $data[1];
 

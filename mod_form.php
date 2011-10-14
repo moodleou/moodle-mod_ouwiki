@@ -82,15 +82,20 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         $mform->addElement('filepicker', 'template_file', get_string('template', 'ouwiki'), null, $filepickeroptions);
         $mform->addHelpButton('template_file', 'template', 'ouwiki');
 
+        // Wordcount
+        $wordcountoptions = array('0' => get_string('no'), '1' => get_string('yes'));
+        $mform->addElement('select', 'enablewordcount', get_string('showwordcounts', 'ouwiki'), $wordcountoptions);
+        $mform->addHelpButton('enablewordcount', 'showwordcounts', 'ouwiki');
+        $mform->setDefault('enablewordcount', 1);
+
+        $this->standard_grading_coursemodule_elements();
+
         // Standard stuff
         $this->standard_coursemodule_elements();
 
-        if (class_exists('ouflags')) {
-            // insitu editing
-            if (has_capability('local/course:revisioneditor', get_context_instance(CONTEXT_COURSE, $COURSE->id), null, false)) {
-                include_once($CFG->dirroot.'/local/insitu/lib.php');
-                oci_mod_setup_form($mform, $this, FALSE);
-            }
+        // Disable the 'completion with grade' if grading is turned off
+        if($mform->elementExists('completionusegrade')) {
+            $mform->disabledIf('completionusegrade', 'grade', 'eq', 0);
         }
 
         $this->add_action_buttons();

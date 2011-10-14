@@ -75,6 +75,11 @@ define('OUWIKI_SYSTEMUSER', -1);
 define('OUWIKI_TIMEOUT_EXTRA', 60);
 define('OUWIKI_FEEDSIZE', 50);
 
+// participation
+define('OUWIKI_NO_PARTICIPATION', 0);
+define('OUWIKI_MY_PARTICIPATION', 1);
+define('OUWIKI_USER_PARTICIPATION', 2);
+define('OUWIKI_PARTICIPATION_PERPAGE', 100);
 
 class ouwiki_portfolio_caller extends portfolio_module_caller_base {
 
@@ -297,6 +302,12 @@ class ouwiki_portfolio_caller extends portfolio_module_caller_base {
         $output .= '</td><td class="content">';
 
         $output .= $formattedtext;
+
+        if ($this->ouwiki->enablewordcount) {
+            $output .= '<div class="ouw_wordcount">';
+            $output .= '<span>'.get_string('numwords', 'ouwiki', $this->version->wordcount).'</span>';
+            $output .= '</div>';
+        }
 
         if (is_array($this->keyedfiles)
                 && array_key_exists($this->version->id, $this->keyedfiles)
@@ -729,7 +740,7 @@ function ouwiki_get_parameter($name, $value, $type) {
  * @param object $context Context for permissions
  * @param object $course Course object
  */
-function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $course) {
+function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $course, $actionurl = 'view.php') {
     global $USER, $DB;
 
     if ($ouwiki->subwikis == OUWIKI_SUBWIKIS_SINGLE) {
@@ -801,7 +812,7 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
             '</label>';
     if ($choicefield && count($choices) > 1) {
         $selectedid = $choicefield == 'user' ? $subwiki->userid : $subwiki->groupid;
-        $out .= '<form method="get" action="view.php" class="ouwiki_otherwikis">
+        $out .= '<form method="get" action="'.$actionurl.'" class="ouwiki_otherwikis">
             <div><input type="hidden" name="id" value="'.$cm->id.'"/>
             <select name="'.$choicefield.'" id="wikiselect">';
         foreach ($choices as $choice) {
@@ -844,8 +855,9 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
 
     $jointype = $option == OUWIKI_GETPAGE_REQUIREVERSION ? 'INNER' : 'LEFT';
 
-    $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
-                p.locked, v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat
+    $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
+                p.locked, v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
+                v.wordcount, v.previousversionid
             FROM {ouwiki_pages} p
             $jointype
             JOIN {ouwiki_versions} v ON p.currentversionid = v.id
@@ -863,10 +875,11 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
         $pageversion->subwikiid = $subwiki->id;
         $pageversion->title = $pagename ? $pagename : null;
         $pageversion->locked = 0;
+        $pageversion->firstversionid = null; // new page
         try {
             $pageversion->pageid = $DB->insert_record('ouwiki_pages', $pageversion);
         } catch (Exception $e) {
-            ouwiki_dberror();
+            ouwiki_dberror($e);
         }
 
         // Update any missing link records that might exist
@@ -882,7 +895,7 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
                     WHERE v.id = fromversionid)",
                 array($pageversion->pageid, $uppertitle, $subwiki->id));
         } catch (Exception $e) {
-            ouwiki_dberror();
+            ouwiki_dberror($e);
         }
 
         $pageversion->title = $pageversion->title;
@@ -897,6 +910,7 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
         $pageversion->xhtmlformat = null;
         $pageversion->timecreated = null;
         $pageversion->userid = null;
+        $pageversion->previousversionid = null; // first version for page
 
         return $pageversion;
     }
@@ -941,7 +955,8 @@ function ouwiki_get_page_version($subwiki, $pagename, $versionid) {
 
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
                 v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
-                v.deletedat, u.firstname, u.lastname, u.username
+                v.deletedat, u.firstname, u.lastname, u.username,
+                v.wordcount
             FROM {ouwiki_pages} p, {ouwiki_versions} v
             LEFT JOIN {user} u ON v.userid = u.id
             WHERE p.subwikiid = ? AND v.id = ? AND UPPER(p.title) $pagename_s";
@@ -1208,7 +1223,6 @@ function ouwiki_print_header($ouwiki, $cm, $subwiki, $pagename, $afterpage = nul
         $PAGE->navbar->add(htmlspecialchars($pagename));
     } else if ($afterpage) {
         $PAGE->navbar->add(htmlspecialchars(get_string('startpage', 'ouwiki')));
-    } else {
     }
     if ($afterpage) {
         foreach ($afterpage as $element) {
@@ -1421,7 +1435,11 @@ function ouwiki_get_page_history($pageid, $selectdeleted, $limitfrom = '', $limi
     }
 
     $sql = "SELECT v.id AS versionid, v.timecreated, v.deletedat, u.id, u.username,
-            u.firstname, u.lastname
+                u.firstname, u.lastname, v.wordcount, v.previousversionid,
+                (SELECT v2.wordcount
+                    FROM {ouwiki_versions} v2
+                    WHERE v2.id = v.previousversionid)
+                    AS previouswordcount
                 FROM {ouwiki_versions} v
             LEFT JOIN {user} u ON v.userid = u.id
             WHERE v.pageid = ?
@@ -1452,7 +1470,7 @@ function ouwiki_get_subwiki_index($subwikiid, $limitfrom = '', $limitnum = '') {
 
     // Get all the pages...
     $sql = "SELECT p.id AS pageid, p.title, v.id AS versionid, v.timecreated, u.id,
-            u.username, u.firstname, u.lastname
+            u.username, u.firstname, u.lastname, v.wordcount
                 FROM {ouwiki_pages} p
             INNER JOIN {ouwiki_versions} v ON p.currentversionid = v.id
             LEFT JOIN {user} u ON v.userid = u.id
@@ -1504,11 +1522,11 @@ function ouwiki_get_subwiki_recentchanges($subwikiid, $limitfrom = '', $limitnum
 
     $sql = 'SELECT v.id AS versionid, v.timecreated, v.userid,
         p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
-        u.firstname, u.lastname, u.username,
-            (SELECT MAX(id)
+        u.firstname, u.lastname, u.username, v.wordcount, v.previousversionid,
+            (SELECT v2.wordcount
                 FROM {ouwiki_versions} v2
-                WHERE v2.pageid = p.id AND v2.id < v.id)
-            AS previousversionid
+                WHERE v2.id = v.previousversionid)
+            AS previouswordcount
         FROM {ouwiki_pages} p
             INNER JOIN {ouwiki_versions} v ON v.pageid = p.id
             LEFT JOIN {user} u ON v.userid = u.id
@@ -1577,7 +1595,7 @@ function ouwiki_get_subwiki_recentpages($subwikiid, $limitfrom = '', $limitnum =
 
     $sql = 'SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
             v.id AS versionid, v.timecreated, v.userid, u.firstname, u.lastname,
-            u.username
+            u.username, v.wordcount
             FROM {ouwiki_versions} v
             INNER JOIN {ouwiki_pages} p ON v.pageid = p.id
             LEFT JOIN {user} u ON v.userid = u.id
@@ -1780,6 +1798,11 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     // Find page if it exists
     $pageversion = ouwiki_get_current_page($subwiki, $pagename, OUWIKI_GETPAGE_CREATE);
 
+    $previousversionid = null;
+    if ($pageversion->currentversionid) {
+        $previousversionid = $pageversion->currentversionid;
+    }
+
     // Analyse content for HTML headings that don't already have an ID.
     // These are all assigned unique, fairly short IDs.
 
@@ -1876,6 +1899,8 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     $version->pageid = $pageversion->pageid;
     $version->xhtml = $content;
     $version->timecreated = time();
+    $version->wordcount = ouwiki_count_words($content);
+    $version->previousversionid = $previousversionid;
     if (!$nouser) {
         $version->userid = $USER->id;
     }
@@ -1887,6 +1912,12 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     }
     try {
         $versionid = $DB->insert_record('ouwiki_versions', $version);
+
+        // if firstversionid is already set in the current page use that
+        // else this is a new page and version entirely
+        if (!$pageversion->firstversionid) {
+            $DB->set_field('ouwiki_pages', 'firstversionid', $versionid, array('id' => $version->pageid));
+        }
     } catch (Exception $e) {
         $tw->rollback();
         ouwiki_dberror($e);
@@ -2886,4 +2917,324 @@ function ouwiki_get_search_form($subwiki, $cmid) {
     $out .= html_writer::end_tag('div');
     $out .= html_writer::end_tag('form');
     return $out;
+}
+
+/**
+ * Returns a wordcount for the given content
+ *
+ * @param string $content
+ * @returns int
+ */
+function ouwiki_count_words($content) {
+
+    $content = strip_tags(trim($content));
+
+    // combine to a single word
+    // hyphen
+    // apostrophe
+    // left single quote
+    // right single quote
+    $content = str_replace('-', '', $content);
+    $content = str_replace('\'', '', $content);
+    $content = str_replace(html_entity_decode('&lsquo;', ENT_QUOTES, 'UTF-8'), '', $content);
+    $content = str_replace(html_entity_decode('&rsquo;', ENT_QUOTES, 'UTF-8'), '', $content);
+
+    // add a space for comma
+    $content = str_replace(',', ' ', $content);
+
+    // Remove:
+    // 0 - empty lines
+    // 1 - double spaces
+    $pattern[0] = '/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/';
+    $pattern[1] = '/\s\s+/';
+    $content = preg_replace($pattern, ' ', $content);
+
+    // trim again for extra spaces created
+    $content = trim($content);
+
+    if (empty($content)) {
+        return 0;
+    }
+    else {
+        return 1 + substr_count($content, ' ');
+    }
+}
+
+/**
+ * Returns a difference in wordcounts between two
+ * versions as a string.
+ *
+ * @param int $current
+ * @param int $previous
+ * @param mixed $previouspage false if this is the first page
+ * @returns string
+ */
+function ouwiki_wordcount_difference($current, $previous, $previouspage = null) {
+
+    if (!$previouspage) {
+        return $current;
+    }
+
+    if ($previous == 0) {
+        return "+$current";
+    }
+
+    if ($current == 0) {
+        return "-$previous";
+    }
+
+    if ($current == $previous) {
+        return '';
+    }
+
+    $diff = $current - $previous;
+    if ($diff <= 0) {
+        return $diff;
+    } else {
+        return "+$diff";
+    }
+}
+
+/**
+ * Checks what level of participation the currently
+ * logged in user can view
+ *
+ * @param object $course
+ * @param object $ouwiki
+ * @param object $subwiki
+ * @param object $cm
+ * @param integer $userid default null is the current user
+ * @return integer
+ */
+function ouwiki_can_view_participation($course, $ouwiki, $subwiki, $cm, $userid = null) {
+    global $USER;
+    if (!$userid) {
+        $userid = $USER->id;
+    }
+    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+
+    $groupmode = groups_get_activity_groupmode($cm, $course);
+    $groupid = $subwiki->groupid;
+
+    $allowgroup =
+            ($groupmode == NOGROUPS || $groupmode == VISIBLEGROUPS)
+            || (has_capability('moodle/site:accessallgroups', $context, $userid))
+            || (groups_is_member($groupid, $userid));
+
+    if (has_capability('mod/ouwiki:viewparticipation', $context, $userid) && $allowgroup) {
+            return OUWIKI_USER_PARTICIPATION;
+    } else if ((int)$ouwiki->subwikis != OUWIKI_SUBWIKIS_INDIVIDUAL &&
+            has_capability('mod/ouwiki:edit', $context, $userid) && $allowgroup) {
+        return OUWIKI_MY_PARTICIPATION;
+    }
+
+    return OUWIKI_NO_PARTICIPATION;
+}
+
+/**
+ * Returns a single users participation for userparticipation.php
+ *
+ * $param int $userid
+ * @param object $subwiki
+ * @return array user participation records
+ */
+function ouwiki_get_user_participation($userid, $subwiki) {
+    global $DB;
+
+    $params = array(
+        'subwikiid' => $subwiki->id,
+        'userid'    => $userid
+    );
+
+    $sql = 'SELECT v.id, p.title, v.timecreated, v.wordcount, p.id AS pageid,
+                v.previousversionid,
+            (SELECT v2.wordcount
+                FROM {ouwiki_versions} v2
+                WHERE v2.id = v.previousversionid)
+            AS previouswordcount, p.currentversionid, p.firstversionid
+        FROM {ouwiki_pages} p
+            INNER JOIN {ouwiki_versions} v ON v.pageid = p.id
+        WHERE p.subwikiid = :subwikiid AND v.userid = :userid
+            AND v.deletedat IS NULL
+        ORDER BY v.timecreated ASC';
+    $changes = $DB->get_records_sql($sql, $params);
+
+    $user = ouwiki_get_user($userid);
+
+    return array($user, $changes);
+}
+
+/**
+ * Retrieve a user object
+ *
+ * @param integer $userid
+ * @return object user record
+ */
+function ouwiki_get_user($userid) {
+    global $DB;
+    $fields = user_picture::fields();
+    $fields .= ',username,idnumber';
+    $user = $DB->get_record('user', array('id' => $userid), $fields, MUST_EXIST);
+    return $user;
+}
+
+/**
+ * Returns users to view in participation.php and related version
+ * change information
+ *
+ * @param object $ouwiki
+ * @param object $subwiki
+ * @param object $context
+ * @param int $groupid
+ * @param string $sort
+ * @return array user participation
+ */
+function ouwiki_get_participation($ouwiki, $subwiki, $context,
+    $groupid, $sort = 'u.firstname, u.lastname') {
+    global $DB;
+
+    // get user objects
+    list($esql, $params) = get_enrolled_sql($context, 'mod/ouwiki:edit', $groupid);
+    $fields = user_picture::fields('u');
+    $fields .= ',u.username,u.idnumber';
+    $sql = "SELECT $fields
+                FROM {user} u
+                JOIN ($esql) eu ON eu.id = u.id
+                ORDER BY $sort ASC";
+    $users = $DB->get_records_sql($sql, $params);
+
+    $join = '';
+    $where = ' WHERE v.userid IN (' . implode(',', array_keys($users)) .')';
+    if ((int)$ouwiki->subwikis == OUWIKI_SUBWIKIS_INDIVIDUAL) {
+        $params['ouwikiid'] = $ouwiki->id;
+        $where = ' AND s.wikiid = :ouwikiid';
+        $join = 'JOIN {ouwiki_subwikis} s ON s.id = p.subwikiid';
+    } else {
+        $params['subwikiid'] = $subwiki->id;
+        $where = ' AND p.subwikiid = :subwikiid';
+    }
+
+    $vsql = "SELECT v.id AS versionid, v.wordcount,
+                    p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
+                    v.userid AS userid, v.previousversionid,
+                (SELECT v2.wordcount
+                    FROM {ouwiki_versions} v2
+                    WHERE v2.id = v.previousversionid)
+                AS previouswordcount, p.firstversionid
+            FROM {ouwiki_pages} p
+                $join
+                JOIN {ouwiki_versions} v ON v.pageid = p.id
+            $where AND v.deletedat IS NULL
+            ORDER BY v.id ASC";
+    $versions = $DB->get_records_sql($vsql, $params);
+
+    $changes = array('users' => $users, 'versions' => $versions);
+
+    return ouwiki_sort_participation($changes);
+}
+
+/**
+ * Sorts version data and calculates changes
+ * per user for rendering
+ *
+ * @param array $data
+ * @return array
+ */
+function ouwiki_sort_participation($data) {
+    global $DB;
+
+    if (empty($data['users'])) {
+        return array(); // no users
+    }
+    if (empty($data['versions'])) {
+        return $data['users']; // users but no versions
+    }
+
+    $byusers = $data['users'];
+    foreach ($data['versions'] as $version) {
+        if (isset($byusers[$version->userid])) {
+
+            // setup properties
+            if (!isset($byusers[$version->userid]->wordsadded)) {
+                $byusers[$version->userid]->wordsadded = 0;
+            }
+            if (!isset($byusers[$version->userid]->wordsdeleted)) {
+                $byusers[$version->userid]->wordsdeleted = 0;
+            }
+            if (!isset($byusers[$version->userid]->pagecreates)) {
+                $byusers[$version->userid]->pagecreates = 0;
+            }
+            if (!isset($byusers[$version->userid]->pageedits)) {
+                $byusers[$version->userid]->pageedits = 0;
+            }
+
+            // calculations
+            if ($version->versionid == $version->firstversionid) {
+                $byusers[$version->userid]->pagecreates++;
+
+                // user created this page so entire wordcount is valid
+                if (isset($version->wordcount)) {
+                    $byusers[$version->userid]->wordsadded += $version->wordcount;
+                }
+            } else {
+                $byusers[$version->userid]->pageedits++;
+
+                // wordcount calculation
+                if (isset($version->wordcount)) {
+                    if ($version->previouswordcount) {
+                        $words = ouwiki_wordcount_difference($version->wordcount,
+                            $version->previouswordcount, true);
+                    } else {
+                        $words = ouwiki_wordcount_difference($version->wordcount, 0, false);
+                    }
+                    if ($words < 0) {
+                        $byusers[$version->userid]->wordsdeleted += abs($words);
+                    } else {
+                        $byusers[$version->userid]->wordsadded += abs($words);
+                    }
+                }
+            }
+        }
+    }
+
+    // return sorted array
+    return $byusers;
+}
+
+/**
+ * Grades users from the participation.php page
+ *
+ * @param array $newgrades
+ * @param object $cm
+ * @param object $ouwiki
+ * @param object $course
+ */
+function ouwiki_update_grades($newgrades, $cm, $ouwiki, $course) {
+    global $CFG, $SESSION;
+
+    require_once($CFG->libdir.'/gradelib.php');
+    $grading_info = grade_get_grades($course->id, 'mod',
+        'ouwiki', $ouwiki->id, array_keys($newgrades));
+
+    foreach ($grading_info->items[0]->grades as $key => $grade) {
+        if (array_key_exists($key, $newgrades)) {
+            if ($newgrades[$key] != $grade->grade) {
+                if ($newgrades[$key] == -1) {
+                    // no grade
+                    $grade->rawgrade = null;
+                } else {
+                    $grade->rawgrade = $newgrades[$key];
+                }
+                $grade->userid = $key;
+                $ouwiki->cmidnumber = $cm->id;
+
+                ouwiki_grade_item_update($ouwiki, $grade);
+            }
+        }
+    }
+
+    // add a message to display to the page
+    if (!isset($SESSION->ouwikigradesupdated)) {
+        $SESSION->ouwikigradesupdated = get_string('gradesupdated', 'ouwiki');
+    }
 }

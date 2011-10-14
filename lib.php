@@ -51,6 +51,8 @@ function ouwiki_add_instance($data, $mform) {
         $ouwikiid = $DB->insert_record('ouwiki', $formdata);
         $formdata->id = $ouwikiid;
 
+        ouwiki_grade_item_update($formdata);
+
         // template file save
         $fs = get_file_storage();
         if ($filename = $mform->get_new_filename('template_file')) {
@@ -86,6 +88,8 @@ function ouwiki_update_instance($data, $mform) {
         unset($data->intro);
         $DB->set_field('ouwiki', 'intro', null, array('id' => $data->id));
     }
+
+    ouwiki_grade_item_update($data);
 
     // insitu editing
     if (class_exists('ouflags') && has_capability('local/course:revisioneditor', get_context_instance(CONTEXT_COURSE, $data->course), null, false)) {
@@ -139,6 +143,8 @@ function ouwiki_delete_instance($id) {
 
     $DB->delete_records_select('ouwiki_subwikis', 'wikiid = ?', array($id));
     $DB->delete_records('ouwiki', array('id' => $id));
+
+    ouwiki_grade_item_delete($ouwiki);
 
     return true;
 }
@@ -310,6 +316,7 @@ function ouwiki_supports($feature) {
         case FEATURE_COMPLETION_TRACKS_VIEWS: return true;
         case FEATURE_COMPLETION_HAS_RULES: return true;
         case FEATURE_BACKUP_MOODLE2: return true;
+        case FEATURE_GRADE_HAS_GRADE: return true;
         case FEATURE_GROUPINGS: return true;
         case FEATURE_GROUPS: return true;
         case FEATURE_GROUPMEMBERSONLY: return true;
@@ -528,4 +535,53 @@ function ouwiki_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
     require_capability('mod/ouwiki:view', $context);
 
     send_stored_file($file, 0, 0, true); // download MUST be forced - security!
+}
+
+/**
+ * Create grade item for given ouwiki
+ *
+ * @param object $ouwiki object with extra cmidnumber
+ * @param mixed optional array/object of grade(s); 'reset' means reset grades in gradebook
+ * @return int 0 if ok, error code otherwise
+ */
+function ouwiki_grade_item_update($ouwiki, $grades = null) {
+    global $CFG;
+    require_once($CFG->libdir.'/gradelib.php');
+
+    $params = array('itemname' => $ouwiki->name);
+
+    if ($ouwiki->grade > 0) {
+        $params['gradetype'] = GRADE_TYPE_VALUE;
+        $params['grademax']  = $ouwiki->grade;
+        $params['grademin']  = 0;
+
+    } else if ($ouwiki->grade < 0) {
+        $params['gradetype'] = GRADE_TYPE_SCALE;
+        $params['scaleid']   = -$ouwiki->grade;
+
+    } else {
+        $params['gradetype'] = GRADE_TYPE_TEXT; // allow text comments only
+    }
+
+    if ($grades  === 'reset') {
+        $params['reset'] = true;
+        $grades = null;
+    }
+
+    return grade_update('mod/ouwiki', $ouwiki->course, 'mod',
+        'ouwiki', $ouwiki->id, 0, $grades, $params);
+}
+
+/**
+ * Delete grade item for given ouwiki
+ *
+ * @param object $assignment object
+ * @return object assignment
+ */
+function ouwiki_grade_item_delete($ouwiki) {
+    global $CFG;
+    require_once($CFG->libdir.'/gradelib.php');
+
+    return grade_update('mod/ouwiki', $ouwiki->course, 'mod',
+        'ouwiki', $ouwiki->id, 0, null, array('deleted' => 1));
 }

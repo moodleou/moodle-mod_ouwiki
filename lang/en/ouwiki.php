@@ -150,6 +150,9 @@ $string['ouwiki:overridelock']='Override locked pages';
 $string['ouwiki:viewgroupindividuals']='Per-user subwikis: view same group';
 $string['ouwiki:viewallindividuals']='Per-user subwikis: view all';
 $string['ouwiki:viewcontributions']='View list of contributions organised by user';
+$string['ouwiki:deletepage'] = 'Delete wiki pages';
+$string['ouwiki:viewparticipation'] = 'View participation of all enrolled users who have access to wiki';
+$string['ouwiki:grade'] = 'Grade users who have have access to wiki';
 
 $string['wikirecentchanges']='Wiki changes';
 $string['wikirecentchanges_from']='Wiki changes (page {$a})';
@@ -279,6 +282,32 @@ $string['thispageislocked'] = 'This wiki page is locked and cannot be edited.';
 $string['emptypagetitle'] = 'The new page title must not be blank.';
 $string['duplicatepagetitle'] = 'The new page title must not be the same as one of the existing page titles.';
 
+// Wordcount
+$string['showwordcounts'] = 'Show word counts';
+$string['showwordcounts_help'] = 'If switched on then word counts for the pages will be calculated and displayed at the bottom of the main content.';
+$string['numwords'] = 'Words: {$a}';
+$string['words'] = 'Words';
+
+// Participation
+$string['myparticipation'] = 'My participation';
+$string['userparticipation'] = 'User participation';
+$string['participationbyuser'] = 'Participation by user';
+$string['viewparticipationerrror'] = 'Cannot view user participation.';
+$string['pagescreated'] = 'Pages created';
+$string['pageedits'] = 'Page edits';
+$string['wordsadded'] = 'Words added';
+$string['wordsdeleted'] = 'Words deleted';
+$string['noparticipation'] = 'No participation to show.';
+$string['detail'] = 'detail';
+$string['downloadspreadsheet'] = 'Download as spreadsheet';
+$string['participation'] = 'Participation';
+$string['usergrade'] = 'User grade';
+$string['savegrades'] = 'Save grades';
+$string['gradesupdated'] = 'Grades updated';
+$string['userdetails'] = 'Detail for {$a}';
+$string['viewwikistartpage'] = 'View {$a}';
+$string['viewwikichanges'] = 'Changes for {$a}';
+
 $string['search'] = 'Search this wiki';
 $string['search_help'] = 'This search option allows you to search within the wiki you are currently viewing.
 
@@ -292,8 +321,8 @@ From this results page you will also have the option to ‘Search the rest of th
  will have the ability to change your keyword and search again. You will also be able to choose to
  search all of your forums or the OU Library.';
 
-$string['sizewarning'] = 'This wiki page is very large and may operate slowly. 
-If possible, please split the content into logical chunks and 
+$string['sizewarning'] = 'This wiki page is very large and may operate slowly.
+If possible, please split the content into logical chunks and
 place it on separate linked pages.';
 
 $string['displayversion'] = 'OU wiki version: <strong>{$a}</strong>';

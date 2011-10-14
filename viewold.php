@@ -116,7 +116,7 @@ print "
 </div>";
 
 // Print page content
-$data = $ouwikioutput->ouwiki_print_page($subwiki, $cm, $pageversion);
+$data = $ouwikioutput->ouwiki_print_page($subwiki, $cm, $pageversion, false, 'viewold', $ouwiki->enablewordcount);
 print($data[0]);
 
 // Footer

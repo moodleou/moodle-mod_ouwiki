@@ -38,7 +38,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      * @return string HTML content for page
      */
     public function ouwiki_print_page($subwiki, $cm, $pageversion, $gewgaws = null,
-            $page = 'history') {
+            $page = 'history', $showwordcount = 0) {
         $output = '';
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
 
@@ -160,6 +160,12 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $output .= html_writer::end_tag('div');
 
         $output .= html_writer::end_tag('div');
+
+        // Render wordcount
+        if ($showwordcount) {
+            $output .= $this->ouwiki_render_wordcount($pageversion->wordcount);
+        }
+
         $output .= html_writer::end_tag('div');
 
         // attached files
@@ -549,21 +555,33 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      */
     public function ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagename, $context,
             $afterpage = null, $hideindex = null, $notabs = null, $head = '', $title='') {
+            global $USER;
         $output = '';
 
         ouwiki_print_header($ouwiki, $cm, $subwiki, $pagename, $afterpage, $head, $title);
 
-        // Print group selector
-        $selector = ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $course);
-        $output .= $selector;
+        $canview = ouwiki_can_view_participation($course, $ouwiki, $subwiki, $cm);
+        $page = basename($_SERVER['PHP_SELF']);
+
+        // Print group/user selector
+        $showselector = true;
+        if (($page == 'userparticipation.php' && $canview != OUWIKI_USER_PARTICIPATION)
+            || $page == 'participation.php'
+                && (int)$ouwiki->subwikis == OUWIKI_SUBWIKIS_INDIVIDUAL) {
+            $showselector = false;
+        }
+        if ($showselector) {
+            $selector = ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm,
+                $context, $course, $page);
+            $output .= $selector;
+        }
 
         // Print index link
         if (!$hideindex) {
             $output .= html_writer::start_tag('div', array('id' => 'ouwiki_indexlinks'));
             $output .= html_writer::start_tag('ul');
 
-            $isindex = basename($_SERVER['PHP_SELF']) == 'wikiindex.php';
-            if ($isindex) {
+            if ($page == 'wikiindex.php') {
                 $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_index'));
                 $output .= html_writer::start_tag('span');
                 $output .= get_string('index', 'ouwiki');
@@ -576,8 +594,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                         ouwiki_display_wiki_parameters(null, $subwiki, $cm)));
                 $output .= html_writer::end_tag('li');
             }
-            $ishistory = basename($_SERVER['PHP_SELF']) == 'wikihistory.php';
-            if ($ishistory) {
+            if ($page == 'wikihistory.php') {
                 $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_history'));
                 $output .= html_writer::start_tag('span');
                 $output .= get_string('wikirecentchanges', 'ouwiki');
@@ -589,6 +606,34 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                         array('href' => 'wikihistory.php?'.
                         ouwiki_display_wiki_parameters(null, $subwiki, $cm)));
                 $output .= html_writer::end_tag('li');
+            }
+            if ($canview == OUWIKI_USER_PARTICIPATION) {
+                $participationstr = get_string('participationbyuser', 'ouwiki');
+                $participationpage = 'participation.php?id='.$cm->id.'&pagename='.$pagename;
+            } else if ($canview == OUWIKI_MY_PARTICIPATION) {
+                $participationstr = get_string('myparticipation', 'ouwiki');
+                $participationpage = 'userparticipation.php?id='.$cm->id.'&pagename='.$pagename;
+                $participationpage .= '&user='.$USER->id;
+            }
+            if (($cm->groupmode != 0) && isset($subwiki->groupid)) {
+                $participationpage .= '&group='.$subwiki->groupid;
+            }
+
+            if ($canview > OUWIKI_NO_PARTICIPATION) {
+                if ($page == 'participation.php' || $page == 'userparticipation.php') {
+                    $output .= html_writer::start_tag('li',
+                        array('id' => 'ouwiki_nav_participation'));
+                    $output .= html_writer::start_tag('span');
+                    $output .= $participationstr;
+                    $output .= html_writer::end_tag('span');
+                    $output .= html_writer::end_tag('li');
+                } else {
+                    $output .= html_writer::start_tag('li',
+                        array('id' => 'ouwiki_nav_participation'));
+                    $output .= html_writer::tag('a', $participationstr,
+                            array('href' => $participationpage));
+                    $output .= html_writer::end_tag('li');
+                }
             }
 
             $output .= html_writer::end_tag('ul');
@@ -609,5 +654,363 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         }
 
         return $output;
+    }
+
+    /**
+     * Format the wordcount for display
+     *
+     * @param string $wordcount
+     * @return output
+     */
+    public function ouwiki_render_wordcount($wordcount) {
+        $output = html_writer::start_tag('div', array('class' => 'ouw_wordcount'));
+        $output .= html_writer::tag('span', get_string('numwords', 'ouwiki', $wordcount));
+        $output .= html_writer::end_tag('div');
+        return $output;
+    }
+
+    /**
+     * Print all user participation records for display
+     *
+     * @param object $cm
+     * @param object $course
+     * @param string $pagename
+     * @param int $groupid
+     * @param object $ouwiki
+     * @param object $subwiki
+     * @param string $download (csv)
+     * @param int $page flexible_table pagination page
+     * @param bool $grading_info gradebook grade information
+     * @param array $participation mixed array of user participation values
+     * @param object $context
+     * @param bool $viewfullnames
+     * @param string groupname
+     */
+    public function ouwiki_render_participation_list($cm, $course, $pagename, $groupid, $ouwiki,
+        $subwiki, $download, $page, $grading_info, $participation, $context, $viewfullnames,
+        $groupname) {
+        global $DB, $CFG, $OUTPUT;
+
+        require_once($CFG->dirroot.'/mod/ouwiki/participation_table.php');
+        $perpage = OUWIKI_PARTICIPATION_PERPAGE;
+
+        // filename for downloading setup
+        $filename = "$course->shortname-".format_string($ouwiki->name, true);
+        if (!empty($groupname)) {
+            $filename .= '-'.format_string($groupname, true);
+        }
+
+        $table = new ouwiki_participation_table($cm, $course, $ouwiki,
+            $pagename, $groupid, $groupname, $grading_info);
+        $table->setup($download);
+        $table->is_downloading($download, $filename, get_string('participation', 'ouwiki'));
+
+        // participation doesn't need standard ouwiki tabs so we need to
+        // add this one div in manually
+        if (!$table->is_downloading()) {
+            echo html_writer::start_tag('div', array('id' => 'ouwiki_belowtabs'));
+        }
+
+        if (!empty($participation)) {
+            if (!$table->is_downloading()) {
+                $table->pagesize($perpage, count($participation));
+                $offset = $page * $perpage;
+                $endposition = $offset + $perpage;
+            } else {
+                // always export all users
+                $endposition = count($participation);
+                $offset = 0;
+            }
+            $currentposition = 0;
+            foreach ($participation as $user) {
+                if ($currentposition == $offset && $offset < $endposition) {
+                    $fullname = fullname($user, $viewfullnames);
+
+                    // control details link
+                    $details = false;
+
+                    // pages
+                    $pagecreates = 0;
+                    if (isset($user->pagecreates)) {
+                        $pagecreates = $user->pagecreates;
+                        $details = true;
+                    }
+                    $pageedits = 0;
+                    if (isset($user->pageedits)) {
+                        $pageedits = $user->pageedits;
+                        $details = true;
+                    }
+
+                    // words
+                    if ($ouwiki->enablewordcount) {
+                        $wordsadded = 0;
+                        if (isset($user->wordsadded)) {
+                            $wordsadded = $user->wordsadded;
+                            $details = true;
+                        }
+                        $wordsdeleted = 0;
+                        if (isset($user->wordsdeleted)) {
+                            $wordsdeleted = $user->wordsdeleted;
+                            $details = true;
+                        }
+                    }
+
+                    // grades
+                    if ($grading_info) {
+                        if (!$table->is_downloading()) {
+                            $attributes = array('userid' => $user->id);
+                            if (!isset($grading_info->items[0]->grades[$user->id]->grade)) {
+                                $user->grade = -1;
+                            } else {
+                                $user->grade = $grading_info->items[0]->grades[$user->id]->grade;
+                                $user->grade = abs($user->grade);
+                            }
+                            $menu = html_writer::select(make_grades_menu($ouwiki->grade),
+                                'menu['.$user->id.']', $user->grade,
+                                array(-1 => get_string('nograde')), $attributes);
+                            $gradeitem = '<div id="gradeuser'.$user->id.'">'. $menu .'</div>';
+                        } else {
+                            if (!isset($grading_info->items[0]->grades[$user->id]->grade)) {
+                                $gradeitem = get_string('nograde');
+                            } else {
+                                $gradeitem = $grading_info->items[0]->grades[$user->id]->grade;
+                            }
+                        }
+                    }
+
+                    // user details
+                    if (!$table->is_downloading()) {
+                        $picture = $OUTPUT->user_picture($user);
+                        $userurl = new moodle_url('/user/view.php?',
+                            array('id' => $user->id, 'course' => $course->id));
+                        $userdetails = html_writer::link($userurl, $fullname);
+                        if ($details) {
+                            $detailparams = array('id' => $cm->id, 'pagename' => $pagename,
+                                'user' => $user->id, 'group' => $groupid);
+                            $detailurl = new moodle_url('/mod/ouwiki/userparticipation.php',
+                                $detailparams);
+                            $accesshidetext = get_string('userdetails', 'ouwiki', $fullname);
+                            $detaillink = html_writer::start_tag('small');
+                            $detaillink .= ' (';
+                            $detaillink .= html_writer::tag('span', $accesshidetext, array('class' => 'accesshide'));
+                            $detaillink .= html_writer::link($detailurl,
+                                get_string('detail', 'ouwiki'));
+                            $detaillink .= ')';
+                            $detaillink .= html_writer::end_tag('small');
+                            $userdetails .= $detaillink;
+                        }
+                    }
+
+                    // add row
+                    if (!$table->is_downloading()) {
+                        if ($ouwiki->enablewordcount) {
+                            $row = array($picture, $userdetails, $pagecreates,
+                                $pageedits, $wordsadded, $wordsdeleted);
+                        } else {
+                            $row = array($picture, $userdetails, $pagecreates, $pageedits);
+                        }
+                    } else {
+                        $row = array($fullname, $pagecreates, $pageedits,
+                            $wordsadded, $wordsdeleted);
+                    }
+                    if (isset($gradeitem)) {
+                        $row[] = $gradeitem;
+                    }
+                    $table->add_data($row);
+                    $offset++;
+                }
+                $currentposition++;
+            }
+        }
+
+        if (!$table->is_downloading()) {
+            $table->print_html();  /// Print the whole table
+
+            // print the grade form footer if necessary
+            if ($grading_info && !empty($participation)) {
+                echo $table->grade_form_footer();
+            }
+        }
+    }
+
+    /**
+     * Render single user participation record for display
+     *
+     * @param object $user
+     * @param array $changes user participation
+     * @param object $cm
+     * @param object $course
+     * @param object $ouwiki
+     * @param object $subwiki
+     * @param string $pagename
+     * @param int $groupid
+     * @param string $download
+     * @param bool $canview level of participation user can view
+     * @param object $context
+     * @param string $fullname
+     * @param bool $cangrade permissions to grade user participation
+     * @param string $groupname
+     */
+    public function ouwiki_render_user_participation($user, $changes, $cm, $course,
+        $ouwiki, $subwiki, $pagename, $groupid, $download, $canview, $context, $fullname,
+        $cangrade, $groupname) {
+        global $DB, $CFG, $OUTPUT;
+
+        require_once($CFG->dirroot.'/mod/ouwiki/participation_table.php');
+
+        $filename = "$course->shortname-".format_string($ouwiki->name, true);
+        if (!empty($groupname)) {
+            $filename .= '-'.format_string($groupname, true);
+        }
+        $filename .= '-'.format_string($fullname, true);
+
+        // setup the table
+        $table = new ouwiki_user_participation_table($cm, $course, $ouwiki,
+            $pagename, $groupname, $user, $fullname);
+        $table->setup($download);
+        $table->is_downloading($download, $filename, get_string('participation', 'ouwiki'));
+
+        // participation doesn't need standard ouwiki tabs so we need to
+        // add this one div in manually
+        if (!$table->is_downloading()) {
+            echo html_writer::start_tag('div', array('id' => 'ouwiki_belowtabs'));
+        }
+
+        $previouswordcount = false;
+        $lastdate = null;
+        foreach ($changes as $change) {
+            $date = userdate($change->timecreated, get_string('strftimedate'));
+            $time = userdate($change->timecreated, get_string('strftimetime'));
+            if (!$table->is_downloading()) {
+                if ($date == $lastdate) {
+                    $date = null;
+                } else {
+                    $lastdate = $date;
+                }
+                $now = time();
+                $edittime = $time;
+                if ($now - $edittime < 5*60) {
+                    $category = 'ouw_recenter';
+                } else if ($now - $edittime < 4*60*60) {
+                    $category = 'ouw_recent';
+                } else {
+                    $category = 'ouw_recentnot';
+                }
+                $time = html_writer::start_tag('span', array('class' => $category));
+                $time .= $edittime;
+                $time .= html_writer::end_tag('span');
+            }
+            $page = $change->title ? htmlspecialchars($change->title) :
+                get_string('startpage', 'ouwiki');
+            $row = array($date, $time, $page);
+
+            // word counts
+            if ($ouwiki->enablewordcount) {
+                $previouswordcount = false;
+                if ($change->previouswordcount) {
+                    $words = ouwiki_wordcount_difference($change->wordcount,
+                        $change->previouswordcount, true);
+                } else {
+                    $words = ouwiki_wordcount_difference($change->wordcount, 0, false);
+                }
+                if (!$table->is_downloading()) {
+                    $row[] = $words;
+                } else {
+                    if ($words <= 0) {
+                        $row[] = 0;
+                        $row[] = $words;
+                    } else {
+                        $row[] = $words;
+                        $row[] = 0;
+                    }
+                }
+            }
+
+            if (!$table->is_downloading()) {
+                $pageparams = ouwiki_display_wiki_parameters($change->title, $subwiki, $cm);
+                $pagestr = $page . ' ' . $lastdate . ' ' . $edittime;
+                if ($change->id != $change->firstversionid) {
+                    $accesshidetext = get_string('viewwikichanges', 'ouwiki', $pagestr);
+                    $changeurl = new moodle_url("/mod/ouwiki/diff.php?$pageparams" .
+                        "&v2=$change->id&v1=$change->previousversionid");
+                    $changelink = html_writer::start_tag('small');
+                    $changelink .= ' (';
+                    $changelink .= html_writer::link($changeurl, get_string('changes', 'ouwiki'));
+                    $changelink .= ')';
+                    $changelink .= html_writer::end_tag('small');
+                } else {
+                    $accesshidetext = get_string('viewwikistartpage', 'ouwiki', $pagestr);
+                    $changelink = html_writer::start_tag('small');
+                    $changelink .= ' (' . get_string('newpage', 'ouwiki') . ')';
+                    $changelink .= html_writer::end_tag('small');
+                }
+                $current = '';
+                if ($change->id == $change->currentversionid) {
+                    $viewurl = new moodle_url("/mod/ouwiki/view.php?$pageparams");
+                } else {
+                    $viewurl = new moodle_url("/mod/ouwiki/viewold.php?" .
+                        "$pageparams&version=$change->id");
+                }
+                $actions = html_writer::tag('span', $accesshidetext, array('class' => 'accesshide'));
+                $actions .= html_writer::link($viewurl, get_string('view'));
+                $actions .= $changelink;
+                $row[] = $actions;
+            }
+
+            // add to the table
+            $table->add_data($row);
+        }
+
+        if (!$table->is_downloading()) {
+            $table->print_html();  /// Print the whole table
+
+            // Grade
+            if ($cangrade && $ouwiki->grade != 0) {
+                $this->ouwiki_render_user_grade($course, $cm, $ouwiki, $user, $pagename, $groupid);
+            }
+        }
+    }
+
+    /**
+     * Render single users grading form
+     *
+     * @param object $course
+     * @param object $cm
+     * @param object $ouwiki
+     * @param object $user
+     */
+    public function ouwiki_render_user_grade($course, $cm, $ouwiki, $user, $pagename, $groupid) {
+        global $CFG;
+
+        require_once($CFG->libdir.'/gradelib.php');
+        $grading_info = grade_get_grades($course->id, 'mod', 'ouwiki', $ouwiki->id, $user->id);
+
+        if ($grading_info) {
+            if (!isset($grading_info->items[0]->grades[$user->id]->grade)) {
+                $user->grade = -1;
+            } else {
+                $user->grade = abs($grading_info->items[0]->grades[$user->id]->grade);
+            }
+            $grademenu = make_grades_menu($ouwiki->grade);
+            $grademenu[-1] = get_string('nograde');
+
+            $formparams = array();
+            $formparams['id'] = $cm->id;
+            $formparams['user'] = $user->id;
+            $formparams['page'] = $pagename;
+            $formparams['group'] = $groupid;
+            $formaction = new moodle_url('/mod/ouwiki/savegrades.php', $formparams);
+            $mform = new MoodleQuickForm('savegrade', 'post', $formaction,
+                '', array('class' => 'savegrade'));
+
+            $mform->addElement('header', 'usergrade', get_string('usergrade', 'ouwiki'));
+
+            $mform->addElement('select', 'grade', get_string('grade'),  $grademenu);
+            $mform->setDefault('grade', $user->grade);
+
+            $mform->addElement('submit', 'savechanges', get_string('savechanges'));
+
+            $mform->display();
+        }
     }
 }

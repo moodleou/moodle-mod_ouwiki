@@ -172,6 +172,7 @@ ouwiki_print_footer($course, $cm, $subwiki, $pagename);
 /* Helper functions */
 
 function ouwiki_display_page_in_index($indexitem, $subwiki, $cm) {
+    global $ouwiki;
     if ($startpage = is_null($indexitem->title)) {
         $title = get_string('startpage', 'ouwiki');
         $output = '<div class="ouw_index_startpage">';
@@ -187,6 +188,10 @@ function ouwiki_display_page_in_index($indexitem, $subwiki, $cm) {
     $lastchange->userlink = ouwiki_display_user($indexitem, $cm->course);
     $lastchange->date = ouwiki_recent_span($indexitem->timecreated).ouwiki_nice_date($indexitem->timecreated).'</span>';
     $output .= '<div class="ouw_indexinfo">';
+    if ($ouwiki->enablewordcount) {
+        $output .= '<span class="ouw_wordcount">'.get_string('numwords', 'ouwiki', $indexitem->wordcount).'</span>';
+        $output .= '<div class="spacer"></div>';
+    }
     $output .= ' <span class="ouw_lastchange">'.get_string('lastchange', 'ouwiki', $lastchange).'</span>';
     $output .= '</div>';
     if ($startpage) {

@@ -77,11 +77,11 @@ echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagenam
 // Check consistency in setting subwikis and group mode
 $courselink = new moodle_url('/course/view.php?id=', array('id' =>  $cm->course));
 if (($cm->groupmode == 0) && isset($subwiki->groupid)) {
-    print_error("Sub-wikis is set to 'One wiki per group'. 
+    print_error("Sub-wikis is set to 'One wiki per group'.
         Please change Group mode to 'Separate groups' or 'Visible groups'.", $courselink);
 }
 if (($cm->groupmode > 0) && !isset($subwiki->groupid)) {
-    print_error("Sub-wikis is NOT set to 'One wiki per group'. 
+    print_error("Sub-wikis is NOT set to 'One wiki per group'.
         Please change Group mode to 'No groups'.", $courselink);
 }
 
@@ -103,7 +103,7 @@ if ($pageversion) {
                 '</div>';
     }
     // Print page content
-    $data = $ouwikioutput->ouwiki_print_page($subwiki, $cm, $pageversion, true, 'view');
+    $data = $ouwikioutput->ouwiki_print_page($subwiki, $cm, $pageversion, true, 'view', $ouwiki->enablewordcount);
     echo $data[0];
     if ($subwiki->canedit && $pageversion->locked != '1') {
         print ouwiki_display_create_page_form($subwiki, $cm, $pageversion);
@@ -118,7 +118,7 @@ if ($pageversion) {
         print '<p>'.get_string('wouldyouliketocreate', 'ouwiki').'</p>';
         print "<form method='get' action='edit.php'>";
         print ouwiki_display_wiki_parameters($pagename, $subwiki, $cm, OUWIKI_PARAMS_FORM);
-        print "<input type='submit' value='".get_string('createpage', 'ouwiki')."' /></form>";  
+        print "<input type='submit' value='".get_string('createpage', 'ouwiki')."' /></form>";
     }
 }
 

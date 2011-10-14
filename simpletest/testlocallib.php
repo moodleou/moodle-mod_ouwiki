@@ -322,6 +322,56 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
         ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki);
     } 
 
+    function test_ouwiki_word_count() {
+        $tests = array();
+
+        $test['string'] = "This is four words";
+        $test['count'] = 4;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEqual($testcount, $test['count']);
+
+        $test['string'] = " ";
+        $test['count'] = 0;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEqual($testcount, $test['count']);
+
+        $test['string'] = "word";
+        $test['count'] = 1;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEqual($testcount, $test['count']);
+
+        $test['string'] = "Two\n\nwords";
+        $test['count'] = 2;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEqual($testcount, $test['count']);
+
+        $test['string'] = "<p><b>two <i>words</i></b></p>";
+        $test['count'] = 2;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEqual($testcount, $test['count']);
+
+        $test['string'] = "Isn’t it three";
+        $test['count'] = 3;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEqual($testcount, $test['count']);
+
+        $test['string'] = "Isn't it three";
+        $test['count'] = 3;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEqual($testcount, $test['count']);
+
+        $test['string'] = "three-times-hyphenated words";
+        $test['count'] = 2;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEqual($testcount, $test['count']);
+
+        $test['string'] = "one,two,さん";
+        $test['count'] = 3;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEqual($testcount, $test['count']);
+
+    }
+
     /* 
      These functions enable us to create database entries and/or grab objects to make it possible to test the 
      many permuations required for OU Wiki.

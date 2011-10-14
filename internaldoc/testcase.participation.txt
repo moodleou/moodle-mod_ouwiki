@@ -1,0 +1,210 @@
+This script describes steps to test the participation facility from a user
+perspective. It is intended to cover most of the UI and features.
+
+NOTE: In this test case, the word 'wiki' always refers to the OU wiki.
+
+The test steps in this script follow on from each other and aren't independent.
+
+
+Initial setup
+=============
+
+This test case requires:
+
+- a course which has at least two groups defined (G1 and G2).
+- two test student users (U.S1, who is in group G1, and U.S2, in group G2).
+- one test teacher (U.T1) who is in group G1.
+
+The test server must have debugging set to DEVELOPER level and to display
+errors; during all parts of the test script, there should be no debugging
+warnings.
+
+The completion system must be enabled for (a) the site, and (b) the test
+course.
+
+
+CRE Creating wikis and data
+===========================
+
+CRE01 / admin
+  In your test course, create a wiki called CRE01 which is set to group wikis
+  and separate groups.
+  Go to the Permissions page for this wiki and set it so that the Teacher role
+  DOES have the accessallgroups capability in this wiki.
+
+CRE02 / admin
+  Create a wiki called CRE02 which is a whole-course wiki (no groups).
+
+CRE03 / admin
+  Create a wiki called CRE03 which is set to individual wikis (no groups).
+
+CRE04 / U.S1 [change]
+  Go to wiki CRE01 (you should be in group G1).
+  Create the start page with 3 words.
+  Edit the start page and add another word so that it now has 4 words.
+  Edit the start page and remove 2 words so that it now has 2 words.
+  Go to wiki CRE02.
+  Create the start page with 1 word.
+  Go to wiki CRE03 (you should be in the individual wiki for U.S1).
+  Create the start page with 2 words.
+
+CRE05 / U.S2 [change]
+  Go to wiki CRE01 (you should be in group G2).
+  Create start page with 1 word.
+  Go to wiki CRE02.
+  Edit start page so that it has 4 words.
+  Using the button at the bottom, create a new page called 'Frog' which has
+  2 words.
+  Go to wiki CRE03 (you should be in the individual wiki for U.S2).
+  Create the start page with 1 word.
+  Create a new page called 'Frog' with 1 word.
+
+CRE06 / U.T [change]
+  Go to wiki CRE01 and choose group G1.
+  Edit the start page and add 3 words so that it now has 5 words.
+
+
+BSC Basic usage
+===============
+
+BSC01 / U.T
+  Go to wiki CRE01.
+  - Verify that there is a button 'Participation by user' alongside the
+    'Wiki index' and 'Wiki changes' buttons.
+  Click the button. The participation list page should load.
+  - Verify that there is a group dropdown.
+  Choose group G1.
+  - Verify that the list of users shows U.S1 and U.T (everyone who is in
+    group G1).
+  - The counts should be:
+         Pages created | Page edits | Words added | Words deleted
+    U.S1   1           |   2        |   4         |   2
+    U.T    0           |   1        |   3         |   0
+
+BSC02 / U.T
+  Go to wiki CRE02. Click the participation list button.
+  - U.T should be included on the list even though they did not do anything in
+    this wiki.
+  - The counts should be:
+         Pages created | Page edits | Words added | Words deleted
+    U.S1   1           |   0        |   1         |   0
+    U.S2   1           |   2        |   6         |   0
+    U.T    0           |   0        |   0         |   0
+
+BSC03 / U.T
+  Go to wiki CRE03. Click the participation list button.
+  - The counts should be:
+         Pages created | Page edits | Words added | Words deleted
+    U.S1   1           |   0        |   2         |   0
+    U.S2   2           |   1        |   3         |   0
+    U.T    0           |   0        |   0         |   0
+
+BSC04 / U.T
+  Return to wiki CRE01. Click on the 'Detail' link next to U.S1.
+  - Verify that you are taken to a page showing details of all the changes
+    made by U.S1.
+  In another tab, go to the 'Wiki changes' page.
+  - Check that the changes shown on this detail link are basically the same
+    as the lines on 'Wiki changes' that relate to U.S1, but with slightly
+    different formatting. (I.e. the values are the same.)
+
+
+FIL File download
+=================
+
+FIL01 / admin [change]
+  Go to the wiki CRE01. Select group G1.
+  - Verify that there is a file download option and CSV is one of the available
+    formats (or possibly the only available format).
+  Do a CSV download of the data.
+  - Verify that the download is as follows (with possible differences regarding
+    quoting, course name, user names, etc.):
+
+    MY-COURSE-SHORTNAME,CRE01,G1
+    User,Pages created,Page edits,Words added,Words deleted
+    U S1,1,2,4,2
+    U T,0,1,3,0
+
+FIL02 / admin
+  Go to the Details list for user U.S1.
+  - Verify there is a download option with CSV.
+  Do the CSV download.
+  - Verify that download is something like the following, with possible
+    differences as noted:
+
+    MY-COURSE-SHORTNAME,CRE01,G1,U S1
+    Date,Time,Page,Words added,Words deleted
+    12 May 2011,11:36,Start page,3,0
+    12 May 2011,11:37,Start page,1,0
+    12 May 2011,11:37,Start page,0,2
+
+FIL03 / admin
+  Create a new wiki (course-wide) with title (exactly as shown including
+  commas and quotes):
+
+  This, surprisingly, is another wiki"'\
+
+  Go to the participation list.
+  - It should show a table with the three users and lots of zeros.
+  Do a CSV download of the data.
+  - Verify that the wiki name in the CSV download is escaped so that it goes
+    into a single column despite the commas.
+    NOTE: This test is supposed to check that the code is correctly using core
+    CSV support library to escape its text. It is possible there might be a bug
+    in the core library which will cause this test to fail. In that case the
+    core library bug should be reported in the Moodle bug tracker and we ignore
+    the failure of this one test item.
+
+
+GRD Grading
+===========
+
+GRD01 / admin
+  Edit the wiki CRE01 settings and set grading option to the 'Separate or
+  Connected' scale. Save and display.
+  Go to participation list.
+  - Verify that a Grade column now shows in the table.
+  - Verify that it shows existing grade as unset for everyone.
+  - Verify that the dropdowns have options as per the scale ('Separate' or
+    'Connected', I think).
+  Edit wiki settings again and set grading option to the 0..10 numeric scale.
+  Save and display. Go to participation list.
+  - Verify that grade dropdowns now have options 0..10.
+
+GRD02 / admin
+  Edit the wiki CRE01 settings and set the completion option to automatic
+  completion.
+  In the form, temporarily turn off the grading option.
+  - Verify that the 'Require grade' checkbox is greyed out.
+  Turn the grading option back on (to 0..10 numeric scale again).
+  - Verify that the 'Require grade' checkbox is now available.
+  Tick the 'Require grade' checkbox and save changes.
+
+GRD03 / U.T [change]
+  Go to the wiki CRE01, group G1, participation list.
+  - Verify that Grade column displays and shows existing grade as unset.
+  Change grade for U.S1 to 5/10 and U.T to 10/10. Click Save grades button.
+  - Verify that the page reloads and now displays the new grades 5/10, 10/10.
+  Change grade for U.T back to 'not set'. Click Save grades button.
+  - Verify that page reloads and shows U.T as 'not set'.
+
+GRD04 / U.T
+  Go to the course gradebook.
+  - Verify that there is a column relating to the wiki CRE01.
+  - Verify that the grades in this column are 50% for U.S1 and not set for
+    other users.
+
+GRD05 / U.T
+  Go to course page.
+  - Verify that automatic tickbox icon next to the wiki is not ticked (this
+    may mean it's invisible, depending on the icon in use).
+  Go to CRE01, group G1, participation list. Click into the details page for
+  U.T.
+  - Verify that the Grade dropdown is shown at the bottom of the details page
+    and is currently showing unset.
+  Change the grade for U.T to 7/10 and save.
+  - The participation list should now load, showing the new 7/10 grade.
+  Click in Details page for U.T.
+  - Verify that the grade now shows as 7/10 here too.
+  Return to course page.
+  - Verify that the automatic tickbox is now ticked.

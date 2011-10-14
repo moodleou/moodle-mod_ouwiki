@@ -37,7 +37,7 @@ class backup_ouwiki_activity_structure_step extends backup_activity_structure_st
         $userinfo = $this->get_setting_value('userinfo');
 
         // Define each element separated
-        $ouwiki = new backup_nested_element('ouwiki', array('id'), array('name', 'subwikis', 'intro', 'editbegin', 'editend', 'annotation' , 'introformat', 'completionedits', 'completionpages'));
+        $ouwiki = new backup_nested_element('ouwiki', array('id'), array('name', 'subwikis', 'intro', 'editbegin', 'editend', 'annotation' , 'introformat', 'completionedits', 'completionpages', 'enablewordcount'));
 
         $subwikis = new backup_nested_element('subs');
 
@@ -49,7 +49,7 @@ class backup_ouwiki_activity_structure_step extends backup_activity_structure_st
 
         $versions = new backup_nested_element('versions');
 
-        $version = new backup_nested_element('version', array('id'), array('xhtml', 'changestart', 'changesize', 'changeprevsize', 'deletedat', 'timecreated', 'userid'));
+        $version = new backup_nested_element('version', array('id'), array('xhtml', 'changestart', 'changesize', 'changeprevsize', 'deletedat', 'timecreated', 'userid', 'wordcount'));
 
         $annotations = new backup_nested_element('annotations');
 

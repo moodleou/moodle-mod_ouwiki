@@ -1,0 +1,105 @@
+== OU Wiki Participation Feature ==
+
+=== Description ===
+
+Display user participation within wikis.
+
+Participation is defined as:
+
+* words added
+* words deleted
+* pages created
+* pages edited
+
+=== Capability Requirements ===
+
+A user will be considered as participating in a wiki if they have the '''mod/ouwiki:edit''' capability within
+the context of the current wiki instance and are not considered a teacher or adminstrator
+by standard Moodle legacy roles and capabilities.
+
+A user who has the capability '''mod/ouwiki:viewparticipation''' and has access to the current wiki
+can view all user participation, subject to the groupmode settings and their membershipt of those groups.
+(A user who has the capability '''moodle/site:accessallgroups''' will be able to see all groups regardless of
+personal membership).
+
+A user who only has the capability ''mod/ouwiki:edit'' and access to the current wiki will only be able to see
+their own participation.
+
+=== Participation Page Display ===
+
+The button displayed to the user to access the participation screens will disply accordingly.
+A user with access to all users participation will see a button labelled '''Participation by user'''
+whereas a user with access to only their participation will see '''My participation'''.  These appear
+next to the buttons for '''Wiki index''' and '''Wiki changes'''.
+
+The different buttons will take the user to two different screens respectively - one showing all participants
+and an overview of their participation and one only showing a single users participation but with more detali.
+
+If a user has access to all users they can also view detailed information per user via a '''Detail''' link which appears
+next to the users full name in the table.
+
+The participants to display is as follows:
+
+{| border="1" style="text-align: left;"
+!Groups
+!Is current group member
+!mod/ouwiki:viewparticipation
+!moodle/site:accessallgroups
+!Visible Participants:
+|-
+| None
+| -
+| Allow
+| -
+| ''All enrolled''
+|-
+| None
+| -
+| -
+| -
+| ''Own participation only''
+|-
+| Visible/Separate
+| No
+| Allow
+| Allow
+| ''All enrolled''
+|-
+| Visible/Separate
+| No
+| Allow
+| -
+| ''No participants''
+|-
+| Visible/Separate
+| Yes
+| Allow
+| -
+| ''Current group members''
+|-
+| Visible/Separate
+| Yes
+| -
+| -
+| ''Own participation only''
+|}
+
+=== Participation Calculations ===
+
+A users participation is calculated in terms of page creations and edits and word additions and deletions.
+
+Each saved page version is saved with the count of words contained in that version.  To calculate a single users
+word count participation each version corresponding to their ID is retrieved and word count values calculated against
+the previous stored version.
+
+Page edits are calculated where the user has saved a version of an existing page.
+
+Page creations are where the user saves a new page.
+
+=== Grading ===
+
+A user with the capability ''mod/ouwiki:grade'' in relation to the current wiki has the ability to add grade values.
+This can either be done as a bulk action on the '''Participation by user''' page or as a single update on the more detailed
+single user page.
+
+Grading will only be available if it has been set for the particular wiki instance in the '''OU wiki administration''' '''edit''' screen.

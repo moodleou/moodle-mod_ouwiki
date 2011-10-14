@@ -114,7 +114,7 @@ function newAnnotation(newtext) {
     // we need the number of the next form textarea
     var annotationcount = document.getElementById('annotationcount');
     var annotationnum = parseInt(annotationcount.firstChild.nodeValue) + 1;
-    
+
     //create the new form section
     var newfitem = document.createElement('div');
     newfitem.id = 'newfitem'+annotationnum;

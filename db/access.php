@@ -125,5 +125,29 @@ $capabilities = array(
             'coursecreator' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
         )
-    )
+    ),
+    'mod/ouwiki:viewparticipation' => array(
+
+        'riskbitmask' => 0,
+
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        )
+    ),
+    'mod/ouwiki:grade' => array(
+
+        'riskbitmask' => 0,
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        )
+    ),
 );

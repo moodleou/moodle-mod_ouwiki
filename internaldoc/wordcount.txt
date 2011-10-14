@@ -1,0 +1,18 @@
+== OU Wiki Word Count Feature ==
+
+=== Description ===
+
+Count the number of words saved with a page version.
+
+=== Wiki Settings Requirements ===
+
+In order to see the page version word counts the feature needs to be enabled in the wiki instance settings.
+
+=== Calculation + Display ===
+
+Whenever a page is edited and saved a new word count is taken and saved alongside the version in the database.
+If the '''enablewordcount''' setting in the wiki instance settings is set to ''yes'' then this is displayed
+at the bottom of the page in it's current version.
+
+In the wiki history pages the word count differences between versions are calculated and displayed as + or - values
+in order to show how many words were added at each page edit.

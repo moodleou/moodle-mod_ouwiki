@@ -96,8 +96,142 @@ function xmldb_ouwiki_upgrade($oldversion=0) {
 
         upgrade_mod_savepoint(true, 2010122001, 'ouwiki');
     }
- 
+
     if ($oldversion < 2011031800) {
         upgrade_mod_savepoint(true, 2011031800, 'ouwiki');
+    }
+
+    if ($oldversion < 2011060100) {
+
+        // Define field enablewordcount to be added to ouwiki
+        $table = new xmldb_table('ouwiki');
+        $field = new xmldb_field('enablewordcount', XMLDB_TYPE_INTEGER, '1',
+            XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '1', 'introformat');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field wordcount to be added to ouwiki_versions
+        $table = new xmldb_table('ouwiki_versions');
+        $field = new xmldb_field('wordcount', XMLDB_TYPE_INTEGER, '10',
+            XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'xhtmlformat');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // we need to update all ouwiki_versions wordcounts
+        $count = $DB->count_records_sql('SELECT COUNT(*) FROM {ouwiki_versions}');
+        $rs = $DB->get_recordset_sql('SELECT id, xhtml FROM {ouwiki_versions} ORDER BY id');
+        if ($rs->valid()) {
+            $pbar = new progress_bar('countwordsouwikiversionsxhtml', 500, true);
+
+            $i = 0;
+            foreach ($rs as $entry) {
+                $i++;
+                upgrade_set_timeout(60); // set up timeout, may also abort execution
+                $pbar->update($i, $count, "Counting words of ouwiki version entries - $i/$count.");
+
+                // retrieve wordcount
+                require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
+                $wordcount = ouwiki_count_words($entry->xhtml);
+                $entry->wordcount = $wordcount;
+                $DB->update_record('ouwiki_versions', $entry);
+            }
+        }
+        $rs->close();
+
+        upgrade_mod_savepoint(true, 2011060100, 'ouwiki');
+    }
+
+    if ($oldversion < 2011071300) {
+
+        // Define field grade to be added to ouwiki
+        $table = new xmldb_table('ouwiki');
+        $field = new xmldb_field('grade', XMLDB_TYPE_INTEGER, '10',
+            XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'enablewordcount');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // we need to update all ouwiki_versions scales
+        $rs = $DB->get_recordset_sql('SELECT id FROM {ouwiki} ORDER BY id');
+        if ($rs->valid()) {
+            foreach ($rs as $entry) {
+                $entry->grade = 0;
+                $DB->update_record('ouwiki', $entry);
+            }
+        }
+        $rs->close();
+
+        upgrade_mod_savepoint(true, 2011071300, 'ouwiki');
+    }
+
+    if ($oldversion < 2011072000) {
+
+        // Define field firstversionid to be added to ouwiki_pages
+        $table = new xmldb_table('ouwiki_pages');
+        $field = new xmldb_field('firstversionid', XMLDB_TYPE_INTEGER, '10',
+            XMLDB_UNSIGNED, null, null, '0', 'locked');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field previousversionid to be added to ouwiki_versions
+        $table = new xmldb_table('ouwiki_versions');
+        $field = new xmldb_field('previousversionid', XMLDB_TYPE_INTEGER, '10',
+            XMLDB_UNSIGNED, null, null, '0', 'wordcount');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // update all ouwiki_versions previousversionids and ouwiki_pages firstversionids
+        // firstversionid
+        $sql = 'SELECT v.pageid,
+                    (SELECT MIN(id)
+                        FROM {ouwiki_versions} v3
+                        WHERE v3.pageid = p.id AND v3.deletedat IS NULL)
+                    AS firstversionid
+                        FROM {ouwiki_pages} p
+                        JOIN {ouwiki_versions} v ON v.pageid = p.id
+                    GROUP BY v.pageid, p.id ORDER BY v.pageid';
+        $rs = $DB->get_recordset_sql($sql);
+        if ($rs->valid()) {
+            foreach ($rs as $entry) {
+                if (isset($entry->firstversionid)) {
+                    $DB->set_field('ouwiki_pages', 'firstversionid', $entry->firstversionid,
+                        array('id' => $entry->pageid));
+                }
+            }
+        }
+        $rs->close();
+
+        // previousversionid
+        $count = $DB->count_records_sql('SELECT COUNT(*) FROM {ouwiki_versions}');
+        $sql = 'SELECT v.id AS versionid,
+                    (SELECT MAX(v2.id)
+                        FROM {ouwiki_versions} v2
+                        WHERE v2.pageid = p.id AND v2.id < v.id)
+                    AS previousversionid
+                        FROM {ouwiki_pages} p
+                        JOIN {ouwiki_versions} v ON v.pageid = p.id';
+        $rs = $DB->get_recordset_sql($sql);
+        if ($rs->valid()) {
+            $pbar = new progress_bar('ouwikifirstandpreviousversions', 500, true);
+
+            $i = 0;
+            foreach ($rs as $entry) {
+                $i++;
+                upgrade_set_timeout(60); // set up timeout, may also abort execution
+                $pbar->update($i, $count, "Updating wiki metadata - $i/$count.");
+
+                if (isset($entry->previousversionid)) {
+                    $DB->set_field('ouwiki_versions', 'previousversionid',
+                        $entry->previousversionid, array('id' => $entry->versionid));
+                }
+            }
+        }
+        $rs->close();
+
+        upgrade_mod_savepoint(true, 2011072000, 'ouwiki');
     }
 }

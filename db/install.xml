@@ -19,7 +19,9 @@
         <FIELD NAME="completionpages" TYPE="int" LENGTH="9" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="If set, wiki should be marked complete once user creates this many new pages of their own." PREVIOUS="editend" NEXT="completionedits"/>
         <FIELD NAME="completionedits" TYPE="int" LENGTH="9" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="If set, wiki should be marked complete once user makes this many edits to the wiki." PREVIOUS="completionpages" NEXT="annotation"/>
         <FIELD NAME="annotation" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="If set, wiki will use annotations." PREVIOUS="completionedits" NEXT="introformat"/>
-        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="annotation"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="annotation" NEXT="enablewordcount"/>
+        <FIELD NAME="enablewordcount" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" PREVIOUS="introformat" NEXT="grade"/>
+        <FIELD NAME="grade" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="enablewordcount"/>
       </FIELDS>
       <KEYS>
 
@@ -53,7 +55,8 @@
         <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Title for the page. All pages must have a title except the start page for the wiki which is set NULL." PREVIOUS="subwikiid" NEXT="currentversionid"/>
         <FIELD NAME="currentversionid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="Points to the most recent entry in ouwiki_versions. This is the entry that will appear when viewing the page normally. May be null if there are no versions of the page yet." PREVIOUS="title" NEXT="locked"/>
 
-        <FIELD NAME="locked" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="Allows the page to be locked. Introduced with the Annotations commenting system to allow page locking while editing annotations." PREVIOUS="currentversionid"/>
+        <FIELD NAME="locked" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" COMMENT="Allows the page to be locked. Introduced with the Annotations commenting system to allow page locking while editing annotations." PREVIOUS="currentversionid" NEXT="firstversionid"/>
+        <FIELD NAME="firstversionid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="Points to the entry in ouwiki_versions that first related to this page. This is used for participation calculations to help with query load at that point." PREVIOUS="locked" />
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="primary key of the table, please edit me" NEXT="ouwiki_pages_fk_currentversionid"/>
@@ -74,7 +77,9 @@
         <FIELD NAME="changeprevsize" TYPE="int" LENGTH="9" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="If a section was edited, the previous size of the section (before editing) in bytes. Otherwise null." PREVIOUS="changesize" NEXT="deletedat"/>
 
         <FIELD NAME="deletedat" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="timestamp when page version was deleted" PREVIOUS="changeprevsize" NEXT="xhtmlformat"/>
-        <FIELD NAME="xhtmlformat" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="deletedat"/>
+        <FIELD NAME="xhtmlformat" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="deletedat" NEXT="wordcount"/>
+        <FIELD NAME="wordcount" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="xhtmlformat" NEXT="previousversionid"/>
+        <FIELD NAME="previousversionid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="Points to the entry in ouwiki_versions of the previous version for the page. This is used for participation calculations to help with query load at that point." PREVIOUS="wordcount" />
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="primary key of the table, please edit me" NEXT="ouwiki_versions_fk_pageid"/>

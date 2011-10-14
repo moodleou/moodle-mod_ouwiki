@@ -734,3 +734,36 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
     margin-left: 20px;
     text-indent: -20px;
 }
+
+.ouw_wordcount span {
+    margin-top: 0.5;
+    font-size: 0.8em;
+    font-weight: normal;
+    color: #555;
+}
+
+/** Styles for participation.php **/
+#page-mod-ouwiki-participation fieldset.felement {margin-left: 16%;}
+#page-mod-ouwiki-participation form#options div {text-align:right;margin-left:auto;margin-right:20px;}
+#page-mod-ouwiki-participation .header .commands {display: inline;}
+#page-mod-ouwiki-participation .picture {width: 35px;}
+#page-mod-ouwiki-participation .fullname,
+#page-mod-ouwiki-participation .pagescreated,
+#page-mod-ouwiki-participation .pagesedited,
+#page-mod-ouwiki-participation .wordsadded,
+#page-mod-ouwiki-participation .wordsdeleted {text-align: left;}
+#page-mod-ouwiki-participation .participation .grade,
+#page-mod-ouwiki-participation .qgprefs #optiontable {text-align:right;margin-left:auto;}
+
+/** Styles for userparticipation.php **/
+#page-mod-ouwiki-user-participation fieldset.felement {margin-left: 16%;}
+#page-mod-ouwiki-user-participation form#options div {text-align:right;margin-left:auto;margin-right:20px;}
+#page-mod-ouwiki-user-participation .header .commands {display: inline;}
+#page-mod-ouwiki-user-participation .date,
+#page-mod-ouwiki-user-participation .time,
+#page-mod-ouwiki-user-participation .page,
+#page-mod-ouwiki-user-participation .words,
+#page-mod-ouwiki-user-participation .view {text-align: left;}
+#page-mod-ouwiki-user-participation .qgprefs #optiontable {text-align:right;margin-left:auto;}
+
+#page-mod-ouwiki-user-participation .savegradesbutton {text-align: center;}

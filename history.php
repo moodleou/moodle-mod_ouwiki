@@ -130,8 +130,11 @@ print "
 $wikiinputs
 <table>
 <tr><th scope='col'>".get_string('date')."</th><th scope='col'>".get_string('time')."</th><th><span class='accesshide'>".get_string('actionheading', 'ouwiki')."</span>
-</th>
-  <th scope='col'>".get_string('changedby', 'ouwiki')."</th><th scope='col'><span class='accesshide'>".get_string('compare', 'ouwiki')."</span></th></tr>
+</th>";
+if ($ouwiki->enablewordcount) {
+    print "<th scope='col'>".get_string('words','ouwiki')."</th>";
+}
+print "<th scope='col'>".get_string('changedby', 'ouwiki')."</th><th scope='col'><span class='accesshide'>".get_string('compare', 'ouwiki')."</span></th></tr>
 ";
 
 $lastdate = '';
@@ -194,15 +197,25 @@ foreach ($changes as $change) {
     $a->createdtime = $createdtime;
     
     $selectaccessibility = get_string('historycompareaccessibility', 'ouwiki', $a);
-    
+
     print "
-<tr$deletedclass>
-  <td class='ouw_leftcol'>$date</td><td>$time $deletedstr</td>
-  <td class='actions'><a href='$viewlink'>".get_string('view')."</a>$deletelink$revertlink$changelink</td>
-  <td>$userlink</td>
-  <td class='check ouw_rightcol'><label for='v{$change->versionid}' class=\"accesshide\"> $selectaccessibility </label>
-  <input type='checkbox' name='v{$change->versionid}' id='v{$change->versionid}' onclick='ouw_check()' /></td>
-</tr>";
+    <tr$deletedclass>
+      <td class='ouw_leftcol'>$date</td><td>$time $deletedstr</td>
+      <td class='actions'><a href='$viewlink'>".get_string('view')."</a>$deletelink$revertlink$changelink</td>";
+    if ($ouwiki->enablewordcount) {
+        if ($change->previouswordcount) {
+            $wordcountchanges = ouwiki_wordcount_difference($change->wordcount, $change->previouswordcount, true);
+        } else {
+            $wordcountchanges = ouwiki_wordcount_difference($change->wordcount, 0, false);
+        }
+    print "
+        <td>$wordcountchanges</td>";
+    }
+    print "
+        <td>$userlink</td>
+      <td class='check ouw_rightcol'><label for='v{$change->versionid}' class=\"accesshide\"> $selectaccessibility </label>
+      <input type='checkbox' name='v{$change->versionid}' id='v{$change->versionid}' onclick='ouw_check()' /></td>
+      </tr>";
     $changeindex++;
 }
 

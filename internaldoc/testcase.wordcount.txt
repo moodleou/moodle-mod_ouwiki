@@ -1,0 +1,205 @@
+This script describes steps to test the word count facility from a user
+perspective. It is intended to cover most of the UI and features.
+
+NOTE: In this test case, the word 'wiki' always refers to the OU wiki.
+
+The test steps in this script follow on from each other and aren't independent,
+except as noted.
+
+
+Initial setup
+=============
+
+This test case requires:
+
+- a course which has at least two groups defined (G1 and G2).
+
+As word count is displayed in the same way to all users, the test case uses
+only the admin user, so you don't need to create any users.
+
+The test server must have debugging set to DEVELOPER level and to display
+errors; during all parts of the test script, there should be no debugging
+warnings.
+
+You must have enabled portfolios and added a file download (HTML) portfolio
+option.
+
+
+UPG Upgrade
+===========
+
+NOTE: This test stage requires access to edit the code on the server and will
+trash all data from all wikis on it. It may be necessary to run this on a
+separate, disposable Moodle installation. For that reason, this test is
+described independently of other tests; the other tests can be done without
+uninstalling anything.
+
+UPG01 / admin
+  Using the Moodle admin interface, delete the wiki module if it is installed.
+    NOTE: This will delete all data from all wikis.
+  Set up the code on the server so that it contains the previous version of the
+  wiki, without the word count feature.
+  Visit the Notifications page so that the wiki installs itself.
+
+UPG02 / admin
+  On your test course, create a wiki called UPG02 which is set to group
+  wikis and separate groups.
+  View the wiki. Select group G1. Click to create the start page. Add the text
+  'This is the start page' and save the page.
+  Click into the 'create new page' text box, type in the title 'Frogs', and
+  click the button. Enter text 'Page about frogs' into the edit box and save
+  the page.
+  Switch group to G2. Click to create the start page. Add the text 'It's
+  yet another page' and save it.
+
+UPG03 / admin
+  Make a backup of the course, with user data, including the (pre-wordcount)
+  wiki.
+
+UPG04 / admin
+  Set up the code on the server so that it contains the new version of the wiki
+  that has the word count feature.
+  Visit the Notifications page so that the wiki upgrades itself.
+  - Verify that a Moodle progress bar displays indicating that 4 versions are
+    being converted. (Obviously the progress bar may move too fast to see in
+    this case.)
+
+UPG05 / admin
+  Visit the wiki. Select group G2 if not already selected.
+  - Verify that the word count 'Words: 4' displays at the bottom of the page.
+  Select group G1.
+  - Verify that word count 6 displays.
+  Click to Frogs page in G1.
+  - Verify that word count 3 displays.
+
+UPG06 / admin
+  Restore the backup (that was made in step UPG03) to a new course.
+  On the new course, visit the wiki and check each page.
+  - The word counts should display and should be the same as in UPG05.
+
+
+BSC Basic usage
+===============
+
+BSC01 / admin
+  In your test course, create a wiki called BSC01 which is set to group wikis
+  and separate groups.
+  - Verify that the settings form has a 'Show word counts' option.
+  - Verify that this option defaults to Yes.
+  Save and display the new wiki.
+
+BSC02 / admin
+  Switch to group G1 and create the start page of the wiki. Type the text
+  'One two 3.'. Save it.
+  - Verify that the page displays and shows 'Words: 3' at the bottom.
+  - Verify that the word count is displayed in a suitable style (e.g. small,
+    grey, with some margin above) to distinguish it from the page content.
+
+BSC03 / admin
+  Click into the 'create new page' box and type the title 'Assorted undead'.
+  Click the button. In the page edit area enter 'Zombies, werewolves'. Save
+  the new page.
+  - Verify that the page shows 'Words: 2'.
+  Click back to the start page. The start page now contains a link to the
+  'Assorted undead' page.
+  - Verify that the start page now shows 'Words: 5'.
+
+BSC04 / admin
+  Click into group G2 and create the start page. Leave the text blank. Save it.
+  - Verify that the page shows 'Words: 0'.
+
+
+CHG Changes and index
+=====================
+
+CHG01 / admin
+  Click into group G2 and edit the start page. Add the phrase 'Frogs, toads'.
+  Save it.
+  - Page should now show 2 words.
+  Edit the page again. This time, add quotes around the word 'toads', but do
+  not add any words. Save it.
+  - Page should still show 2 words.
+  Edit the page again and delete the word 'toads'. Save it.
+  - Page should now show 'Words: 1'.
+
+CHG02 / admin
+  Click into the History tab.
+  - Verify that there is a 'Words' column in the table.
+  - There should be four versions (original and three changes). In the order
+    they appear on screen, these should have the following values for the
+    Words column: '-1', '' (blank), '+2', and '0'.
+
+CHG03 / admin
+  Click on the 'View' link next to the previous version, with 2 words.
+  The old page containing both words should appear.
+  - Verify that there is a 'Words: 2' display at bottom.
+
+CHG03 / admin
+  Click the 'Wiki changes' button toward top right.
+  - Verify there is a 'Words' column in the table.
+  - Verify that the values are the same as when shown on the individual page
+    history.
+  Click the 'New pages' tab.
+  - Verify there is a 'Words' column in the table.
+  - This should show '0' for the new page because it had 0 words when created.
+
+CHG04 / admin
+  Click the 'Wiki index' button.
+  - Verify that the 'Start page' box contains a line 'Words: 1'.
+  Click the 'Structure' tab.
+  - Verify that the 'Start page' box still contains the same line.
+
+
+EXP Export
+==========
+
+EXP01 / admin
+  Switch to group G1 and go to the 'Assorted undead' page.
+  Click the 'Export to portfolio' link (and select the portfolio, if
+  necessary); save and open the resulting .html file.
+  - Verify that the exported html file contains the 'Words: 2' text.
+
+
+BAR Backup and restore
+======================
+
+BAR01 / admin
+  Back up the course, including user data, with the wiki.
+  Restore the backup to a new course.
+  - Check each wiki page and verify that it contains the expected word counts.
+    (G1: 5, 2; G2: 1)
+
+
+SWH Switch on/off
+=================
+
+SWH01 / admin
+  Edit the wiki settings and change the 'Show word counts' option to No.
+  Visit the start page of the wiki.
+  - Verify that word count is not displayed.
+
+SWH02 / admin
+  Visit the history tab.
+  - Verify that the 'Words' column is not displayed.
+  Click on an old version of the page.
+  - Verify that word count is not displayed.
+  Click the 'Wiki changes' button.
+  - Verify that the 'Words' column is not displayed in either tab.
+  Click the 'Wiki index' button
+  - Verify that the 'Words' column is not displayed in either tab.
+
+SWH03 / admin
+  Export a page to portfolio and open the resulting .html file.
+  - Verify that word count is not shown.
+
+SWH04 / admin
+  Change to group G2 and edit the start page, which currently has 1 word. Add
+  two more words 'eat flies', so that there are now three words, and save the
+  changes.
+  Edit the page again, delete the word 'flies', and save the changes.
+  Edit the wiki settings and change 'Show word counts' back to Yes.
+  Go to the start page for G2.
+  - Verify that the number of words is correctly shown as 2.
+  Go to the history tab.
+  - Verify that the number of words in the 2 new changes are correctly shown
+    as '-1' and '+2'.

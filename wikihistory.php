@@ -123,7 +123,11 @@ $strview = get_string('view');
 print "
 <table>
 <tr><th scope='col'>$strdate</th><th scope='col'>$strtime</th><th scope='col'>$strpage</th>".
-($newpages?'':'<th><span class="accesshide">'.$strview.'</span></th>')."
+($newpages?'':'<th><span class="accesshide">'.$strview.'</span></th>');
+if ($ouwiki->enablewordcount) {
+    print "<th scope='col'>".get_string('words', 'ouwiki')."</th>";
+}
+print "
   <th scope='col'>$strperson</th></tr>
 ";
 
@@ -189,7 +193,17 @@ foreach ($changes as $change) {
     print "
 <tr$current>
   <td class='ouw_leftcol'>$date</td><td>$time</td><td>$page</td>
-  $actions
+  $actions";
+if ($ouwiki->enablewordcount) {
+    if ($change->previouswordcount) {
+        $wordcountchanges = ouwiki_wordcount_difference($change->wordcount, $change->previouswordcount, true);
+    } else {
+        // first page
+        $wordcountchanges = ouwiki_wordcount_difference($change->wordcount, 0, false);
+    }
+    print "<td>$wordcountchanges</td>";
+}
+    print "
   <td class='ouw_rightcol'>$userlink</td>
 </tr>";
 }
