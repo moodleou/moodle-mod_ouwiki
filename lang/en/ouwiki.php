@@ -124,6 +124,7 @@ $string['advice_missingpages']='These pages are linked to, but have not yet been
 $string['advice_missingpage']='This page is linked to, but has not yet been created.';
 $string['frompage']='from {$a}';
 $string['frompages']='from {$a}...';
+$string['nowikipages'] = 'This wiki does not have any pages.';
 
 $string['changesnav']='Changes';
 $string['advice_diff']='The older version is shown on the

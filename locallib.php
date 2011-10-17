@@ -1585,27 +1585,27 @@ function ouwiki_get_contributions($subwikiid, $userid) {
  */
 function ouwiki_get_subwiki_recentpages($subwikiid, $limitfrom = '', $limitnum = 51) {
     global $DB;
+    $result = array();
 
     $subwikis = $DB->get_records_sql('SELECT MIN(v.id)
                                     FROM {ouwiki_pages} p
                                 INNER JOIN {ouwiki_versions} v ON v.pageid = p.id
                                 WHERE p.subwikiid = ? AND v.deletedat IS NULL
                                 GROUP BY p.id', array($subwikiid));
-    list($usql, $params) = $DB->get_in_or_equal(array_keys($subwikis));
 
-    $sql = 'SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
-            v.id AS versionid, v.timecreated, v.userid, u.firstname, u.lastname,
-            u.username, v.wordcount
-            FROM {ouwiki_versions} v
-            INNER JOIN {ouwiki_pages} p ON v.pageid = p.id
-            LEFT JOIN {user} u ON v.userid = u.id
-            WHERE v.id '.$usql.
-            ' ORDER BY v.id DESC';
+    if ($subwikis) {
+        list($usql, $params) = $DB->get_in_or_equal(array_keys($subwikis));
 
-    $result = $DB->get_records_sql($sql, $params, $limitfrom, $limitnum);
+        $sql = 'SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
+                v.id AS versionid, v.timecreated, v.userid, u.firstname, u.lastname,
+                u.username, v.wordcount
+                FROM {ouwiki_versions} v
+                INNER JOIN {ouwiki_pages} p ON v.pageid = p.id
+                LEFT JOIN {user} u ON v.userid = u.id
+                WHERE v.id '.$usql.
+                ' ORDER BY v.id DESC';
 
-    if (!$result) {
-        $result = array();
+        $result = $DB->get_records_sql($sql, $params, $limitfrom, $limitnum);
     }
 
     return $result;
@@ -2954,8 +2954,7 @@ function ouwiki_count_words($content) {
 
     if (empty($content)) {
         return 0;
-    }
-    else {
+    } else {
         return 1 + substr_count($content, ' ');
     }
 }

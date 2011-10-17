@@ -77,6 +77,7 @@ $coursecontext = get_context_instance(CONTEXT_COURSE, $course->id);
 $participation = ouwiki_get_participation($ouwiki, $subwiki, $context, $groupid);
 
 // is grading enabled and available for the current user
+$grading_info = array();
 if ($ouwiki->grade != 0 && has_capability('mod/ouwiki:grade', $context)) {
     $grading_info = grade_get_grades($course->id, 'mod',
         'ouwiki', $ouwiki->id, array_keys($participation));

@@ -194,21 +194,26 @@ foreach ($changes as $change) {
 <tr$current>
   <td class='ouw_leftcol'>$date</td><td>$time</td><td>$page</td>
   $actions";
-if ($ouwiki->enablewordcount) {
-    if ($change->previouswordcount) {
-        $wordcountchanges = ouwiki_wordcount_difference($change->wordcount, $change->previouswordcount, true);
-    } else {
-        // first page
-        $wordcountchanges = ouwiki_wordcount_difference($change->wordcount, 0, false);
+    if ($ouwiki->enablewordcount) {
+        if ($change->previouswordcount) {
+            $wordcountchanges = ouwiki_wordcount_difference($change->wordcount,
+                    $change->previouswordcount, true);
+        } else {
+            // first page
+            $wordcountchanges = ouwiki_wordcount_difference($change->wordcount, 0, false);
+        }
+        print "<td>$wordcountchanges</td>";
     }
-    print "<td>$wordcountchanges</td>";
-}
     print "
   <td class='ouw_rightcol'>$userlink</td>
 </tr>";
 }
 
 print '</table>';
+
+if (empty($changes)) {
+    echo get_string('nowikipages', 'ouwiki');
+}
 
 if ($count > OUWIKI_PAGESIZE || $from > 0) {
     print '<div class="ouw_paging"><div class="ouw_paging_prev">&nbsp;';
