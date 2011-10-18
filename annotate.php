@@ -289,6 +289,24 @@ echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagenam
 
 // Tabs
 ouwiki_print_tabs('annotate', $pagename, $subwiki, $cm, $context, $pageversion->versionid ? true : false, $pageversion->locked);
+
+// check to see if ajax is enabled in the user profile. It is required for the annotate page
+if (!ajaxenabled()) {
+    print '<div class="ouwiki_nojs_message"><p>'.get_string('ajaxnotenabled', 'ouwiki').'</p></div>'.
+            '<div class="ouwiki_jsrequired"><p>'.get_string('jsajaxrequired', 'ouwiki').'</p></div>';
+
+    // print the footer and stop
+    ouwiki_print_footer($course, $cm, $subwiki, $pagename);
+    exit();
+}
+
+// prints the div that contains a message when js is disabled in the browser so cannot annotate.
+print '<div id="ouwiki_belowtabs_annotate_nojs"><p>'.get_string('jsnotenabled', 'ouwiki').'</p>'.
+        '<div class="ouwiki_jsrequired"><p>'.get_string('jsajaxrequired', 'ouwiki').'</p></div></div>';
+
+// opens the annotate specific div for when js is enabled in the browser, user can annotate.
+print '<div id="ouwiki_belowtabs_annotate">';
+
 ouwiki_print_editlock($lock, $ouwiki);
 
 if ($ouwiki->timeout) {
@@ -341,5 +359,7 @@ if(ajaxenabled() || class_exists('ouflags')) {
     $PAGE->requires->js('/mod/ouwiki/annotate.js');
 }
 
+// close <div id="#ouwiki_belowtabs_annotate">
+print '</div>';
 // Footer
 ouwiki_print_footer($course, $cm, $subwiki, $pagename);

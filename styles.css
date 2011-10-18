@@ -117,6 +117,22 @@
     margin-right:auto;
 }
 
+#ouwiki_belowtabs_annotate {
+    display: none;
+}
+
+body.jsenabled #ouwiki_belowtabs_annotate {
+    display: block;
+}
+
+#ouwiki_belowtabs_annotate_nojs {
+    display: block;
+}
+
+body.jsenabled #ouwiki_belowtabs_annotate_nojs {
+    display: none;
+}
+
 #page-mod-ouwiki-viewold .ouw_versionbox,
 #page-mod-ouwiki-diff .ouw_versionbox {
     border-top:1px solid #888;

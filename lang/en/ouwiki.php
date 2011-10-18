@@ -88,6 +88,9 @@ $string['lockcancelled'] = 'Your editing lock has been overridden and somebody e
 $string['nojsbrowser'] = 'Our apologies, but you are using a browser we do not fully support.';
 $string['nojsdisabled'] = 'You have disabled JavaScript in your browser settings.';
 $string['nojswarning'] = 'As a result, we can only hold this page for you for {$a->minutes} minutes. Please ensure that you save your changes by {$a->deadline} (it is currently {$a->now}). Otherwise, somebody else might edit the page and your changes could be lost';
+$string['jsnotenabled'] = 'Javascript is not enabled in your browser.';
+$string['ajaxnotenabled'] = 'AJAX not enabled in your profile.';
+$string['jsajaxrequired'] = ' This Annotate page requires Javascript to be enabled in your browser and the AJAX and Javascript setting in your user profile to be set to Yes: use advanced web features.';
 
 $string['countdowntext'] = 'This wiki allows only {$a} minutes for editing. Make your changes and click Save or Cancel before the remaining time (to right) reaches zero.';
 $string['countdownurgent'] = 'Please finish or cancel your edit now. If you do not save before time runs out, your changes will be saved automatically.';
