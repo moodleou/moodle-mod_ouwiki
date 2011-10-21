@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -38,7 +37,7 @@ if (class_exists('ouflags')) {
     global $OUMOBILESUPPORT;
     $OUMOBILESUPPORT = true;
     ou_set_is_mobile(ou_get_is_mobile_from_cookies());
-    if (ou_get_is_mobile()){
+    if (ou_get_is_mobile()) {
         ou_mobile_configure_theme();
     }
 }
@@ -91,7 +90,8 @@ $locked = ($pageversion) ? $pageversion->locked : false;
 
 ouwiki_print_tabs('view', $pagename, $subwiki, $cm, $context, $pageversion ? true : false, $locked);
 
-if (($pagename === '' || $pagename === null) && strlen(preg_replace('/\s|<br\s*\/?>|<p>|<\/p>/', '', $ouwiki->intro)) > 0) {
+if (($pagename === '' || $pagename === null) && strlen(preg_replace('/\s|<br\s*\/?>|<p>|<\/p>/',
+        '', $ouwiki->intro)) > 0) {
     print '<div class="ouw_intro">'.format_text($ouwiki->intro).'</div>';
 }
 
@@ -113,7 +113,7 @@ if ($pageversion) {
     }
 } else {
     // Page does not exist
-    print '<p>'.get_string($pagename ? 'pagedoesnotexist' : 'startpagedoesnotexist','ouwiki').'</p>';
+    print '<p>'.get_string($pagename ? 'pagedoesnotexist' : 'startpagedoesnotexist', 'ouwiki').'</p>';
     if ($subwiki->canedit) {
         print '<p>'.get_string('wouldyouliketocreate', 'ouwiki').'</p>';
         print "<form method='get' action='edit.php'>";
@@ -132,13 +132,21 @@ if (class_exists('ouflags') && ($pagename ==='' || $pagename === null)) {
 }
 
 // init JS module
-// init JS module
-if(ajaxenabled() || class_exists('ouflags')) {
+if (ajaxenabled()) {
     $PAGE->requires->yui2_lib('event');
     $PAGE->requires->yui2_lib('connection');
     $PAGE->requires->yui2_lib('dom');
     $PAGE->requires->yui2_lib('annimation');
-    $PAGE->requires->js('/mod/ouwiki/view.js');
+
+    $stringlist[] = array('typeinsectionname', 'ouwiki');
+    $stringlist[] = array('typeinpagename', 'ouwiki');
+    $module = array(
+            'name'      => 'mod_ouwiki',
+            'fullpath'  => '/mod/ouwiki/view.js',
+            'requires'  => array('base'),
+            'strings'   => $stringlist
+    );
+    $PAGE->requires->js_init_call('M.mod_ouwiki.init', array(), false, $module);
 }
 
 // Footer

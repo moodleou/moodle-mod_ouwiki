@@ -758,6 +758,11 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
     color: #555;
 }
 
+#ouw_newsectionname,
+#ouw_newpagename {
+    margin-right:5px;
+}
+
 /** Styles for participation.php **/
 #page-mod-ouwiki-participation fieldset.felement {margin-left: 16%;}
 #page-mod-ouwiki-participation form#options div {text-align:right;margin-left:auto;margin-right:20px;}

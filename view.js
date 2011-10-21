@@ -74,14 +74,14 @@ function ouwikiShowFormFunction(target, header, link) {
     form.parentNode.removeChild(form);
     target.appendChild(form);
     form.style.display = 'block';
-    
+
     link.originalLink = link.firstChild;
     link.removeChild(link.firstChild);
-    
+
     document.getElementById('ouw_ac_section').value =
         header.id ? header.id.substring(5): '';
     document.getElementById('ouw_ac_title').focus();
-        
+
     return false;
   };
 }
@@ -93,10 +93,11 @@ function ouwikiSetFields() {
 
     var pagename = document.getElementById('ouw_newpagename');
     pagename.style.color = "gray";
-    pagename.notusedyet = true;    
+    pagename.notusedyet = true;
     pagename.onfocus = function() { ouwikiResetThisField(pagename); };
     pagename.onkeyup = function() { ouwikiClearDisabled(createbutton, pagename); };
-    
+    pagename.value = M.str.ouwiki.typeinpagename;
+
     var addbutton = document.getElementById('ouw_add');
     addbutton.disabled = true;
 
@@ -105,6 +106,7 @@ function ouwikiSetFields() {
     sectionname.notusedyet = true;
     sectionname.onfocus = function() { ouwikiResetThisField(sectionname); };
     sectionname.onkeyup = function() { ouwikiClearDisabled(addbutton, sectionname); };
+    sectionname.value = M.str.ouwiki.typeinsectionname;
 }
 
 function ouwikiClearDisabled(element, field) {
@@ -181,7 +183,6 @@ function setupspans(span) {
     };
 }
 
-
 function ouwikiOnLoad() {
   // set add page and section fields
   if(document.getElementById('ouw_create') != null) {
@@ -195,5 +196,15 @@ function init() {
     annospans = YAHOO.util.Dom.getElementsByClassName('ouwiki-annotation-tag', 'span');
     for (var span = 0; span < annospans.length; span++) {
         setupspans(annospans[span]);
+    }
+}
+
+M.mod_ouwiki = {
+    /**
+     * Main init function called from HTML.
+     */
+    init : function() {
+        // TODO: Change wiki JavaScript to actually use Moodle 2 style. At
+        // present this is only here in order to pass language strings.
     }
 }

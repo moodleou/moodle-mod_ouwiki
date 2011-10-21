@@ -2286,8 +2286,7 @@ function ouwiki_display_create_page_form($subwiki, $cm, $pageversion) {
     // create new section
     $result .= '<li>'.$genericformdetails
         .get_string('addnewsection', 'ouwiki') . ' '
-        .'<input type="text" size="30" name="newsection" id="ouw_newsectionname" value="'.
-        get_string('typeinsectionname', 'ouwiki').'" />'
+        .'<input type="text" size="30" name="newsection" id="ouw_newsectionname" value="" />'
         .'<input type="submit" id="ouw_add" name="ouw_subb" value="'.
         get_string('add', 'ouwiki').'" />'.
         '</div></form></li>';
@@ -2295,8 +2294,7 @@ function ouwiki_display_create_page_form($subwiki, $cm, $pageversion) {
     // create new page
     $result .= '<li>'.$genericformdetails
         .get_string('createnewpage', 'ouwiki') . ' '
-        .'<input type="text" name="newpage" id="ouw_newpagename" size="30" value="'.
-        get_string('typeinpagename', 'ouwiki').'" />'
+        .'<input type="text" name="newpage" id="ouw_newpagename" size="30" value="" />'
         .'<input type="submit" id="ouw_create" name="ouw_subb" value="'.
         get_string('create', 'ouwiki').'" />'.
         '</div></form></li>';
