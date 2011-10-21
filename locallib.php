@@ -2723,7 +2723,8 @@ function ouwiki_print_editlock($lock, $ouwiki) {
     $ff = check_browser_version('Gecko', 20051106);
     $op = check_browser_version('Opera', 9.0);
     $sa = check_browser_version('Safari', 412);
-    $js = $ie || $ff || $op || $sa;
+    $ch = check_browser_version('Chrome', 14);
+    $js = $ie || $ff || $op || $sa || $ch;
     if ($js) {
         $nojsdisabled = get_string('nojsdisabled', 'ouwiki');
         $nojs = $nojsstart.$nojsdisabled.' '.$nojswarning.
