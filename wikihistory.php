@@ -195,7 +195,7 @@ foreach ($changes as $change) {
   <td class='ouw_leftcol'>$date</td><td>$time</td><td>$page</td>
   $actions";
     if ($ouwiki->enablewordcount) {
-        if ($change->previouswordcount) {
+        if (isset($change->previouswordcount)) {
             $wordcountchanges = ouwiki_wordcount_difference($change->wordcount,
                     $change->previouswordcount, true);
         } else {
