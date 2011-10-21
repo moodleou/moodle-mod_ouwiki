@@ -287,16 +287,18 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             }
         }
 
-        require_once($CFG->libdir . '/portfoliolib.php');
-        $button = new portfolio_add_button();
-        $button->set_callback_options('ouwiki_portfolio_caller',
-                array('versionid' => $versionid), '/mod/ouwiki/locallib.php');
-        if (empty($files)) {
-            $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
-        } else {
-            $button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
+        if ($CFG->enableportfolios) {
+            require_once($CFG->libdir . '/portfoliolib.php');
+            $button = new portfolio_add_button();
+            $button->set_callback_options('ouwiki_portfolio_caller',
+                    array('versionid' => $versionid), '/mod/ouwiki/locallib.php');
+            if (empty($files)) {
+                $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+            } else {
+                $button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
+            }
+            $output .= ' ' . $button->to_html(PORTFOLIO_ADD_TEXT_LINK).' ';
         }
-        $output .= ' ' . $button->to_html(PORTFOLIO_ADD_TEXT_LINK).' ';
 
         $output .= html_writer::end_tag('div');
         $output .= html_writer::end_tag('div');
@@ -792,7 +794,8 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                             $accesshidetext = get_string('userdetails', 'ouwiki', $fullname);
                             $detaillink = html_writer::start_tag('small');
                             $detaillink .= ' (';
-                            $detaillink .= html_writer::tag('span', $accesshidetext, array('class' => 'accesshide'));
+                            $detaillink .= html_writer::tag('span', $accesshidetext,
+                                    array('class' => 'accesshide'));
                             $detaillink .= html_writer::link($detailurl,
                                 get_string('detail', 'ouwiki'));
                             $detaillink .= ')';

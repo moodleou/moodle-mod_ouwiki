@@ -353,7 +353,8 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
 
 #page-mod-ouwiki-view .ouw_editsection,
 #page-mod-ouwiki-view .ouw_annotate,
-#page-mod-ouwiki-view .ouw_editpage {
+#page-mod-ouwiki-view .ouw_editpage,
+#page-mod-ouwiki-view #showhideannotations {
     margin-right:1em;
 }
 
