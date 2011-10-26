@@ -27,10 +27,6 @@
 require_once(dirname(__FILE__).'/../../config.php');
 require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
 
-if (isset($countasview) && class_exists('ouflags')) {
-    $DASHBOARD_COUNTER = DASHBOARD_WIKI_VIEW;
-}
-
 $id = required_param('id', PARAM_INT);           // Course Module ID that defines wiki
 $pagename = optional_param('page', null, PARAM_RAW);    // Which page to show. Omitted for start page
 $groupid = optional_param('group', 0, PARAM_INT); // Group ID. If omitted, uses first appropriate group
@@ -45,23 +41,24 @@ if (strtolower(trim($pagename)) == strtolower(get_string('startpage', 'ouwiki'))
     print_error('pagenameisstartpage', 'ouwiki');
 }
 
-// Get basic information about this wiki
-if (!$cm = get_coursemodule_from_id('ouwiki', $id)) {
-    print_error("Course module ID was incorrect");
+// Load efficiently (and with full $cm data) using get_fast_modinfo
+$course = $DB->get_record_select('course',
+            'id = (SELECT course FROM {course_modules} WHERE id = ?)', array($id),
+            '*', MUST_EXIST);
+$modinfo = get_fast_modinfo($course);
+$cm = $modinfo->get_cm($id);
+if ($cm->modname !== 'ouwiki') {
+    print_error('invalidcoursemodule');
 }
 
-$course = $DB->get_record('course', array('id' => $cm->course));
-if (!$course) {
-    print_error("Course is misconfigured");
-}
 $ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance));
 if (!$ouwiki) {
     print_error("Wiki ID is incorrect in database");
 }
 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
-global $DISABLESAMS;
-if (empty($DISABLESAMS)) {
+global $ouwiki_nologin;
+if (empty($ouwiki_nologin)) {
     // Make sure they're logged in and check they have permission to view
     require_course_login($course, true, $cm);
     require_capability('mod/ouwiki:view', $context);

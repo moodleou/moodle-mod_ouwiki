@@ -113,10 +113,9 @@ try {
         }
 
         // Update completion status for user
-        if(class_exists('ouflags')) {
-            if(completion_is_enabled($course,$cm) && ($ouwiki->completionedits || $ouwiki->completionpages)) {
-                completion_update_state($course, $cm, COMPLETION_COMPLETE, $pageversion->userid);
-            }
+        $completion = new completion_info($course);
+        if ($completion->is_enabled($cm) && ($ouwiki->completionedits || $ouwiki->completionpages)) {
+            $completion->update_state($cm, COMPLETION_COMPLETE, $pageversion->userid);
         }
     }
 

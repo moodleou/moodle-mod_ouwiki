@@ -28,8 +28,8 @@
 require_once(dirname(__FILE__) . '/../../config.php');
 require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
-global $DISABLESAMS;
-$DISABLESAMS = true;
+global $ouwiki_nologin;
+$ouwiki_nologin = true;
 
 $magic = required_param('magic', PARAM_RAW);
 if ($magic != $subwiki->magic) {

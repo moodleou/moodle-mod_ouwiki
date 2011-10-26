@@ -27,13 +27,6 @@
 require_once(dirname(__FILE__) . '/../../config.php');
 require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
-if (class_exists('ouflags')) {
-    require_once($CFG->dirroot.'/local/mobile/ou_lib.php');
-    global $OUMOBILESUPPORT;
-    $OUMOBILESUPPORT = true;
-    ou_set_is_mobile(ou_get_is_mobile_from_cookies());
-}
-
 $id = required_param('id', 0, PARAM_INT); // Course Module ID
 $pagename = optional_param('page', '', PARAM_TEXT);
 
@@ -81,9 +74,6 @@ switch ($format) {
         break;
     case OUWIKI_FORMAT_HTML:
         // Do header
-        if (class_exists('ouflags') && ou_get_is_mobile()){
-            ou_mobile_configure_theme();
-        }
         echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, get_string('entirewiki', 'ouwiki'), $context, null, false, true);
         print '<div class="ouwiki_content">';
         break;

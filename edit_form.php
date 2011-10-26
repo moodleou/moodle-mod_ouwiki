@@ -30,11 +30,7 @@ class mod_ouwiki_edit_page_form extends moodleform {
         $mform =& $this->_form;
 
         //editor
-        if (class_exists('ouflags') && ou_get_is_mobile()) {
-            $mform->addElement('textarea', 'content', get_string('content'), array('cols'=>50, 'rows'=>20));
-        } else {
-            $mform->addElement('editor', 'content', get_string('content'), null, array('maxfiles' => EDITOR_UNLIMITED_FILES));
-        }
+        $mform->addElement('editor', 'content', get_string('content'), null, array('maxfiles' => EDITOR_UNLIMITED_FILES));
         $mform->addHelpButton('content', 'formathtml', 'wiki');
         $mform->addRule('content', '', 'required', null, 'server');
 

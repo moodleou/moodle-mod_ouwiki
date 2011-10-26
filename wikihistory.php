@@ -29,14 +29,6 @@ require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
 
-$countasview = true;
-if (class_exists('ouflags')) {
-    require_once($CFG->dirroot.'/local/mobile/ou_lib.php');
-    global $OUMOBILESUPPORT;
-    $OUMOBILESUPPORT = true;
-    ou_set_is_mobile(ou_get_is_mobile_from_cookies());
-}
-
 $id = required_param('id', 0, PARAM_INT); // Course Module ID
 $newpages = optional_param('type', '', PARAM_ALPHA) == 'pages';
 $from = optional_param('from', '', PARAM_INT);
@@ -86,10 +78,6 @@ $meta = '<link rel="alternate" type="application/atom+xml" title="Atom feed" '.
 // bug #3542
 $wikiname = format_string(htmlspecialchars($ouwiki->name));
 $title = $wikiname.' - '.get_string('wikirecentchanges', 'ouwiki');
-
-if (class_exists('ouflags') && ou_get_is_mobile()){
-    ou_mobile_configure_theme();
-}
 
 echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki,
     $from > 0 

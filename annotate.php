@@ -36,10 +36,6 @@ $deleteorphaned = optional_param('deleteorphaned', 0, PARAM_BOOL);
 $lockunlock = optional_param('lockediting', false, PARAM_BOOL);
 $userid = optional_param('user', 0, PARAM_INT);
 
-if ($save && class_exists('ouflags')) {
-    $DASHBOARD_COUNTER = DASHBOARD_WIKI_EDIT;
-}
-
 if (!empty($_POST) && !confirm_sesskey()) {
     print_error('invalidrequest');
 }
@@ -348,7 +344,7 @@ echo '    </div>';
 echo '</div>';
 
 // init JS module
-if(ajaxenabled() || class_exists('ouflags')) {
+if(ajaxenabled()) {
     $annotateconfig = new stdClass;
     $annotateconfig->url = $url->out(true, array());
     $annotateconfig->save = get_string('add');

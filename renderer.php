@@ -114,23 +114,16 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $output .= ')';
             }
 
-            if (class_exists('ouflags') && ou_get_is_mobile()) {
-                $output .= '; ';
-                $output .= html_writer::end_tag('span');
-                $output .= html_writer::end_tag('div');
-            } else {
-                $output .= '; ';
-                $pagestr = '';
-                if (strtolower(trim($title)) !== strtolower(get_string('startpage', 'ouwiki'))) {
-                    $pagestr = '&page='.$title;
-                }
-                $output .= html_writer::tag('a', get_string('seedetails', 'ouwiki'),
-                        array('href' => $CFG->wwwroot.'/mod/ouwiki/history.php?id='.
-                        $cm->id . $pagestr));
-                $output .= html_writer::end_tag('span');
-                $output .= html_writer::end_tag('div');
-
+            $output .= '; ';
+            $pagestr = '';
+            if (strtolower(trim($title)) !== strtolower(get_string('startpage', 'ouwiki'))) {
+                $pagestr = '&page='.$title;
             }
+            $output .= html_writer::tag('a', get_string('seedetails', 'ouwiki'),
+                    array('href' => $CFG->wwwroot.'/mod/ouwiki/history.php?id='.
+                    $cm->id . $pagestr));
+            $output .= html_writer::end_tag('span');
+            $output .= html_writer::end_tag('div');
         }
 
         $output .= html_writer::end_tag('div');

@@ -33,15 +33,6 @@ if (file_exists($CFG->dirroot.'/local/mobile/ou_lib.php')) {
     require_once($CFG->dirroot.'/local/mobile/ou_lib.php');
 }
 
-if (class_exists('ouflags')) {
-    $OUMOBILESUPPORT = true;
-    ou_set_is_mobile(ou_get_is_mobile_from_cookies());
-}
-
-if (class_exists('ouflags') && ou_get_is_mobile()){
-    ou_mobile_configure_theme();
-}
-
 // standard parameters
 $id = required_param('id', 0, PARAM_INT); // Course Module ID
 $action = optional_param('editoption', '', PARAM_TEXT);
@@ -57,10 +48,6 @@ $section = optional_param('section', null, PARAM_RAW);
 // sort out if the action was save or cancel
 $save = $action === get_string('savechanges') ? true : false;
 $cancel = $action === get_string('cancel') ? true : false;
-
-if ($save && class_exists('ouflags')) {
-    $DASHBOARD_COUNTER = DASHBOARD_WIKI_EDIT;
-}
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('ouwiki', $id)) {

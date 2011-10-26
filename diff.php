@@ -27,7 +27,6 @@
 require_once(dirname(__FILE__) . '/../../config.php');
 require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
-$countasview = true;
 $id = required_param('id', PARAM_INT);
 $v1 = required_param('v1', PARAM_INT);
 $v2 = required_param('v2', PARAM_INT);

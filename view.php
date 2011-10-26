@@ -31,37 +31,13 @@ if (file_exists($CFG->dirroot . '/local/externaldashboard/external_dashboard.php
     require_once($CFG->dirroot . '/local/externaldashboard/external_dashboard.php');
 }
 
-$countasview = true;
-if (class_exists('ouflags')) {
-    require_once($CFG->dirroot.'/local/mobile/ou_lib.php');
-    global $OUMOBILESUPPORT;
-    $OUMOBILESUPPORT = true;
-    ou_set_is_mobile(ou_get_is_mobile_from_cookies());
-    if (ou_get_is_mobile()) {
-        ou_mobile_configure_theme();
-    }
-}
-
 $id = required_param('id', 0, PARAM_INT); // Course Module ID
 $pagename = optional_param('page', '', PARAM_TEXT);
 
 $url = new moodle_url('/mod/ouwiki/view.php', array('id' => $id, 'page' => $pagename));
 $PAGE->set_url($url);
+$PAGE->set_cm($cm);
 
-if ($id) {
-    if (!$cm = get_coursemodule_from_id('ouwiki', $id)) {
-        print_error('invalidcoursemodule');
-    }
-
-    // Checking course instance
-    $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-
-    if (!$ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance))) {
-        print_error('invalidcoursemodule');
-    }
-
-    $PAGE->set_cm($cm);
-}
 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 $PAGE->set_pagelayout('incourse');
 require_course_login($course, true, $cm);
@@ -124,11 +100,6 @@ if ($pageversion) {
 
 if ($timelocked = ouwiki_timelocked($subwiki, $ouwiki, $context)) {
     print '<div class="ouw_timelocked">'.$timelocked.'</div>';
-}
-
-// Show dashboard feature if enabled, on start page only
-if (class_exists('ouflags') && ($pagename ==='' || $pagename === null)) {
-    external_dashboard::print_favourites_button($cm);
 }
 
 // init JS module

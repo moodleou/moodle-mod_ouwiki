@@ -27,10 +27,6 @@
 require_once(dirname(__FILE__) . '/../../config.php');
 require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
-if (!array_key_exists('compare', $_GET)) {
-    $countasview = true;
-}
-
 $id = required_param('id', 0, PARAM_INT); // Course Module ID
 $compare = optional_param('compare', 0, PARAM_INT);
 $pagename = optional_param('page', '', PARAM_TEXT);

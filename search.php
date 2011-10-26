@@ -28,15 +28,6 @@ require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot.'/local/ousearch/searchlib.php');
 require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
-if (class_exists('ouflags')) {
-    require_once($CFG->dirroot.'/local/mobile/ou_lib.php');
-    global $OUMOBILESUPPORT;
-    $OUMOBILESUPPORT = true;
-    ou_set_is_mobile(ou_get_is_mobile_from_cookies());
-    if (ou_get_is_mobile()){
-        ou_mobile_configure_theme();
-    }
-}
 $querytext = required_param('query', PARAM_RAW);
 
 $url = new moodle_url('/mod/ouwiki/search.php', array('id'=>$id, 'user'=>$userid, 'query'=>$querytext));

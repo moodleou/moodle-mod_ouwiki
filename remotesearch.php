@@ -19,6 +19,8 @@
  * Provide federated-search access to wiki. This facility searches all
  * wikis that a user has access to.
  *
+ * Note: I don't think anyone has tested this in years and I bet it doesn't
+ * work any more.
  * @copyright &copy; 2007 The Open University
  * @author s.marshall@open.ac.uk
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
@@ -29,8 +31,8 @@ require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot.'/blocks/ousearch/searchlib.php');
 require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
 
-global $DISABLESAMS;
-$DISABLESAMS = true;
+global $ouwiki_nologin;
+$ouwiki_nologin = true;
 
 // Security
 ousearch_require_remote_access();

@@ -1142,32 +1142,6 @@ function ouwiki_print_tabs($selected, $pagename, $subwiki, $cm, $context, $pagee
 
     $tabrow = array();
 
-    if (class_exists('ouflags')) {
-        //  OpenLearn insitu editing
-        //  Now we have to check if we are in an insitu edited course and display
-        //  the extra tabs for versions and the main mod settings (tidyer this way)
-        //  means you don't need to go back to the course homepage to edit the other
-        //  mod settings
-
-        if (has_capability('local/course:revisioneditor',
-                get_context_instance(CONTEXT_COURSE, $cm->course), null, false)) {
-            if (!empty($revisionedit)) {
-                //  We don't need a URL as the current tab is always empty, and this tab
-                //  will only display while you are viewing a revision
-                $tabrow[] = new tabobject('viewrevision', '', 'View Revision');
-                $current_tab = 'viewrevision';
-            }
-
-            $modeediturl = new moodle_url('/course/modedit.php',
-                    array('update' => $cm->id, 'return' => 1));
-            $revisionsurl = new moodle_url('/local/insitu/activity_revisions.php',
-                    array('id' => $cm->id));
-            $tabrow[] = new tabobject('edit_settings', $modeediturl, 'Edit Settings');
-            $tabrow[] = new tabobject('revisions', $revisionsurl,
-                    get_string('revisions', 'course'));
-        }
-    }
-
     $params = ouwiki_display_wiki_parameters($pagename, $subwiki, $cm);
 
     $tabrow[] = new tabobject('view',
@@ -1185,8 +1159,7 @@ function ouwiki_print_tabs($selected, $pagename, $subwiki, $cm, $context, $pagee
         }
     }
 
-    if ((!class_exists('ouflags') && $pageexists) || (class_exists('ouflags') &&
-            !ou_get_is_mobile() && $pageexists)) {
+    if ($pageexists) {
         $tabrow[] = new tabobject('history',
             'history.php?'.$params, get_string('tab_history', 'ouwiki'));
     }

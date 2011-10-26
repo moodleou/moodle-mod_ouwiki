@@ -91,12 +91,6 @@ function ouwiki_update_instance($data, $mform) {
 
     ouwiki_grade_item_update($data);
 
-    // insitu editing
-    if (class_exists('ouflags') && has_capability('local/course:revisioneditor', get_context_instance(CONTEXT_COURSE, $data->course), null, false)) {
-        include_once($CFG->dirroot.'/local/insitu/lib.php');
-        return oci_mod_make_backup_and_save_instance($data);
-    }
-
     return true;
 }
 
