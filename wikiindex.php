@@ -16,7 +16,7 @@
 // along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * 'Wiki index' page. Displays an index of all pages in the wiki, in 
+ * 'Wiki index' page. Displays an index of all pages in the wiki, in
  * various formats.
  *
  * @copyright &copy; 2007 The Open University
@@ -65,7 +65,7 @@ $tabrow = array();
 $tabrow[] = new tabobject('alpha', 'wikiindex.php?'.$wikiparams,
     get_string('tab_index_alpha', 'ouwiki'));
 $tabrow[] = new tabobject('tree', 'wikiindex.php?'.$wikiparams.'&amp;type=tree',
-    get_string('tab_index_tree', 'ouwiki'));   
+    get_string('tab_index_tree', 'ouwiki'));
 $tabs = array();
 $tabs[] = $tabrow;
 print_tabs($tabs, $treemode ? 'tree' : 'alpha');
@@ -84,17 +84,17 @@ if (count($index) == 0) {
     print '<ul class="ouw_indextree">';
     print ouwiki_tree_index(reset($index)->pageid, $index, $subwiki, $cm);
     print '</ul>';
-    
+
     foreach ($index as $indexitem) {
-        if (count($indexitem->linksfrom) == 0 && !is_null($indexitem->title)) {        
+        if (count($indexitem->linksfrom) == 0 && !is_null($indexitem->title)) {
             $orphans = true;
         }
-    }    
+    }
 } else {
     // ...or standard alphabetical
     print '<ul class="ouw_index">';
     foreach ($index as $indexitem) {
-        if (count($indexitem->linksfrom)!= 0 || is_null($indexitem->title)) {        
+        if (count($indexitem->linksfrom)!= 0 || is_null($indexitem->title)) {
             print '<li>'.ouwiki_display_page_in_index($indexitem, $subwiki, $cm).'</li>';
         } else {
             $orphans = true;
@@ -102,14 +102,14 @@ if (count($index) == 0) {
     }
     print '</ul>';
 }
-    
+
 if ($orphans) {
     print '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
     print '<ul class="ouw_index">';
     foreach ($index as $indexitem) {
-        if (count($indexitem->linksfrom) == 0 && !is_null($indexitem->title)) {        
+        if (count($indexitem->linksfrom) == 0 && !is_null($indexitem->title)) {
             print '<li>'.ouwiki_display_page_in_index($indexitem, $subwiki, $cm).'</li>';
-        } 
+        }
     }
     print '</ul>';
 }
@@ -143,10 +143,23 @@ if (count($index) != 0) {
     print '<p>'.get_string('onepageview', 'ouwiki').'</p><ul>';
     print '<li id="ouwiki_down_html"><a href="entirewiki.php?'.$wikiparams.'&amp;format=html">'.
         get_string('format_html', 'ouwiki').'</a></li>';
-    if (file_exists(dirname(__FILE__).'/../../local/rtf.php')) {
-        print '<li id="ouwiki_down_rtf"><a href="entirewiki.php?'.$wikiparams.'&amp;format=rtf">'.
-            get_string('format_rtf', 'ouwiki').'</a></li>';
-    }
+
+    // Are there any files in this wiki?
+    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $result = $DB->get_records_sql("
+SELECT
+    f.id
+FROM
+    {ouwiki_subwikis} sw
+    JOIN {ouwiki_pages} p ON p.subwikiid = sw.id
+    JOIN {ouwiki_versions} v ON v.pageid = p.id
+    JOIN {files} f ON f.itemid = v.id
+WHERE
+    sw.id = ? AND f.contextid = ? AND f.component = 'mod_ouwiki'
+    ", array($subwiki->id, $context->id), 0, 1);
+    $anyfiles = count($result) > 0;
+    print $ouwikioutput->render_export_all_li($subwiki, $anyfiles);
+
     if (has_capability('moodle/course:manageactivities', $context)) {
         print '<li id="ouwiki_down_template"><a href="entirewiki.php?'.$wikiparams.'&amp;format=template">'.
             get_string('format_template', 'ouwiki').'</a></li>';

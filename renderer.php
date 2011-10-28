@@ -84,9 +84,9 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 array('class' => 'ouw_topheading'));
 
         if ($gewgaws) {
-            $output .= $this->ouwiki_internal_print_heading_bit(1, $pageversion->title, $subwiki,
+            $output .= $this->render_heading_bit(1, $pageversion->title, $subwiki,
                     $cm, null, $annotations, $pageversion->locked, $files,
-                    $pageversion->versionid);
+                    $pageversion->pageid);
         } else {
             $output .= html_writer::end_tag('div');
         }
@@ -145,6 +145,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             $ouwikiinternalre->annotations = $annotations;
             $ouwikiinternalre->locked = $pageversion->locked;
             $ouwikiinternalre->pageversion = $pageversion;
+            $ouwikiinternalre->files = $files;
             $output = preg_replace_callback(
                     '|<h([1-9]) id="ouw_s([0-9]+_[0-9]+)">(.*?)(<br\s*/>)?</h[1-9]>|s',
                     'ouwiki_internal_re_heading', $output);
@@ -233,13 +234,14 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         return array($output, $annotations);
     }
 
-    public function ouwiki_internal_print_heading_bit($headingnumber, $pagename, $subwiki, $cm,
-            $xhtmlid, $annotations, $locked, $files, $versionid) {
+    public function render_heading_bit($headingnumber, $pagename, $subwiki, $cm,
+            $xhtmlid, $annotations, $locked, $files, $pageid) {
         global $CFG;
 
         $output = '';
         $output .= html_writer::start_tag('div', array('class' => 'ouw_byheading'));
 
+        // Add edit link for page or section
         if ($subwiki->canedit && !$locked) {
             $str = $xhtmlid ? 'editsection' : 'editpage';
             $output .= html_writer::tag('a', get_string($str, 'ouwiki'), array(
@@ -248,14 +250,16 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                     'class' => 'ouw_' . $str));
         }
 
-        // output the annotate link if using annotation system
-        if ($subwiki->annotation) {
+        // output the annotate link if using annotation system, only for page not section
+        if (!$xhtmlid && $subwiki->annotation) {
+            // Add annotate link
             if ($subwiki->canannotate) {
                 $output .= ' ' .html_writer::tag('a', get_string('annotate', 'ouwiki'),
                         array('href' => $CFG->wwwroot.'/mod/ouwiki/annotate.php?id='.$cm->id.
                         '&page='.$pagename, 'class' => 'ouw_annotate'));
             }
 
+            // 'Show all' annotation controls
             if ($annotations != false) {
                 $orphancount = 0;
                 foreach ($annotations as $annotation) {
@@ -280,11 +284,12 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             }
         }
 
-        if ($CFG->enableportfolios) {
+        // On main page, add export button
+        if (!$xhtmlid && $CFG->enableportfolios) {
             require_once($CFG->libdir . '/portfoliolib.php');
             $button = new portfolio_add_button();
-            $button->set_callback_options('ouwiki_portfolio_caller',
-                    array('versionid' => $versionid), '/mod/ouwiki/locallib.php');
+            $button->set_callback_options('ouwiki_page_portfolio_caller',
+                    array('pageid' => $pageid), '/mod/ouwiki/portfoliolib.php');
             if (empty($files)) {
                 $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
             } else {
@@ -297,6 +302,31 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $output .= html_writer::end_tag('div');
 
         return $output;
+    }
+
+    /**
+     * Renders the 'export entire wiki' link.
+     * @param object $subwiki Subwiki data object
+     * @param bool $anyfiles True if any page of subwiki contains files
+     * @return string HTML content of list item with link, or nothing if none
+     */
+    public function render_export_all_li($subwiki, $anyfiles) {
+        global $CFG;
+
+        if (!$CFG->enableportfolios) {
+            return '';
+        }
+
+        require_once($CFG->libdir . '/portfoliolib.php');
+        $button = new portfolio_add_button();
+        $button->set_callback_options('ouwiki_all_portfolio_caller',
+                array('subwikiid' => $subwiki->id), '/mod/ouwiki/portfoliolib.php');
+        if ($anyfiles) {
+            $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+        } else {
+            $button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
+        }
+        return html_writer::tag('li', $button->to_html(PORTFOLIO_ADD_TEXT_LINK));
     }
 
     public function ouwiki_internal_re_heading_bits($matches) {
@@ -308,53 +338,11 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $matches[1]));
         $output .= html_writer::tag($tag, $matches[3], array('id' => 'ouw_s'.$matches[2]));
 
-        $output .= $this->ouwiki_internal_display_heading_bit($matches[1],
+        $output .= $this->render_heading_bit($matches[1],
                 $ouwikiinternalre->pagename, $ouwikiinternalre->subwiki,
                 $ouwikiinternalre->cm, $matches[2], $ouwikiinternalre->annotations,
-                $ouwikiinternalre->locked, $ouwikiinternalre->pageversion);
-
-        return $output;
-    }
-
-    public function ouwiki_internal_display_heading_bit($headingnumber, $pagename, $subwiki, $cm,
-            $xhtmlid, $annotations, $locked, $pageversion) {
-        global $CFG;
-
-        $output = '';
-        $output .= html_writer::start_tag('div', array('class' => 'ouw_byheading'));
-
-        if ($subwiki->canedit && !$locked) {
-            $output .= html_writer::tag('a',
-                    get_string($xhtmlid ? 'editsection' : 'editpage', 'ouwiki'),
-                    array('href' => $CFG->wwwroot.'/mod/ouwiki/edit.php?id='.$cm->id.'&page='.
-                    $pagename.($xhtmlid ? '&section='.$xhtmlid : ''),
-                    'class' => 'ouw_editsection'));
-        }
-
-        // output the annotate link if using annotation system
-        if ($subwiki->annotation) {
-            if ($subwiki->canannotate) {
-                $output .= html_writer::tag('a', get_string('annotate', 'ouwiki'),
-                        array('href' => $CFG->wwwroot.'/mod/ouwiki/annotate.php?id='.$cm->id.
-                        '&page='.$pagename, 'class' => 'ouw_annotate'));
-            }
-        }
-
-        if (!$xhtmlid) {
-            require_once($CFG->libdir . '/portfoliolib.php');
-            $button = new portfolio_add_button();
-            $button->set_callback_options('ouwiki_portfolio_caller',
-                    array('versionid' => $pageversion->versionid), '/mod/ouwiki/locallib.php');
-            if (empty($files)) {
-                $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
-            } else {
-                $button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
-            }
-            $output .= ' ' . $button->to_html(PORTFOLIO_ADD_TEXT_LINK).' ';
-        }
-
-        $output .= html_writer::end_tag('div');
-        $output .= html_writer::end_tag('div');
+                $ouwikiinternalre->locked, $ouwikiinternalre->files,
+                $ouwikiinternalre->pageversion->pageid);
 
         return $output;
     }

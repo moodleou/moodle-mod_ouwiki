@@ -29,11 +29,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 /** Include the files that are required by this module */
-require_once(dirname(__FILE__).'/../../config.php');
-require_once($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
 require_once($CFG->dirroot . '/mod/ouwiki/lib.php');
-require_once($CFG->dirroot.'/mod/ouwiki/difflib.php');
-require_once($CFG->libdir . '/portfolio/caller.php');
+require_once($CFG->dirroot . '/mod/ouwiki/difflib.php');
 
 // OU shared APIs which (for OU system) are present in ouwiki/local, elsewhere
 // are incorporated in module
@@ -81,287 +79,6 @@ define('OUWIKI_MY_PARTICIPATION', 1);
 define('OUWIKI_USER_PARTICIPATION', 2);
 define('OUWIKI_PARTICIPATION_PERPAGE', 100);
 
-class ouwiki_portfolio_caller extends portfolio_module_caller_base {
-
-    protected $versionid;
-    protected $attachment;
-
-    private $version;
-    private $keyedfiles = array(); // keyed on entry
-
-    /**
-     * @return array
-     */
-    public static function expected_callbackargs() {
-        return array(
-            'versionid'    => false,
-            'attachment'   => false,
-        );
-    }
-    /**
-     * @param array $callbackargs
-     */
-    public function __construct($callbackargs) {
-        parent::__construct($callbackargs);
-        if (!$this->versionid) {
-            throw new portfolio_caller_exception('mustprovideid', 'ouwiki');
-        }
-    }
-
-    /**
-     * @global object
-     */
-    public function load_data() {
-        global $DB;
-
-        if ($this->versionid) {
-            if (!$this->version = $DB->get_record('ouwiki_versions',
-                    array('id' => $this->versionid))) {
-                throw new portfolio_caller_exception('invalidversionid', 'ouwiki');
-            }
-        }
-
-        if (!$this->page = $DB->get_record('ouwiki_pages',
-                array('id' => $this->version->pageid))) {
-            throw new portfolio_caller_exception('invalidpageid', 'ouwiki');
-        }
-
-        if (!$this->subwiki = $DB->get_record('ouwiki_subwikis',
-                array('id' => $this->page->subwikiid))) {
-            throw new portfolio_caller_exception('invalidsubwikiid', 'ouwiki');
-        }
-
-        if (!$this->ouwiki = $DB->get_record('ouwiki', array('id' => $this->subwiki->wikiid))) {
-            throw new portfolio_caller_exception('invalidouwikiid', 'ouwiki');
-        }
-
-        if (!$this->cm = get_coursemodule_from_instance('ouwiki', $this->ouwiki->id)) {
-            throw new portfolio_caller_exception('invalidcoursemodule');
-        }
-
-        $this->modcontext = get_context_instance(CONTEXT_MODULE, $this->cm->id);
-        $fs = get_file_storage();
-        if ($this->attachment) {
-            $this->set_file_and_format_data($this->attachment);
-        } else {
-            $attach = $fs->get_area_files($this->modcontext->id, 'mod_ouwiki', 'attachment',
-                    $this->version->id);
-            $embed  = $fs->get_area_files($this->modcontext->id, 'mod_ouwiki', 'content',
-                    $this->version->id);
-            $files = array_merge($attach, $embed);
-            $this->set_file_and_format_data($files);
-        }
-        if (!empty($this->multifiles)) {
-            $this->keyedfiles[$this->version->id] = $this->multifiles;
-        } else if (!empty($this->singlefile)) {
-            $this->keyedfiles[$this->version->id] = array($this->singlefile);
-        }
-        if (empty($this->multifiles) && !empty($this->singlefile)) {
-            $this->multifiles = array($this->singlefile); // copy_files workaround
-        }
-        // depending on whether there are files or not, we might have to change richhtml/plainhtml
-        if (empty($this->attachment)) {
-            if (!empty($this->multifiles)) {
-                $this->add_format(PORTFOLIO_FORMAT_RICHHTML);
-            } else {
-                $this->add_format(PORTFOLIO_FORMAT_PLAINHTML);
-            }
-        }
-    }
-
-    /**
-     * @global object
-     * @return string
-     */
-    public function get_return_url() {
-        global $CFG;
-        return new moodle_url('/mod/ouwiki/view.php',
-                array('id' => $this->cm->id, 'page' => $this->page->title));
-    }
-
-    /**
-     * @global object
-     * @return array
-     */
-    public function get_navigation() {
-        global $CFG;
-
-        $navlinks = array();
-        $navlinks[] = array(
-            'name' => format_string($this->ouwiki->name),
-            'link' => $CFG->wwwroot . '/mod/ouwiki/view.php?id=' . $this->page->id . '&page=' .
-                    $this->page->title,
-            'type' => 'title'
-        );
-        return array($navlinks, $this->cm);
-    }
-
-    /**
-     * a page with or without attachment
-     *
-     * @global object
-     * @global object
-     * @uses PORTFOLIO_FORMAT_RICH
-     * @return mixed
-     */
-    public function prepare_package() {
-        global $CFG;
-
-        if ($this->attachment) { // simplest case first - single file attachment
-            $this->copy_files(array($this->singlefile), $this->attachment);
-        } else { // exporting a single page
-            $pagehtml = $this->prepare_page($this->page, $this->version);
-
-            $content = $pagehtml;
-            $name = 'page.html';
-            $manifest = ($this->exporter->get('format') instanceof PORTFOLIO_FORMAT_RICH);
-
-            $this->copy_files($this->multifiles);
-            $this->get('exporter')->write_new_file($content, $name, $manifest);
-        }
-    }
-
-    /**
-     * @param array $files
-     * @param mixed $justone false of id of single file to copy
-     * @return bool|void
-     */
-    private function copy_files($files, $justone=false) {
-        if (empty($files)) {
-            return;
-        }
-        foreach ($files as $f) {
-            if ($justone && $f->get_id() != $justone) {
-                continue;
-            }
-            $this->get('exporter')->copy_existing_file($f);
-            if ($justone && $f->get_id() == $justone) {
-                return true; // all we need to do
-            }
-        }
-    }
-
-    /**
-     * this is a very cut down version of what is in forum_make_mail_post
-     *
-     * @global object
-     * @param int $page
-     * @param object $version
-     * @return string
-     */
-    private function prepare_page($page, $version, $fileoutputextras=null) {
-        global $DB;
-        static $users;
-        if (empty($users)) {
-            $users = array($this->user->id => $this->user);
-        }
-        if (!array_key_exists($this->version->userid, $users)) {
-            $users[$this->version->userid] = $DB->get_record('user',
-                    array('id' => $version->userid));
-        }
-        // add the user object on to the page
-        $page->author = $users[$this->version->userid];
-        $viewfullnames = true;
-        // format the page body
-        $options = portfolio_format_text_options();
-        $format = $this->get('exporter')->get('format');
-        $formattedtext = format_text($this->version->xhtml, $this->version->xhtmlformat, $options,
-                $this->get('course')->id);
-        $formattedtext = portfolio_rewrite_pluginfile_urls($formattedtext, $this->modcontext->id,
-                'mod_ouwiki', 'content', $this->version->id, $format);
-
-        // Get annotations - only if using annotation system. prevents unnecessary db access
-        if ($this->ouwiki->annotation) {
-            $pageversion = ouwiki_get_current_page($this->subwiki, $this->page->title);
-            $annotations = ouwiki_get_annotations($pageversion);
-        } else {
-            $annotations = '';
-        }
-        // create the annotations
-        if ($this->ouwiki->annotation && count($annotations)) {
-            ouwiki_highlight_existing_annotations(&$this->version->xhtml, $annotations,
-                    'portfolio');
-        }
-
-        $output = '<table border="0" cellpadding="3" cellspacing="0" class="ouwikipage">';
-
-        $output .= '<tr class="header"><td>';// can't print picture.
-        $output .= '</td>';
-
-        $output .= '<td class="topic">';
-
-        $output .= '<div class="subject">'.format_string($this->page->title).'</div>';
-        $output .= '<div class="date">'.userdate($this->version->timecreated).'</div>';
-        $fullname = fullname($users[$this->version->userid], $viewfullnames);
-        $output .= '<div class="author">'.get_string('editedby', 'ouwiki', $fullname).'</div>';
-
-        $output .= '</td></tr>';
-
-        $output .= '<tr><td class="left side" valign="top">';
-
-        $output .= '</td><td class="content">';
-
-        $output .= $formattedtext;
-
-        if ($this->ouwiki->enablewordcount) {
-            $output .= '<div class="ouw_wordcount">';
-            $output .= '<span>'.get_string('numwords', 'ouwiki', $this->version->wordcount).'</span>';
-            $output .= '</div>';
-        }
-
-        if (is_array($this->keyedfiles)
-                && array_key_exists($this->version->id, $this->keyedfiles)
-                && is_array($this->keyedfiles[$this->version->id])
-                && count($this->keyedfiles[$this->version->id]) > 0) {
-            $output .= '<div class="attachments">';
-            $output .= '<br /><b>' .  get_string('attachments', 'ouwiki') . '</b>:<br /><br />';
-            foreach ($this->keyedfiles[$this->version->id] as $file) {
-                $output .= $format->file_output($file)  . '<br/ >';
-            }
-            $output .= "</div>";
-        }
-
-        $output .= '</td></tr></table>'."\n\n";
-
-        return $output;
-    }
-
-    /**
-     * @return string
-     */
-    public function get_sha1() {
-        $filesha = '';
-        try {
-            $filesha = $this->get_sha1_file();
-        } catch (portfolio_caller_exception $e) { } // no files
-
-        return sha1($filesha . ',' . $this->page->title . ',' . $this->version->xhtml);
-    }
-
-    public function expected_time() {
-        return $this->expected_time_file();
-    }
-
-    /**
-     * @uses CONTEXT_MODULE
-     * @return bool
-     */
-    public function check_permissions() {
-        $context = get_context_instance(CONTEXT_MODULE, $this->cm->id);
-        return (has_capability('mod/ouwiki:view', $context));
-    }
-
-    /**
-     * @return string
-     */
-    public static function display_name() {
-        return get_string('modulename', 'ouwiki');
-    }
-
-    public static function base_supported_formats() {
-        return array(PORTFOLIO_FORMAT_FILE, PORTFOLIO_FORMAT_RICHHTML, PORTFOLIO_FORMAT_PLAINHTML);
-    }
-}
 
 function ouwiki_dberror($error, $source = null) {
     if (!$source) {
@@ -853,18 +570,17 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
         $pagename_s = 'p.title IS NULL';
     }
 
-    $jointype = $option == OUWIKI_GETPAGE_REQUIREVERSION ? 'INNER' : 'LEFT';
+    $jointype = $option == OUWIKI_GETPAGE_REQUIREVERSION ? 'JOIN' : 'LEFT JOIN';
 
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
                 p.locked, v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
-                v.wordcount, v.previousversionid
+                v.wordcount, v.previousversionid, u.firstname, u.lastname
             FROM {ouwiki_pages} p
-            $jointype
-            JOIN {ouwiki_versions} v ON p.currentversionid = v.id
-                WHERE p.subwikiid = ? AND $pagename_s";
+            $jointype {ouwiki_versions} v ON p.currentversionid = v.id
+            $jointype {user} u ON v.userid = u.id
+            WHERE p.subwikiid = ? AND $pagename_s";
 
     $pageversion = $DB->get_record_sql($sql, array($subwiki->id, $tl->strtoupper($pagename)));
-
     if (!$pageversion) {
         if($option != OUWIKI_GETPAGE_CREATE) {
             return false;
@@ -898,12 +614,6 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
             ouwiki_dberror($e);
         }
 
-        $pageversion->title = $pageversion->title;
-          // Because it wouldn't have slashes if
-          // we returned it from get_record. It's kind of
-          // insane that insert_record requires them, but
-          // anyway.
-
         $pageversion->currentversionid = null;
         $pageversion->versionid = null;
         $pageversion->xhtml = null;
@@ -930,6 +640,29 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
             array($pageversion->pageid, $timecreated), 0, 3);
 
     return $pageversion;
+}
+
+/**
+ * Obtains all the pages from a subwiki as pageversion objects. As a special
+ * bonus feature, this query also returns the firstname and lastname of current
+ * author (person in userid field of version).
+ * @return array Array of pageversion objects (note: the 'recentversions'
+ *   member is not available, but otherwise these are the same as from
+ *   ouwiki_get_current_page) in same order as index page
+ */
+function ouwiki_get_subwiki_allpages($subwiki) {
+    global $DB;
+
+    $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
+                p.locked, v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
+                v.wordcount, v.previousversionid, u.firstname, u.lastname
+            FROM {ouwiki_pages} p
+            JOIN {ouwiki_versions} v ON p.currentversionid = v.id
+            JOIN {user} u ON u.id = v.userid
+            WHERE p.subwikiid = ? AND v.deletedat IS NULL
+            ORDER BY CASE WHEN p.title IS NULL THEN '' ELSE UPPER(p.title) END";
+
+    return $DB->get_records_sql($sql, array($subwiki->id));
 }
 
 /**
@@ -2512,10 +2245,10 @@ function ouwiki_get_annotation_marker($position) {
 /**
  * Highlights existing annotations in the xhtml for display.
  *
- * @param string $content The content (xhtml) to be displayed
+ * @param string &$content The content (xhtml) to be displayed: output variable
  * @param object $annotations List of annotions in a object
  * @param string $page The page being displayed
- * @return nothing
+ * @return void nothing
  */
 function ouwiki_highlight_existing_annotations(&$content, $annotations, $page) {
     global $OUTPUT, $PAGE;
@@ -2556,10 +2289,16 @@ function ouwiki_highlight_existing_annotations(&$content, $annotations, $page) {
                     $replace = '<span id="annotation'.$annotation->id.'">'.
                             $ouwikioutput->ouwiki_print_portfolio_annotation($annotation);
                     break;
-                default:
+                case 'clear' :
+                    $replace = '<span>';
+                    break;
             }
             $content = str_replace($annotation->annotationtag, $replace, $content);
             $annotationnumber--;
+        }
+        if ($page === 'clear') {
+            // Get rid of any empty tags added by clear
+            $content = str_replace('<span></span>', '', $content);
         }
     }
 }

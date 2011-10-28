@@ -129,6 +129,8 @@ $string['frompage']='from {$a}';
 $string['frompages']='from {$a}...';
 $string['nowikipages'] = 'This wiki does not have any pages.';
 
+$string['error_export'] = 'An error occurred while exporting wiki data.';
+
 $string['changesnav']='Changes';
 $string['advice_diff']='The older version is shown on the
 left<span class=\'accesshide\'> under the heading Older version</span>, where
