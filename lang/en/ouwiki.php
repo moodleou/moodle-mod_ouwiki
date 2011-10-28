@@ -287,6 +287,7 @@ $string['cannotlockpage'] = 'The page could not be locked, your changes have not
 $string['thispageislocked'] = 'This wiki page is locked and cannot be edited.';
 $string['emptypagetitle'] = 'The new page title must not be blank.';
 $string['duplicatepagetitle'] = 'The new page title must not be the same as one of the existing page titles.';
+$string['emptysectiontitle'] = 'The new section name must not be blank.';
 
 // Wordcount
 $string['showwordcounts'] = 'Show word counts';

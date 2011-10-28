@@ -89,12 +89,12 @@ foreach ($index as $pageinfo) {
     if (is_null($pageversion->xhtml)) {
         continue;        
     }
-    $visibletitle = is_null($pageversion->title) ? get_string('startpage', 'ouwiki') : $pageversion->title;
+    $visibletitle = $pageversion->title === '' ? get_string('startpage', 'ouwiki') : $pageversion->title;
     
     switch ($format) {
         case OUWIKI_FORMAT_TEMPLATE:
             print '<page>';
-            if (!is_null($pageversion->title)) {
+            if ($pageversion->title !== '') {
                 print '<title>'.htmlspecialchars($pageversion->title).'</title>';
             }
             print '<xhtml>'.htmlspecialchars($pageversion->xhtml).'</xhtml>';

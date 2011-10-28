@@ -234,4 +234,55 @@ function xmldb_ouwiki_upgrade($oldversion=0) {
 
         upgrade_mod_savepoint(true, 2011072000, 'ouwiki');
     }
+
+    if ($oldversion < 2011102802) {
+
+        // Delete any duplicate null values (these aren't caught by index)
+        // Done in two stages in case mysql is a piece of ****.
+        $rs = $DB->get_recordset_sql("
+SELECT
+    p.id
+FROM
+   {ouwiki_pages} p
+   LEFT JOIN {ouwiki_pages} p2 ON p2.subwikiid = p.subwikiid AND p2.title IS NULL
+       AND p.title IS NULL AND p2.id < p.id
+WHERE
+   p2.id IS NOT NULL");
+        $ids = array();
+        foreach ($rs as $rec) {
+            $ids[] = $rec->id;
+        }
+        $rs->close();
+        if ($ids) {
+            list($sql, $params) = $DB->get_in_or_equal($ids);
+            $DB->execute("DELETE FROM {ouwiki_pages} WHERE id $sql", $params);
+        }
+
+        // Set all the null values to blank
+        $DB->execute("UPDATE {ouwiki_pages} SET title='' WHERE title IS NULL");
+
+        // Also in ousearch table if installed
+        $table = new xmldb_table('local_ousearch_documents');
+        if ($dbman->table_exists($table)) {
+            $DB->execute("UPDATE {local_ousearch_documents} SET stringref='' WHERE stringref IS NULL AND plugin='mod_ouwiki'");
+        }
+
+        // Changing nullability of field title on table ouwiki_pages to not null
+        $table = new xmldb_table('ouwiki_pages');
+        $field = new xmldb_field('title', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, 'subwikiid');
+
+        // Launch change of nullability for field title
+        $dbman->change_field_notnull($table, $field);
+
+        // Define index subwikiid-title (unique) to be added to ouwiki_pages
+        $index = new xmldb_index('subwikiid-title', XMLDB_INDEX_UNIQUE, array('subwikiid', 'title'));
+
+        // Conditionally launch add index subwikiid-title
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // ouwiki savepoint reached
+        upgrade_mod_savepoint(true, 2011102802, 'ouwiki');
+    }
 }

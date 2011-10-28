@@ -286,7 +286,7 @@ class ouwiki_page_portfolio_caller extends ouwiki_portfolio_caller_base {
         $pagehtml = $this->prepare_page($this->pageversion);
 
         $content = $pagehtml;
-        $name = $this->make_filename_safe(is_null($this->pageversion->title) ?
+        $name = $this->make_filename_safe($this->pageversion->title === '' ?
                 get_string('startpage', 'ouwiki') : $this->pageversion->title) . '.html';
         $manifest = ($this->exporter->get('format') instanceof PORTFOLIO_FORMAT_RICH);
 

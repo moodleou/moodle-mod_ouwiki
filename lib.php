@@ -245,12 +245,8 @@ function ouwiki_ousearch_get_document($document) {
 
     $params = array($document->coursemoduleid);
 
-    if (is_null($document->stringref)) {
-        $titlecondition = ' AND p.title IS NULL';
-    } else {
-        $titlecondition = ' AND p.title = ?';
-        $params[] = $document->stringref;
-    }
+    $titlecondition = ' AND p.title = ?';
+    $params[] = $document->stringref;
 
     $groupconditions = '';
     if (is_null($document->groupid)) {
@@ -282,12 +278,12 @@ function ouwiki_ousearch_get_document($document) {
         return false;
     }
 
-    if (is_null($result->title)) {
+    if ($result->title == '') {
         $result->title = get_string('startpage', 'ouwiki');
     }
     $result->activityurl = new moodle_url('/mod/ouwiki/view.php', array('id' => $document->coursemoduleid));
     $result->url = $result->activityurl;
-    if (!is_null($document->stringref)) {
+    if ($document->stringref !== '') {
         $result->url .= '&page='.urlencode($document->stringref);
     }
     if ($document->groupid) {

@@ -35,21 +35,29 @@ class mod_ouwiki_edit_page_form extends moodleform {
         $mform->addRule('content', '', 'required', null, 'server');
 
         // attachments
-        $mform->addElement('filemanager', 'attachments', get_string('attachments', 'ouwiki'), null, array('subdirs' => 0));
+        if ($this->_customdata->attachments) {
+            $mform->addElement('filemanager', 'attachments', get_string('attachments', 'ouwiki'), null, array('subdirs' => 0));
+        }
 
         // hiddens
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'startversionid', null);
-        $mform->setDefault('startversionid', PARAM_INT);
-        $mform->addElement('hidden', 'page', '');
-        $mform->setDefault('page', PARAM_TEXT);
-        $mform->addElement('hidden', 'newpage', '');
-        $mform->setDefault('newpage', PARAM_TEXT);
-        $mform->addElement('hidden', 'newsection', '');
-        $mform->setDefault('newsection', PARAM_TEXT);
+        $mform->setType('startversionid', PARAM_INT);
+        if (!$this->_customdata->startpage) {
+            $mform->addElement('hidden', 'page', '');
+            $mform->setType('page', PARAM_TEXT);
+        }
+        if ($this->_customdata->addpage) {
+            $mform->addElement('hidden', 'frompage', '');
+            $mform->setType('frompage', PARAM_TEXT);
+        }
+        if ($this->_customdata->addsection) {
+            $mform->addElement('hidden', 'newsection', '');
+            $mform->setType('newsection', PARAM_TEXT);
+        }
         $mform->addElement('hidden', 'section', '');
-        $mform->setDefault('section', PARAM_RAW);
+        $mform->setType('section', PARAM_RAW);
 
         $buttongroup = array();
         $buttongroup[] =& $mform->createElement('submit', 'editoption', get_string('savechanges'), array('id' => 'save'));

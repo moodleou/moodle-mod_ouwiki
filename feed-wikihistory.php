@@ -105,7 +105,8 @@ foreach ($changes as $change) {
     $a->name = htmlspecialchars(fullname($change));
     $a->date = ouwiki_nice_date($change->timecreated);
 
-    $itemtitle = $ouwiki->name.' - '.(is_null($change->title) ? get_string('startpage','ouwiki') : htmlspecialchars($change->title));
+    $itemtitle = $ouwiki->name . ' - ' . ($change->title === ''
+            ? get_string('startpage','ouwiki') : htmlspecialchars($change->title));
     $itemlink = $CFG->wwwroot.'/mod/ouwiki/view.php?'.$pageparams;
     if (!empty($change->previousversionid)) {
         $a->url = $CFG->wwwroot.'/mod/ouwiki/diff.php?'.$pageparams.'&amp;v1='.

@@ -33,13 +33,6 @@ require_once($CFG->dirroot . '/course/moodleform_mod.php');
 require_once($CFG->dirroot . '/mod/ouwiki/lib.php');
 require_once($CFG->dirroot . '/mod/ouwiki/difflib.php');
 
-// OU shared APIs which (for OU system) are present in ouwiki/local, elsewhere
-// are incorporated in module
-@include_once($CFG->dirroot.'/local/transaction_wrapper.php');
-if (!class_exists('transaction_wrapper')) {
-    require_once($CFG->dirroot.'/mod/ouwiki/null_transaction_wrapper.php');
-}
-
 // subwikis
 define('OUWIKI_SUBWIKIS_SINGLE', 0);
 define('OUWIKI_SUBWIKIS_GROUPS', 1);
@@ -55,6 +48,8 @@ define('OUWIKI_SESSION_LOCKS', 'ouwikilocks'); // Session variable used to store
 define('OUWIKI_PARAMS_LINK', 0);
 define('OUWIKI_PARAMS_FORM', 1);
 define('OUWIKI_PARAMS_URL', 2);
+define('OUWIKI_PARAMS_ARRAY', 3);
+
 define('OUWIKI_FORMAT_HTML', 'html');
 define('OUWIKI_FORMAT_RTF', 'rtf');
 define('OUWIKI_FORMAT_TEMPLATE', 'template');
@@ -403,19 +398,37 @@ function ouwiki_shared_url_params($pagename, $subwiki, $cm) {
  * @param object $subwiki Current subwiki object
  * @param object $cm Course-module object
  * @param int $type OUWIKI_PARAMS_xx constant
+ * @return mixed Either array or string depending on type
  */
 function ouwiki_display_wiki_parameters($page, $subwiki, $cm, $type = OUWIKI_PARAMS_LINK) {
-    $output = ouwiki_get_parameter('id', $cm->id, $type);
+    if ($type == OUWIKI_PARAMS_ARRAY) {
+        $output = array();
+        $output['id'] = $cm->id;
+    } else {
+        $output = ouwiki_get_parameter('id', $cm->id, $type);
+    }
     if (!$subwiki->defaultwiki) {
         if ($subwiki->groupid) {
-            $output .= ouwiki_get_parameter('group', $subwiki->groupid, $type);
+            if ($type == OUWIKI_PARAMS_ARRAY) {
+                $output .= ouwiki_get_parameter('group', $subwiki->groupid, $type);
+            } else {
+                $output['group'] = $subwiki->groupid;
+            }
         }
         if ($subwiki->userid) {
-            $output .= ouwiki_get_parameter('user', $subwiki->userid, $type);
+            if ($type == OUWIKI_PARAMS_ARRAY) {
+                $output .= ouwiki_get_parameter('user', $subwiki->userid, $type);
+            } else {
+                $output['user'] = $subwiki->userid;
+            }
         }
     }
-    if (!is_null($page) && $page !== '') {
-        $output .= ouwiki_get_parameter('page', $page, $type);
+    if ($page !== '') {
+        if ($type == OUWIKI_PARAMS_ARRAY) {
+            $output['page'] = $page;
+        } else {
+            $output .= ouwiki_get_parameter('page', $page, $type);
+        }
     }
     return $output;
 }
@@ -563,12 +576,10 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
 function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_REQUIREVERSION) {
     global $DB;
 
+    $params = array($subwiki->id);
     $tl = textlib_get_instance();
-    if ($pagename) {
-        $pagename_s = 'UPPER(p.title) = ?';
-    } else {
-        $pagename_s = 'p.title IS NULL';
-    }
+    $pagename_s = 'UPPER(p.title) = ?';
+    $params[] = $tl->strtoupper($pagename);
 
     $jointype = $option == OUWIKI_GETPAGE_REQUIREVERSION ? 'JOIN' : 'LEFT JOIN';
 
@@ -577,10 +588,10 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
                 v.wordcount, v.previousversionid, u.firstname, u.lastname
             FROM {ouwiki_pages} p
             $jointype {ouwiki_versions} v ON p.currentversionid = v.id
-            $jointype {user} u ON v.userid = u.id
+            LEFT JOIN {user} u ON v.userid = u.id
             WHERE p.subwikiid = ? AND $pagename_s";
 
-    $pageversion = $DB->get_record_sql($sql, array($subwiki->id, $tl->strtoupper($pagename)));
+    $pageversion = $DB->get_record_sql($sql, $params);
     if (!$pageversion) {
         if($option != OUWIKI_GETPAGE_CREATE) {
             return false;
@@ -630,7 +641,7 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
 
     $sql = 'SELECT v.id, v.timecreated, v.userid, u.firstname, u.lastname
                 FROM {ouwiki_versions} v
-            INNER JOIN {user} u ON v.userid = u.id
+            LEFT JOIN {user} u ON v.userid = u.id
             WHERE v.pageid = ?
                 AND v.timecreated <= ?
                 AND v.deletedat IS NULL
@@ -658,7 +669,7 @@ function ouwiki_get_subwiki_allpages($subwiki) {
                 v.wordcount, v.previousversionid, u.firstname, u.lastname
             FROM {ouwiki_pages} p
             JOIN {ouwiki_versions} v ON p.currentversionid = v.id
-            JOIN {user} u ON u.id = v.userid
+            LEFT JOIN {user} u ON u.id = v.userid
             WHERE p.subwikiid = ? AND v.deletedat IS NULL
             ORDER BY CASE WHEN p.title IS NULL THEN '' ELSE UPPER(p.title) END";
 
@@ -677,23 +688,16 @@ function ouwiki_get_subwiki_allpages($subwiki) {
 function ouwiki_get_page_version($subwiki, $pagename, $versionid) {
     global $DB;
 
-    if ($pagename) {
-        $pagename_s = "= ?";
-        $tl = textlib_get_instance();
-        $pagename = $tl->strtoupper($pagename);
-    } else {
-        $pagename_s = "IS NULL";
-        $pagename = null;
-    }
-
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
                 v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
                 v.deletedat, u.firstname, u.lastname, u.username,
                 v.wordcount
             FROM {ouwiki_pages} p, {ouwiki_versions} v
             LEFT JOIN {user} u ON v.userid = u.id
-            WHERE p.subwikiid = ? AND v.id = ? AND UPPER(p.title) $pagename_s";
+            WHERE p.subwikiid = ? AND v.id = ? AND UPPER(p.title) = ?";
 
+    $tl = textlib_get_instance();
+    $pagename = $tl->strtoupper($pagename);
     $pageversion = $DB->get_record_sql($sql, array($subwiki->id, $versionid, $pagename));
 
     $pageversion->recentversions = false;
@@ -778,7 +782,7 @@ function ouwiki_internal_re_internallinks($matches) {
 
     // See if it matches a known page
     foreach ($ouwiki_internallinks as $indexpage) {
-        if (($details->page === '' && is_null($indexpage->title)) ||
+        if (($details->page === '' && $indexpage->title === '') ||
             (strtoupper($indexpage->title) === strtoupper($details->page)) ) {
             // Page matches, return link
             return '<a class="ouw_wikilink" href="#' . $indexpage->pageid .
@@ -922,10 +926,10 @@ function ouwiki_print_header($ouwiki, $cm, $subwiki, $pagename, $afterpage = nul
     $wikiname = format_string(htmlspecialchars($ouwiki->name));
     $buttontext = ouwiki_get_search_form($subwiki, $cm->id);
 
-    if ($afterpage && $pagename) {
+    if ($afterpage && $pagename !== null) {
         $PAGE->navbar->add(htmlspecialchars($pagename), new moodle_url('/mod/ouwiki/view.php',
                 array('id' => $cm->id, 'page' => $pagename)));
-    } else if ($pagename) {
+    } else if ($pagename !== null) {
         $PAGE->navbar->add(htmlspecialchars($pagename));
     } else if ($afterpage) {
         $PAGE->navbar->add(htmlspecialchars(get_string('startpage', 'ouwiki')));
@@ -974,7 +978,7 @@ function ouwiki_print_footer($course, $cm, $subwiki, $pagename = null, $logurl =
     if ($subwiki->userid) {
         $url .= '&user='.$subwiki->userid;
     }
-    if ($pagename) {
+    if ($pagename !== null) {
         $url .= '&page='.urlencode($pagename);
         $info = $pagename;
     } else {
@@ -1373,8 +1377,8 @@ function ouwiki_get_subwiki_missingpages($subwikiid, $limitfrom = '', $limitnum 
 function ouwiki_find_sections($content) {
     $results = array();
     $matchlist = array();
-    preg_match_all('|<h([0-9]) id="ouw_s([0-9]+_[0-9]+)">(.*?)</h([0-9])>|s', $content,
-            $matchlist, PREG_SET_ORDER);
+    preg_match_all('~<h([0-9]) id="ouw_s([0-9]+_[0-9]+)">(.*?)</h([0-9])>~s',
+            $content, $matchlist, PREG_SET_ORDER);
     foreach ($matchlist as $matches) {
         if ($matches[1] != $matches[4]) {
             // Some weird s*** with nested headings
@@ -1459,7 +1463,7 @@ function ouwiki_save_new_version_section($course, $cm, $ouwiki, $subwiki, $pagen
         substr($contentbefore, $sectiondetails->startpos + $sectiondetails->size);
     // Store details of change size in db
     ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $result,
-        $sectiondetails->startpos, strlen($newcontent), $sectiondetails->size, -1, $formdata);
+        $sectiondetails->startpos, strlen($newcontent), $sectiondetails->size, null, $formdata);
 }
 
 /**
@@ -1499,7 +1503,7 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     global $DB, $USER;
     global $ouwikiinternalre, $ouwiki_count; // Nasty but I can't think of a better way!
 
-    $tw = new transaction_wrapper();
+    $transaction = $DB->start_delegated_transaction();
 
     // Find page if it exists
     $pageversion = ouwiki_get_current_page($subwiki, $pagename, OUWIKI_GETPAGE_CREATE);
@@ -1603,7 +1607,7 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     // Create version
     $version = new StdClass;
     $version->pageid = $pageversion->pageid;
-    $version->xhtml = $content;
+    $version->xhtml = $content; // May be altered later (see below)
     $version->timecreated = time();
     $version->wordcount = ouwiki_count_words($content);
     $version->previousversionid = $previousversionid;
@@ -1625,7 +1629,6 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
             $DB->set_field('ouwiki_pages', 'firstversionid', $versionid, array('id' => $version->pageid));
         }
     } catch (Exception $e) {
-        $tw->rollback();
         ouwiki_dberror($e);
     }
 
@@ -1634,27 +1637,42 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
     $prevversion = ($revertversionid) ? $revertversionid : $pageversion->versionid;
 
-    // need to copy over attached files from the previous version
-    if ($oldfiles = $fs->get_area_files($modcontext->id, 'mod_ouwiki', 'attachment',
-            $prevversion)) {
-        foreach ($oldfiles as $oldfile) {
-            // copy this file to the version record.
-            $fs->create_file_from_storedfile(array(
-                'contextid' => $modcontext->id,
-                'filearea' => 'attachment',
-                'itemid' => $versionid), $oldfile);
-        }
-    }
-
     // save new files connected with the version from the formdata if set
     if ($formdata) {
-        $formdata->itemid = $formdata->content['itemid'];
-        $formdata->content = $content;
-        $formdata->content = file_save_draft_area_files($formdata->itemid, $modcontext->id,
-                'mod_ouwiki', 'content', $versionid, array('subdirs' => 0), $formdata->content);
-        $DB->set_field('ouwiki_versions', 'xhtml', $formdata->content, array('id' => $versionid));
-        file_save_draft_area_files($formdata->attachments, $modcontext->id, 'mod_ouwiki',
-                'attachment', $versionid, array('subdirs' => 0));
+        $formdata->content = file_save_draft_area_files($formdata->content['itemid'],
+                $modcontext->id, 'mod_ouwiki', 'content', $versionid,
+                array('subdirs' => 0), $content);
+        if ($content !== $formdata->content) {
+            $DB->set_field('ouwiki_versions', 'xhtml', $formdata->content,
+                    array('id' => $versionid));
+        }
+        if (isset($formdata->attachments)) {
+            file_save_draft_area_files($formdata->attachments, $modcontext->id, 'mod_ouwiki',
+                    'attachment', $versionid, array('subdirs' => 0));
+        }
+    } else {
+        // need to copy over attached files from the previous version when
+        // editing without using form
+        if ($oldfiles = $fs->get_area_files($modcontext->id, 'mod_ouwiki', 'attachment',
+                $prevversion)) {
+            foreach ($oldfiles as $oldfile) {
+                // copy this file to the version record.
+                $fs->create_file_from_storedfile(array(
+                    'contextid' => $modcontext->id,
+                    'filearea' => 'attachment',
+                    'itemid' => $versionid), $oldfile);
+            }
+        }
+        if ($oldfiles = $fs->get_area_files($modcontext->id, 'mod_ouwiki', 'content',
+            $prevversion)) {
+            foreach ($oldfiles as $oldfile) {
+                // copy this file to the version record.
+                $fs->create_file_from_storedfile(array(
+                    'contextid' => $modcontext->id,
+                    'filearea' => 'content',
+                    'itemid' => $versionid), $oldfile);
+            }
+        }
     }
 
     // Update latest version
@@ -1718,7 +1736,6 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
         try {
             $link->id = $DB->insert_record('ouwiki_links', $link);
         } catch (Exception $e) {
-            $tw->rollback();
             ouwiki_dberror($e);
         }
     }
@@ -1734,7 +1751,6 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
         try {
             $link->id = $DB->insert_record('ouwiki_links', $link);
         } catch (Exception $e) {
-            $tw->rollback();
             ouwiki_dberror($e);
         }
     }
@@ -1750,11 +1766,11 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
         if ($subwiki->userid) {
             $doc->set_user_id($subwiki->userid);
         }
-        $title = is_null($pageversion->title) ? '' : $pageversion->title;
+        $title = $pageversion->title;
         $doc->update($title, $content);
     }
 
-    $tw->commit();
+    $transaction->allow_commit();
 }
 
 /**
@@ -1981,29 +1997,31 @@ function ouwiki_display_create_page_form($subwiki, $cm, $pageversion) {
     $result = '';
 
     // shared form elements
-    $genericformdetails = '<form method="get" action="edit.php">'
-        .'<div class="ouwiki_addnew_div">'
-        .'<input type="hidden" name="id" value="'.$cm->id.'"/>'
-        .'<input type="hidden" name="page" value="'
-        .$pageversion->title.'" />';
+    $genericformdetails = '<form method="get" action="edit.php">' .
+            '<div class="ouwiki_addnew_div">' .
+            '<input type="hidden" name="id" value="'.$cm->id.'"/>';
 
-    $result.='<div id="ouwiki_addnew"><ul>';
+    $result .= '<div id="ouwiki_addnew"><ul>';
 
     // create new section
-    $result .= '<li>'.$genericformdetails
-        .get_string('addnewsection', 'ouwiki') . ' '
-        .'<input type="text" size="30" name="newsection" id="ouw_newsectionname" value="" />'
-        .'<input type="submit" id="ouw_add" name="ouw_subb" value="'.
-        get_string('add', 'ouwiki').'" />'.
-        '</div></form></li>';
+    $result .= '<li>' . $genericformdetails;
+    if ($pageversion->title !== '') {
+        $result .= '<input type="hidden" name="page" value="' . $pageversion->title . '" />';
+    }
+    $result .= get_string('addnewsection', 'ouwiki') . ' ' .
+            '<input type="text" size="30" name="newsection" id="ouw_newsectionname" value="" />' .
+            '<input type="submit" id="ouw_add" name="ouw_subb" value="' .
+            get_string('add', 'ouwiki').'" />' .
+            '</div></form></li>';
 
     // create new page
-    $result .= '<li>'.$genericformdetails
-        .get_string('createnewpage', 'ouwiki') . ' '
-        .'<input type="text" name="newpage" id="ouw_newpagename" size="30" value="" />'
-        .'<input type="submit" id="ouw_create" name="ouw_subb" value="'.
-        get_string('create', 'ouwiki').'" />'.
-        '</div></form></li>';
+    $result .= '<li>' . $genericformdetails .
+            '<input type="hidden" name="frompage" value="' . $pageversion->title . '" />' .
+            get_string('createnewpage', 'ouwiki') . ' ' .
+            '<input type="text" name="page" id="ouw_newpagename" size="30" value="" />' .
+            '<input type="submit" id="ouw_create" name="ouw_subb" value="' .
+            get_string('create', 'ouwiki') . '" />' .
+            '</div></form></li>';
 
     $result .= '</ul></div>';
 
@@ -2013,13 +2031,16 @@ function ouwiki_display_create_page_form($subwiki, $cm, $pageversion) {
 /**
  * @param string $cm ID of course module
  * @param string $subwiki details if it exists
- * @param string $pagename of the original wiki page for which the new page is a link of
- * @param string $newpagename page name of the new page being created
+ * @param string $pagename of the original wiki page for which the new page is a link of,
+ *   null for start page
+ * @param string $newpagename page name of the new page being created (not null)
  * @param string $content of desired new page
  */
-
 function ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $pagename, $newpagename,
         $content, $formdata) {
+    global $DB;
+    $transaction = $DB->start_delegated_transaction();
+
     // need to get old page and new page
     $sourcecontent = '';
     if ($sourcepage = ouwiki_get_current_page($subwiki, $pagename)) {
@@ -2027,7 +2048,7 @@ function ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $pagename, $new
         $sourcecontent .= '<p>[['.htmlspecialchars($newpagename).']]</p>';
     }
 
-    // Create the new  page
+    // Create the new page
     $pageversion = ouwiki_get_current_page($subwiki, $newpagename, OUWIKI_GETPAGE_CREATE);
 
     // need to save version - will call error if does not work
@@ -2035,10 +2056,9 @@ function ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $pagename, $new
             null, $formdata);
 
     // save the revised original page as a new version
-    if (empty($pagename)) {
-        $pagename = null;
-    }
     ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $sourcecontent);
+
+    $transaction->allow_commit();
 }
 
 /**

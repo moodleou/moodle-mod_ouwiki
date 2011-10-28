@@ -86,7 +86,7 @@ if (count($index) == 0) {
     print '</ul>';
 
     foreach ($index as $indexitem) {
-        if (count($indexitem->linksfrom) == 0 && !is_null($indexitem->title)) {
+        if (count($indexitem->linksfrom) == 0 && $indexitem->title !== '') {
             $orphans = true;
         }
     }
@@ -94,7 +94,7 @@ if (count($index) == 0) {
     // ...or standard alphabetical
     print '<ul class="ouw_index">';
     foreach ($index as $indexitem) {
-        if (count($indexitem->linksfrom)!= 0 || is_null($indexitem->title)) {
+        if (count($indexitem->linksfrom)!= 0 || $indexitem->title === '') {
             print '<li>'.ouwiki_display_page_in_index($indexitem, $subwiki, $cm).'</li>';
         } else {
             $orphans = true;
@@ -107,7 +107,7 @@ if ($orphans) {
     print '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
     print '<ul class="ouw_index">';
     foreach ($index as $indexitem) {
-        if (count($indexitem->linksfrom) == 0 && !is_null($indexitem->title)) {
+        if (count($indexitem->linksfrom) == 0 && $indexitem->title !== '') {
             print '<li>'.ouwiki_display_page_in_index($indexitem, $subwiki, $cm).'</li>';
         }
     }
@@ -174,7 +174,7 @@ ouwiki_print_footer($course, $cm, $subwiki, $pagename);
 
 function ouwiki_display_page_in_index($indexitem, $subwiki, $cm) {
     global $ouwiki;
-    if ($startpage = is_null($indexitem->title)) {
+    if ($startpage = $indexitem->title === '') {
         $title = get_string('startpage', 'ouwiki');
         $output = '<div class="ouw_index_startpage">';
     } else {

@@ -56,7 +56,8 @@ if ($oldbrowser) {
     header('Content-Type: application/atom+xml; charset=UTF-8');
 }
 
-$pagetitle = is_null($pageversion->title) ? get_string('startpage', 'ouwiki') : htmlspecialchars($pageversion->title);
+$pagetitle = $pageversion->title === '' ? get_string('startpage', 'ouwiki') :
+        htmlspecialchars($pageversion->title);
 
 $a = new StdClass;
 $a->course = htmlspecialchars($course->shortname);

@@ -32,19 +32,30 @@ $pagename = optional_param('page', null, PARAM_RAW);    // Which page to show. O
 $groupid = optional_param('group', 0, PARAM_INT); // Group ID. If omitted, uses first appropriate group
 $userid  = optional_param('user', 0, PARAM_INT);   // User ID (for individual wikis). If omitted, uses own
 
+// Special logic to handle legacy code that gets pagename wrong
+if ($pagename === '') {
+    debugging('Please try to make code omit page parameter when it is null', DEBUG_DEVELOPER);
+}
+if (is_null($pagename)) {
+    $pagename = '';
+}
+
 // Restrict page name
 $tl = textlib_get_instance();
 if ($tl->strlen($pagename) > 200) {
     print_error('pagenametoolong', 'ouwiki');
 }
-if (strtolower(trim($pagename)) == strtolower(get_string('startpage', 'ouwiki'))) {
+// Convert nbsp to space
+$pagename = str_replace(html_entity_decode('&nbsp;', ENT_QUOTES, 'UTF-8'), ' ', $pagename);
+$pagename = trim($pagename);
+if (strtolower($pagename) == strtolower(get_string('startpage', 'ouwiki'))) {
     print_error('pagenameisstartpage', 'ouwiki');
 }
 
 // Load efficiently (and with full $cm data) using get_fast_modinfo
 $course = $DB->get_record_select('course',
-            'id = (SELECT course FROM {course_modules} WHERE id = ?)', array($id),
-            '*', MUST_EXIST);
+        'id = (SELECT course FROM {course_modules} WHERE id = ?)', array($id),
+        '*', MUST_EXIST);
 $modinfo = get_fast_modinfo($course);
 $cm = $modinfo->get_cm($id);
 if ($cm->modname !== 'ouwiki') {

@@ -103,8 +103,7 @@ if ($save) {
         }
     }
 
-    // intitiate the transaction wrapper
-    $tw = new transaction_wrapper();
+    $transaction = $DB->start_delegated_transaction();
 
     // get the existing annotations to check for changes
     $stored = ouwiki_get_annotations($pageversion);
@@ -196,7 +195,7 @@ if ($save) {
         ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $pageversion->xhtml);
     }
 
-    $tw->commit();
+    $transaction->allow_commit();
 }
 
 // Redirect for save or cancel

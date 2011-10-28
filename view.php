@@ -24,15 +24,9 @@
  */
 
 require_once(dirname(__FILE__) . '/../../config.php');
+require_once($CFG->dirroot . '/lib/ajax/ajaxlib.php');
+
 require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
-require_once($CFG->dirroot.'/lib/ajax/ajaxlib.php');
-
-if (file_exists($CFG->dirroot . '/local/externaldashboard/external_dashboard.php')) {
-    require_once($CFG->dirroot . '/local/externaldashboard/external_dashboard.php');
-}
-
-$id = required_param('id', 0, PARAM_INT); // Course Module ID
-$pagename = optional_param('page', '', PARAM_TEXT);
 
 $url = new moodle_url('/mod/ouwiki/view.php', array('id' => $id, 'page' => $pagename));
 $PAGE->set_url($url);

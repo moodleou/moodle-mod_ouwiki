@@ -57,7 +57,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         }
 
         // Title
-        $title = is_null($pageversion->title) ? get_string('startpage', 'ouwiki') :
+        $title = $pageversion->title === '' ? get_string('startpage', 'ouwiki') :
                 htmlspecialchars($pageversion->title);
 
         // setup annotations according to the page we are on
@@ -205,8 +205,9 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                     $linktitle = ($link->title) ? htmlspecialchars($link->title) :
                             get_string('startpage', 'ouwiki');
                     $output .= html_writer::tag('a', $linktitle,
-                            array('href'=>$CFG->wwwroot.'/mod/ouwiki/view.php?id=' . $cm->id .
-                            '&page=' . $link->title));
+                            array('href' => $CFG->wwwroot . '/mod/ouwiki/view.php?' .
+                            ouwiki_display_wiki_parameters(
+                                $link->title, $subwiki, $cm, OUWIKI_PARAMS_URL)));
                     $output .= html_writer::end_tag('li');
                 }
                 $output .= html_writer::end_tag('ul');
@@ -244,9 +245,11 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         // Add edit link for page or section
         if ($subwiki->canedit && !$locked) {
             $str = $xhtmlid ? 'editsection' : 'editpage';
+
             $output .= html_writer::tag('a', get_string($str, 'ouwiki'), array(
-                    'href' => $CFG->wwwroot.'/mod/ouwiki/edit.php?id='.$cm->id.'&page='.
-                        $pagename.($xhtmlid ? '&section='.$xhtmlid : ''),
+                    'href' => $CFG->wwwroot . '/mod/ouwiki/edit.php?' .
+                        ouwiki_display_wiki_parameters($pagename, $subwiki, $cm, OUWIKI_PARAMS_URL) .
+                        ($xhtmlid ? '&section=' . $xhtmlid : ''),
                     'class' => 'ouw_' . $str));
         }
 
