@@ -189,7 +189,13 @@ if ($save) {
     // and save a new wiki version if required
     $neednewversion = (ouwiki_cleanup_annotation_tags($updated, $pageversion->xhtml)) ? true : $neednewversion;
 
-    ouwiki_lock_editing($pageversion->pageid, $lockunlock);
+    // Note: Because we didn't get data values from the form, they have not been
+    // sanity-checked so we don't know if the field actually existed or not.
+    // That means we need to do another lock capability check here in addition
+    // to the one done when displaying the form.
+    if(has_capability('mod/ouwiki:lock', $context)) {
+        ouwiki_lock_editing($pageversion->pageid, $lockunlock);
+    }
 
     if ($neednewversion) {
         ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $pageversion->xhtml);
@@ -320,6 +326,7 @@ $customdata[0] = $annotations;
 $customdata[1] = $pageversion;
 $customdata[2] = $pagename;
 $customdata[3] = $userid;
+$customdata[4] = has_capability('mod/ouwiki:lock', $context);
 $annotateform = new mod_ouwiki_annotate_form('annotate.php?id='.$id, $customdata);
 $annotateform->display();
 

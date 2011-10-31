@@ -152,8 +152,8 @@ function newAnnotation(newtext) {
 
     // insert the new fitem before the last fitem (which is the delete orphaned checkbox)
     var fcontainer = YAHOO.util.Dom.getElementsByClassName('fcontainer', 'div');
-    var checkbox = YAHOO.util.Dom.getElementsByClassName('felement fcheckbox', 'div');
-    fcontainer[0].insertBefore(newfitem, checkbox[0].parentNode);
+    var endmarker = document.getElementById('end');
+    fcontainer[0].insertBefore(newfitem, endmarker.parentNode.parentNode);
 
     markNewAnnotation(annotationnum);
 

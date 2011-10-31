@@ -28,6 +28,7 @@ class mod_ouwiki_annotate_form extends moodleform {
         $pageid = $this->_customdata[1]->pageid;
         $pagename = $this->_customdata[2];
         $currentuserid = $this->_customdata[3];
+        $canlock = $this->_customdata[4];
         $orphaned = false;
 
         $mform->addElement('hidden', 'page', $pagename);
@@ -48,16 +49,21 @@ class mod_ouwiki_annotate_form extends moodleform {
             }
         }
 
+        // Special field used in JavaScript
+        $mform->addElement('static', 'endannotations', '', '<span id="end"></span>');
+
         // only display this checkbox if there are orphaned annotations
         if ($orphaned) {
             $mform->addElement('checkbox', 'deleteorphaned', get_string('deleteorphanedannotations','ouwiki'));
         }
-        $mform->addElement('checkbox', 'lockediting', get_string('lockediting','ouwiki'));
 
-        if (ouwiki_is_page_editing_locked($pageid)) {
-            $mform->setDefault('lockediting',true);
-        } else {
-            $mform->setDefault('lockediting',false);
+        if ($canlock) {
+            $mform->addElement('checkbox', 'lockediting', get_string('lockediting','ouwiki'));
+            if (ouwiki_is_page_editing_locked($pageid)) {
+                $mform->setDefault('lockediting',true);
+            } else {
+                $mform->setDefault('lockediting',false);
+            }
         }
         $this->add_action_buttons();
      }
