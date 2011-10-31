@@ -31,7 +31,9 @@ class mod_ouwiki_annotate_form extends moodleform {
         $canlock = $this->_customdata[4];
         $orphaned = false;
 
-        $mform->addElement('hidden', 'page', $pagename);
+        if ($pagename !== '') {
+            $mform->addElement('hidden', 'page', $pagename);
+        }
         $mform->addElement('hidden', 'user', $currentuserid);
         $mform->addElement('header', 'annotations', get_string('annotations','ouwiki'));
 

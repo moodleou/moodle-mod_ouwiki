@@ -410,16 +410,16 @@ function ouwiki_display_wiki_parameters($page, $subwiki, $cm, $type = OUWIKI_PAR
     if (!$subwiki->defaultwiki) {
         if ($subwiki->groupid) {
             if ($type == OUWIKI_PARAMS_ARRAY) {
-                $output .= ouwiki_get_parameter('group', $subwiki->groupid, $type);
-            } else {
                 $output['group'] = $subwiki->groupid;
+            } else {
+                $output .= ouwiki_get_parameter('group', $subwiki->groupid, $type);
             }
         }
         if ($subwiki->userid) {
             if ($type == OUWIKI_PARAMS_ARRAY) {
-                $output .= ouwiki_get_parameter('user', $subwiki->userid, $type);
-            } else {
                 $output['user'] = $subwiki->userid;
+            } else {
+                $output .= ouwiki_get_parameter('user', $subwiki->userid, $type);
             }
         }
     }

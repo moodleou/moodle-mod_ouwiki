@@ -258,8 +258,9 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             // Add annotate link
             if ($subwiki->canannotate) {
                 $output .= ' ' .html_writer::tag('a', get_string('annotate', 'ouwiki'),
-                        array('href' => $CFG->wwwroot.'/mod/ouwiki/annotate.php?id='.$cm->id.
-                        '&page='.$pagename, 'class' => 'ouw_annotate'));
+                        array('href' => $CFG->wwwroot.'/mod/ouwiki/annotate.php?' .
+                        ouwiki_display_wiki_parameters($pagename, $subwiki, $cm, OUWIKI_PARAMS_URL),
+                        'class' => 'ouw_annotate'));
             }
 
             // 'Show all' annotation controls

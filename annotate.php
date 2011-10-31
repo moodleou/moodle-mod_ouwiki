@@ -29,12 +29,10 @@ require_once($CFG->dirroot.'/lib/ajax/ajaxlib.php');
 require_once($CFG->dirroot.'/mod/ouwiki/annotate_form.php');
 require_once($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
-$id = required_param('id', 0, PARAM_INT); // Course Module ID
 $save = optional_param('submitbutton', '', PARAM_TEXT);
 $cancel = optional_param('cancel', '', PARAM_TEXT);
 $deleteorphaned = optional_param('deleteorphaned', 0, PARAM_BOOL);
 $lockunlock = optional_param('lockediting', false, PARAM_BOOL);
-$userid = optional_param('user', 0, PARAM_INT);
 
 if (!empty($_POST) && !confirm_sesskey()) {
     print_error('invalidrequest');
