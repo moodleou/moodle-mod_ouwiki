@@ -316,17 +316,13 @@ $string['viewwikistartpage'] = 'View {$a}';
 $string['viewwikichanges'] = 'Changes for {$a}';
 
 $string['search'] = 'Search this wiki';
-$string['search_help'] = 'This search option allows you to search within the wiki you are currently viewing.
+$string['search_help'] = 'Type your search term and press Enter or click the button.
 
-To begin searching please enter a keyword within the search text box and press the arrow button.
+To search for exact phrases use quote marks.
 
-You will be taken to a results page where your keyword will be displayed within the search text box.
- You will be presented with a page of search results where your keyword is featured.
+To exclude a word insert a hyphen immediately before the word.
 
-From this results page you will also have the option to ‘Search the rest of this website’. Click on the
- link and you will be taken to a ‘Your search options’. Your keyword will be carried through but you
- will have the ability to change your keyword and search again. You will also be able to choose to
- search all of your forums or the OU Library.';
+Example: the search term <tt>picasso -sculpture &quot;early works&quot;</tt> will return results for &lsquo;picasso&rsquo; or the phrase &lsquo;early works&rsquo; but will exclude items containing &lsquo;sculpture&rsquo;.';
 
 $string['sizewarning'] = 'This wiki page is very large and may operate slowly.
 If possible, please split the content into logical chunks and
@@ -366,46 +362,9 @@ $string['annotation_help'] = '<p>A user, with the appropriate permission, can ad
 $string['editbegin_help'] = '<p>If you enable this option the wiki enters read-only mode until the given date. In read-only mode users can see pages, navigate between them, view history, and participate in discussions, but they cannot edit pages.</p>';
 $string['editend_help'] = 'If you enable this option the wiki enters read-only mode from the given date onwards.';
 $string['createlinkedwiki'] = 'Creating a new page';
-$string['createlinkedwiki_help'] = '
-<p>
-Creating wiki pages can be confusing if you aren\'t familiar with wikis.
-</p>
-<ul>
-<li>A key principle is that pages on a wiki should be <strong>linked together</strong> in some way.</li>
-<li>In order to ensure this happens, you have to create a <strong>link to the new page</strong> before you can create the new page itself.</li>
-</ul>
-<h3>Wiki links</h3>
-<p>
-When editing a page, links are created by typing the title of a page you want to link to inside double square brackets.
-</p>
-<ul>
-<li>If you wish to link to a page titled <strong>Fish</strong>, you would type <strong>[[Fish]]</strong>.</li>
-</ul>
-<h3>New pages</h3>
-<p>
-To create a new page:
-</p>
-<ol>
-<li>Think of a <strong>title</strong> for your page. The title should be different to the titles of other pages on the wiki.
-It should describe the content of your page.
-An example title might be <strong>Frogs and other amphibians</strong>.</li>
-<li>Decide which page should <strong>link</strong> to your new page. If the wiki is small this might be the
-start page. Otherwise, find an appropriate page.</li>
-<li><strong>Edit</strong> the page that will contain the link.</li>
-<li>Find the point where you would like the link to go, and type it in: <strong>[[Frogs and other amphibians]]</strong>.</li>
-<li><strong>Save</strong> this change. The link you have created should appear, ready for use.</li>
-<li><strong>Click</strong> the link. You will be asked whether you want to create a new page.</li>
-<li>Click <strong>Yes</strong>. The edit window appears for your new page.</li>
-<li><strong>Type in</strong> the initial text of your page, then <strong>save</strong> it. Your page is now created.</li>
-</ol>
-<h3>Hints</h3>
-<ul>
-<li>If you\'re creating multiple pages, you might want to make all the links in one go.</li>
-<li>You can make links to new pages even when you personally don\'t intend to create the new page.
-When you do that, the "missing" pages are indicated in the wiki index view. This could be used
-to indicate that you think the page should exist.</li>
-<li>Be careful about titles - once a page has been created, the title can\'t be changed.</li>
-</ul>';
+$string['createlinkedwiki_help'] = 'While editing, you can type a link to a page that doesn&rsquo;t exist yet, such as [[Frogs]]. Then save this page and click on the &lsquo;Frogs&rsquo; link to create the new page.
+
+It is also possible to create new pages from the &lsquo;View&rsquo; tab using the &lsquo;Create new page&rsquo; box.';
 $string['allowediting_help'] = '
 <p>
 If you enable this option the wiki enters read-only mode until the given date. In read-only mode
