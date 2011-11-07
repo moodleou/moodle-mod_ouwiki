@@ -600,7 +600,7 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
         // Create page
         $pageversion = new StdClass;
         $pageversion->subwikiid = $subwiki->id;
-        $pageversion->title = $pagename ? $pagename : null;
+        $pageversion->title = $pagename ? $pagename : '';
         $pageversion->locked = 0;
         $pageversion->firstversionid = null; // new page
         try {

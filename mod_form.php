@@ -76,11 +76,13 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         $mform->addHelpButton('editend', 'editend', 'ouwiki');
 
         // Template (only on creation)
-        $filepickeroptions = array();
-        $filepickeroptions['filetypes'] = '*';
-        $filepickeroptions['maxbytes'] = $COURSE->maxbytes;
-        $mform->addElement('filepicker', 'template_file', get_string('template', 'ouwiki'), null, $filepickeroptions);
-        $mform->addHelpButton('template_file', 'template', 'ouwiki');
+        if (empty($this->_cm)) {
+            $filepickeroptions = array();
+            $filepickeroptions['filetypes'] = '*';
+            $filepickeroptions['maxbytes'] = $COURSE->maxbytes;
+            $mform->addElement('filepicker', 'template_file', get_string('template', 'ouwiki'), null, $filepickeroptions);
+            $mform->addHelpButton('template_file', 'template', 'ouwiki');
+        }
 
         // Wordcount
         $wordcountoptions = array('0' => get_string('no'), '1' => get_string('yes'));
