@@ -199,12 +199,18 @@ if ($save) {
 
         ouwiki_release_lock($pageversion->pageid);
         echo $OUTPUT->header();
+
+        $pagefield = '';
+        if ($returnpage !== '') {
+            $pagefield = html_writer::empty_tag('input', array('type' => 'hidden',
+                    'name' => 'page', 'value' => $returnpage));
+        }
         print '<div id="ouwiki_savefail">'
             .'<h2>'.$savefailtitle.'</h2>'
             .'<p>'.$specificmessage.'</p>'
             .'<form action="view.php" method="get">'
             .'<input type="hidden" name="id" value="'.$cm->id.'" />'
-            .'<input type="hidden" name="page" value="'.$returnpage.'" />'
+            . $pagefield
             .'<input type="submit" value="'.$returntoview.'" />'
             .'</form>'
             .'<p>'.$savefailcontent.'</p>'
@@ -288,15 +294,27 @@ if (!$lockok) {
         $pagelockedoverride
         <div class='ouwiki_lockinfobuttons'>";
 
-    $pageinputs = "<input type='hidden' name='page' value='$pagename' />";
+    if ($pagename === '') {
+        $pageinputs = '';
+    } else {
+        $pageinputs = html_writer::empty_tag('input', array('type' => 'hidden',
+                        'name' => 'page', 'value' => $pagename));
+    }
     if ($addpage) {
-        $pageinputs .= "<input type='hidden' name='frompage' value='$frompage' />";
+        $pageinputs .= html_writer::empty_tag('input', array('type' => 'hidden',
+                        'name' => 'frompage', 'value' => $frompage));
+    }
+
+    $newsectioninput = '';
+    if ($addsection) {
+        $newsectioninput = html_writer::empty_tag('input', array('type' => 'hidden',
+                'name' => 'newsection', 'value' => $newsection));
     }
 
     print "<form action='edit.php' method='get'>
             <input type='hidden' name='id' value='$cm->id' />
             $pageinputs
-            <input type='hidden' name='newsection' value='$newsection' />
+            $newsectioninput
             $sectionfields
             <input type='submit' value='$tryagain' />
         </form>";
@@ -304,7 +322,7 @@ if (!$lockok) {
     print "<form action='view.php' method='get'>
             <input type='hidden' name='id' value='$cm->id' />
             $pageinputs
-            <input type='hidden' name='newsection' value='$newsection' />
+            $newsectioninput
             $sectionfields
             <input type='submit' value='$cancel' />
         </form>";
@@ -313,7 +331,7 @@ if (!$lockok) {
         ? "<form class='ouwiki_overridelock' action='override.php' method='post'>
         <input type='hidden' name='id' value='$cm->id' />
         $pageinputs
-        <input type='hidden' name='newsection' value='$newsection' />
+        $newsectioninput
         <input type='submit' value='$overridelock' /></form>"
         : '';
 
