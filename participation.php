@@ -87,10 +87,7 @@ $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 
 // Headers
 if (empty($download)) {
-    $nav = array(
-        array('name' => get_string('userparticipation', 'ouwiki'), 'link' => null)
-    );
-    echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, null, $context, $nav);
+    echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, get_string('userparticipation', 'ouwiki'), $context);
 
     // gets a message after grades updated
     if (isset($SESSION->ouwikigradesupdated)) {

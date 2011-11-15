@@ -578,7 +578,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_index'));
                 $output .= html_writer::tag('a', get_string('index', 'ouwiki'),
                         array('href' => 'wikiindex.php?'.
-                        ouwiki_display_wiki_parameters(null, $subwiki, $cm)));
+                        ouwiki_display_wiki_parameters('', $subwiki, $cm, OUWIKI_PARAMS_URL)));
                 $output .= html_writer::end_tag('li');
             }
             if ($page == 'wikihistory.php') {
@@ -591,15 +591,17 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_history'));
                 $output .= html_writer::tag('a', get_string('wikirecentchanges', 'ouwiki'),
                         array('href' => 'wikihistory.php?'.
-                        ouwiki_display_wiki_parameters(null, $subwiki, $cm)));
+                        ouwiki_display_wiki_parameters('', $subwiki, $cm, OUWIKI_PARAMS_URL)));
                 $output .= html_writer::end_tag('li');
             }
             if ($canview == OUWIKI_USER_PARTICIPATION) {
                 $participationstr = get_string('participationbyuser', 'ouwiki');
-                $participationpage = 'participation.php?id='.$cm->id.'&pagename='.$pagename;
+                $participationpage = 'participation.php?' .
+                    ouwiki_display_wiki_parameters('', $subwiki, $cm, OUWIKI_PARAMS_URL);
             } else if ($canview == OUWIKI_MY_PARTICIPATION) {
                 $participationstr = get_string('myparticipation', 'ouwiki');
-                $participationpage = 'userparticipation.php?id='.$cm->id.'&pagename='.$pagename;
+                $participationpage = 'userparticipation.php?' .
+                        ouwiki_display_wiki_parameters('', $subwiki, $cm, OUWIKI_PARAMS_URL);
                 $participationpage .= '&user='.$USER->id;
             }
             if (($cm->groupmode != 0) && isset($subwiki->groupid)) {

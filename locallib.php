@@ -394,7 +394,7 @@ function ouwiki_shared_url_params($pagename, $subwiki, $cm) {
 /**
  * Prints the parameters that identify a particular wiki and could be used in view.php etc.
  *
- * @param string $page Name of page (null for startpage)
+ * @param string $page Name of page (empty string for startpage)
  * @param object $subwiki Current subwiki object
  * @param object $cm Course-module object
  * @param int $type OUWIKI_PARAMS_xx constant
@@ -798,7 +798,7 @@ function ouwiki_internal_re_wikilinks($matches) {
 
     $details = ouwiki_get_wiki_link_details($matches[1]);
     return '<a class="ouw_wikilink" href="view.php?' .
-        ouwiki_display_wiki_parameters(null, $ouwiki_wikilinks->subwiki,
+        ouwiki_display_wiki_parameters('', $ouwiki_wikilinks->subwiki,
             $ouwiki_wikilinks->cm) .
         ($details->page !== ''
             ? '&amp;page=' . htmlspecialchars(urlencode($details->page)) : '') .

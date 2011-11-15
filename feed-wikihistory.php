@@ -40,7 +40,7 @@ $newpages = optional_param('type', '', PARAM_ALPHA) == 'pages';
 $rss = optional_param('format', '', PARAM_RAW) === 'rss';
 
 // Get basic wiki parameters
-$wikiparams = ouwiki_display_wiki_parameters(null, $subwiki, $cm);
+$wikiparams = ouwiki_display_wiki_parameters('', $subwiki, $cm);
 
 // Get changes
 if ($newpages) {

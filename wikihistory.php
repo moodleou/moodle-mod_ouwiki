@@ -57,7 +57,7 @@ require_course_login($course, true, $cm);
 $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 
 // Get basic wiki parameters
-$wikiparams = ouwiki_display_wiki_parameters(null, $subwiki, $cm);
+$wikiparams = ouwiki_display_wiki_parameters('', $subwiki, $cm);
 $tabparams = $newpages ? $wikiparams.'&amp;type=pages' : $wikiparams;
 
 // Get changes

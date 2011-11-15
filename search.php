@@ -44,7 +44,7 @@ if ($subwiki->userid) {
     $query->set_user_id($subwiki->userid);
 }
 
-$foundsomething = $query->display_results('search.php?'.ouwiki_display_wiki_parameters(null, $subwiki, $cm));
+$foundsomething = $query->display_results('search.php?'.ouwiki_display_wiki_parameters('', $subwiki, $cm));
 
 echo $foundsomething;
 
