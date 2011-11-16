@@ -370,6 +370,10 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
         $testcount = ouwiki_count_words($test['string']);
         $this->assertEqual($testcount, $test['count']);
 
+        $test['string'] = 'Two&nbsp;words&nbsp;&nbsp;&nbsp;&nbsp;';
+        $test['count'] = 2;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEqual($testcount, $test['count']);
     }
 
     /* 

@@ -2658,7 +2658,8 @@ function ouwiki_get_search_form($subwiki, $cmid) {
  */
 function ouwiki_count_words($content) {
 
-    $content = strip_tags(trim($content));
+    // Strip tags and convert entities to text
+    $content = html_entity_decode(strip_tags($content), ENT_QUOTES, 'UTF-8');
 
     // combine to a single word
     // hyphen
@@ -2672,6 +2673,9 @@ function ouwiki_count_words($content) {
 
     // add a space for comma
     $content = str_replace(',', ' ', $content);
+
+    // non-breaking space to space
+    $content = str_replace(html_entity_decode('&nbsp;', ENT_QUOTES, 'UTF-8'), ' ', $content);
 
     // Remove:
     // 0 - empty lines
