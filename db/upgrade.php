@@ -285,4 +285,7 @@ WHERE
         // ouwiki savepoint reached
         upgrade_mod_savepoint(true, 2011102802, 'ouwiki');
     }
+
+    // Must always return true from these functions
+    return true;
 }

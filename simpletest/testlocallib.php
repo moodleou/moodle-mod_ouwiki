@@ -123,11 +123,6 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
         $this->capabilities[] = $cap;
 
         $cap = new stdClass();
-        $cap->name = 'mod/ouwiki:viewcontributions';
-        $cap->id = $this->testdb->insert_record('capabilities', $cap);
-        $this->capabilities[] = $cap;
-
-        $cap = new stdClass();
         $cap->name = 'mod/ouwiki:deletepage';
         $cap->id = $this->testdb->insert_record('capabilities', $cap);
         $this->capabilities[] = $cap;
