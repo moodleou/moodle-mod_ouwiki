@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -115,11 +114,12 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
      * @param object $course Course object
      * @param bool $withannotations If true, includes annotations
      * @param portfolio_format $portfolioformat Portfolio format
+     * @param string $plugin the portfolio plugin being used.
      * @return string HTML code
      */
     static function get_page_html($pageversion, $attachments,
             $context, $ouwiki, $subwiki, $course, $withannotations,
-            portfolio_format $portfolioformat) {
+            portfolio_format $portfolioformat, $plugin) {
         global $DB;
 
         // Format the page body
@@ -177,7 +177,15 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
             $output .= html_writer::tag('h3', get_string('attachments', 'ouwiki'));
             $output .= html_writer::start_tag('ul');
             foreach ($attachments[$pageversion->versionid] as $file) {
-                $output .= html_writer::tag('li', $portfolioformat->file_output($file));
+                if ($plugin == 'rtf') {
+                    $filename = $file->get_filename();
+                    $path = moodle_url::make_pluginfile_url($context->id, 'mod_ouwiki',
+                        'attachment', $pageversion->versionid, '/', $filename, true);
+                    $atag = html_writer::tag('a', $filename, array('href' => $path));
+                } else {
+                    $atag = $portfolioformat->file_output($file);
+                }
+                $output .= html_writer::tag('li', $atag);
             }
             $output .= html_writer::end_tag('ul');
             $output .= html_writer::end_tag('div');
@@ -255,8 +263,11 @@ class ouwiki_page_portfolio_caller extends ouwiki_portfolio_caller_base {
     }
 
     public function get_return_url() {
-        return new moodle_url('/mod/ouwiki/view.php',
-                array('id' => $this->cm->id, 'page' => $this->pageversion->title));
+        $params['id'] = $this->cm->id;
+        if (!empty($this->pageversion->title)) {
+            $params['page'] = $this->pageversion->title;
+        }
+        return new moodle_url('/mod/ouwiki/view.php', $params);
     }
 
     public function get_navigation() {
@@ -302,7 +313,8 @@ class ouwiki_page_portfolio_caller extends ouwiki_portfolio_caller_base {
         return ouwiki_portfolio_caller_base::get_page_html($pageversion, $this->attachments,
                 $this->modcontext, $this->ouwiki,
                 $this->subwiki, $this->get('course'), $this->withannotations,
-                $this->get('exporter')->get('format'));
+                $this->get('exporter')->get('format'),
+                $this->get('exporter')->get('instance')->get('plugin'));
     }
 
     public function get_sha1() {
@@ -373,7 +385,8 @@ class ouwiki_all_portfolio_caller extends ouwiki_portfolio_caller_base {
         return ouwiki_portfolio_caller_base::get_page_html($pageversion,
                 $this->attachments, $this->modcontext, $this->ouwiki,
                 $this->subwiki, $this->get('course'), $this->withannotations,
-                $this->get('exporter')->get('format'));
+                $this->get('exporter')->get('format'),
+                $this->get('exporter')->get('instance')->get('plugin'));
     }
 
     public function get_sha1() {
