@@ -87,7 +87,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="primary key of the table, please edit me" NEXT="ouwiki_versions_fk_pageid"/>
-        <KEY NAME="ouwiki_versions_fk_pageid" TYPE="foreign" FIELDS="pageid" REFTABLE="ouwiki_page" REFFIELDS="id" PREVIOUS="primary" NEXT="ouwiki_versions_fk_userid"/>
+        <KEY NAME="ouwiki_versions_fk_pageid" TYPE="foreign" FIELDS="pageid" REFTABLE="ouwiki_pages" REFFIELDS="id" PREVIOUS="primary" NEXT="ouwiki_versions_fk_userid"/>
         <KEY NAME="ouwiki_versions_fk_userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="ouwiki_versions_fk_pageid"/>
       </KEYS>
     </TABLE>
@@ -124,7 +124,7 @@
 
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="primary key of the table, please edit me" NEXT="ouwiki_locks_fk_pageid"/>
         <KEY NAME="ouwiki_locks_fk_pageid" TYPE="foreign" FIELDS="pageid" REFTABLE="ouwiki_pages" REFFIELDS="id" PREVIOUS="primary" NEXT="ouwiki_locks_fk_userid"/>
-        <KEY NAME="ouwiki_locks_fk_userid" TYPE="foreign" FIELDS="userid" REFTABLE="mdl_user" REFFIELDS="id" PREVIOUS="ouwiki_locks_fk_pageid" NEXT="ouwiki_locks_fk_versionid"/>
+        <KEY NAME="ouwiki_locks_fk_userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="ouwiki_locks_fk_pageid" NEXT="ouwiki_locks_fk_versionid"/>
         <KEY NAME="ouwiki_locks_fk_versionid" TYPE="foreign" FIELDS="versionid" REFTABLE="ouwiki_versions" REFFIELDS="id" PREVIOUS="ouwiki_locks_fk_userid"/>
       </KEYS>
     </TABLE>
