@@ -46,9 +46,6 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         require_once($CFG->libdir . '/filelib.php');
 
-        $pageversion->xhtml = file_rewrite_pluginfile_urls($pageversion->xhtml, 'pluginfile.php',
-                $modcontext->id, 'mod_ouwiki', 'content', $pageversion->versionid);
-
         // Get annotations - only if using annotation system. prevents unnecessary db access
         if ($subwiki->annotation) {
             $annotations = ouwiki_get_annotations($pageversion);
@@ -71,6 +68,11 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             ouwiki_setup_annotation_markers(&$pageversion->xhtml);
             ouwiki_highlight_existing_annotations(&$pageversion->xhtml, $annotations, 'annotate');
         }
+
+        // Must rewrite plugin urls AFTER doing annotations because they depend on byte
+        // position in unmolested data from db
+        $pageversion->xhtml = file_rewrite_pluginfile_urls($pageversion->xhtml, 'pluginfile.php',
+                $modcontext->id, 'mod_ouwiki', 'content', $pageversion->versionid);
 
         // get files up here so we have them for the portfolio button addition as well
         $fs = get_file_storage();

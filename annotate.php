@@ -112,38 +112,23 @@ if ($save) {
     if ($deleteorphaned) {
         foreach($stored as $annotation) {
             if ($annotation->orphaned) {
-                try {
-                    $DB->delete_records('ouwiki_annotations', array('id' => $annotation->id));
-                    $deleted_annotations[$annotation->id] = '';
-                } catch (Exception $e) {
-                    $tw->rollback();
-                    ouwiki_dberror('annotations');
-                }   
+                $DB->delete_records('ouwiki_annotations', array('id' => $annotation->id));
+                $deleted_annotations[$annotation->id] = '';
             }
         }    
     }
 
     foreach ($edited_annotations as $key => $value) {
         if ($value == '') {
-            try {
-                $DB->delete_records('ouwiki_annotations', array('id' => $key));
-                $deleted_annotations[$key] = '';
-            } catch (Exception $e) {
-                $tw->rollback();
-                ouwiki_dberror('annotations');
-            }   
+            $DB->delete_records('ouwiki_annotations', array('id' => $key));
+            $deleted_annotations[$key] = '';
         } else if ($value != $stored[$key]->content) {
             $dataobject->id = $key;
             $dataobject->pageid = $pageversion->pageid;
             $dataobject->userid = $userid;
             $dataobject->timemodified = time();
             $dataobject->content = $value;
-            try {
-                $DB->update_record('ouwiki_annotations', $dataobject);
-            } catch (Exception $e) {
-                $tw->rollback();
-                ouwiki_dberror($e, 'annotations');
-            }
+            $DB->update_record('ouwiki_annotations', $dataobject);
         }
     }
 
@@ -159,13 +144,8 @@ if ($save) {
             $dataobject->userid = $userid;
             $dataobject->timemodified = time();
             $dataobject->content = $value;
-            try {
-                $newannoid = $DB->insert_record('ouwiki_annotations', $dataobject);
-                $updated[$newannoid] = '';
-            } catch (Exception $e) {
-                $tw->rollback();
-                ouwiki_dberror('annotations');
-            }
+            $newannoid = $DB->insert_record('ouwiki_annotations', $dataobject);
+            $updated[$newannoid] = '';
 
             // we're still going so insert the new annotation into the xhtml
             $replace = '<span id="annotation'.$newannoid.'"></span>';
@@ -175,7 +155,7 @@ if ($save) {
             } else {
                 $position = $key;
             }
-            
+
             $pageversion->xhtml = substr_replace($pageversion->xhtml, $replace, $position, 0);
             $neednewversion = true;
             $spanlength = strlen($replace);
