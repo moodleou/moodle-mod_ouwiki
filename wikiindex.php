@@ -29,7 +29,7 @@ require_once(dirname(__FILE__) . '/../../config.php');
 require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
 $treemode = optional_param('type', '', PARAM_ALPHA) == 'tree';
-$id = required_param('id', 0, PARAM_INT); // Course Module ID
+$id = required_param('id', PARAM_INT); // Course Module ID
 
 $url = new moodle_url('/mod/ouwiki/wikiindex.php', array('id'=>$id));
 $PAGE->set_url($url);

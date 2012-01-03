@@ -27,7 +27,7 @@
 require_once(dirname(__FILE__) . '/../../config.php');
 require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
-$id = required_param('id', 0, PARAM_INT); // Course Module ID
+$id = required_param('id', PARAM_INT); // Course Module ID
 $pagename = optional_param('page', '', PARAM_TEXT);
 
 $url = new moodle_url('/mod/ouwiki/view.php', array('id' => $id, 'page' => $pagename));

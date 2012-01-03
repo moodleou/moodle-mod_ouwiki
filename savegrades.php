@@ -27,7 +27,7 @@
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
 
-$id         = required_param('id', 0, PARAM_INT); // Course Module ID
+$id         = required_param('id', PARAM_INT); // Course Module ID
 $groupid    = optional_param('group', 0, PARAM_INT);
 $userid     = optional_param('user', 0, PARAM_INT);
 $page       = optional_param('page', '', PARAM_TEXT);

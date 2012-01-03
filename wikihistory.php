@@ -29,7 +29,7 @@ require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
 
-$id = required_param('id', 0, PARAM_INT); // Course Module ID
+$id = required_param('id', PARAM_INT); // Course Module ID
 $newpages = optional_param('type', '', PARAM_ALPHA) == 'pages';
 $from = optional_param('from', '', PARAM_INT);
 

@@ -27,7 +27,7 @@
 require_once(dirname(__FILE__) . '/../../config.php');
 require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
-$id = required_param('id', 0, PARAM_INT); // Course Module ID
+$id = required_param('id', PARAM_INT); // Course Module ID
 $compare = optional_param('compare', 0, PARAM_INT);
 $pagename = optional_param('page', '', PARAM_TEXT);
 
