@@ -575,3 +575,15 @@ function ouwiki_grade_item_delete($ouwiki) {
     return grade_update('mod/ouwiki', $ouwiki->course, 'mod',
         'ouwiki', $ouwiki->id, 0, null, array('deleted' => 1));
 }
+
+/**
+ * Sets the module uservisible to false if the user has not got the view capability
+ * @param cm_info $cm
+ */
+function ouwiki_cm_info_dynamic(cm_info $cm) {
+    if (!has_capability('mod/ouwiki:view',
+            get_context_instance(CONTEXT_MODULE,$cm->id))) {
+        $cm->uservisible = false;
+        $cm->set_available(false);
+    }
+}
