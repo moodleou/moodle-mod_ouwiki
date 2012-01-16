@@ -398,7 +398,7 @@ if ($section) {
 // print the preview box
 if ($content) {
     $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
-    echo $ouwikioutput->ouwiki_print_preview($content, $page, $subwiki, $cm, $pageversion->xhtmlformat);
+    echo $ouwikioutput->ouwiki_print_preview($content, $pagename, $subwiki, $cm, $pageversion->xhtmlformat);
     $existing = $content;
 }
 
