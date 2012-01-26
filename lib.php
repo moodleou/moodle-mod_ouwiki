@@ -559,7 +559,7 @@ function ouwiki_grade_item_update($ouwiki, $grades = null) {
         $params['scaleid']   = -$ouwiki->grade;
 
     } else {
-        $params['gradetype'] = GRADE_TYPE_TEXT; // allow text comments only
+        $params['gradetype'] = GRADE_TYPE_NONE;
     }
 
     if ($grades  === 'reset') {
