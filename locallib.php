@@ -926,12 +926,12 @@ function ouwiki_print_header($ouwiki, $cm, $subwiki, $pagename, $afterpage = nul
     $wikiname = format_string(htmlspecialchars($ouwiki->name));
     $buttontext = ouwiki_get_search_form($subwiki, $cm->id);
 
-    if ($afterpage && $pagename !== null) {
+    if ($afterpage && $pagename !== '') {
         $PAGE->navbar->add(htmlspecialchars($pagename), new moodle_url('/mod/ouwiki/view.php',
                 array('id' => $cm->id, 'page' => $pagename)));
-    } else if ($pagename !== null) {
+    } else if ($pagename !== '') {
         $PAGE->navbar->add(htmlspecialchars($pagename));
-    } else if ($afterpage) {
+    } else {
         $PAGE->navbar->add(htmlspecialchars(get_string('startpage', 'ouwiki')));
     }
     if ($afterpage) {
