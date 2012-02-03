@@ -285,7 +285,8 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
                 }
                 switch ($child->tagName) {
                     case 'title':
-                        $title = $text;
+                        // Replace non-breaking spaces with normal spaces in title
+                        $title = str_replace(html_entity_decode('&nbsp;', ENT_QUOTES, 'UTF-8'), ' ', $text);
                         break;
                     case 'xhtml':
                         $xhtml = $text;
@@ -1813,6 +1814,9 @@ function ouwiki_get_wiki_link_details($wikilink) {
             $wikilink = $tl->substr($wikilink, 0, $space);
         }
     }
+
+    // Remove non-breaking spaces
+    $wikilink = str_replace(html_entity_decode('&nbsp;', ENT_QUOTES, 'UTF-8'), ' ', $wikilink);
 
     // What will the title be of this link?
     if ($rawtitle) {
