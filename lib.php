@@ -537,6 +537,95 @@ function ouwiki_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
 }
 
 /**
+ * File browsing support for ouwiki module.
+ * @param object $browser
+ * @param object $areas
+ * @param object $course
+ * @param object $cm
+ * @param object $context
+ * @param string $filearea
+ * @param int $itemid
+ * @param string $filepath
+ * @param string $filename
+ * @return file_info instance Representing an actual file or folder (null if not found
+ * or cannot access)
+ */
+function ouwiki_get_file_info($browser, $areas, $course, $cm, $context, $filearea,
+        $itemid, $filepath, $filename) {
+    global $CFG, $DB, $USER;
+
+    if ($context->contextlevel != CONTEXT_MODULE) {
+        return null;
+    }
+    $fileareas = array('attachment', 'content');
+    if (!in_array($filearea, $fileareas)) {
+        return null;
+    }
+    if (!has_capability('mod/ouwiki:view', $context)) {
+        return null;
+    }
+    if (!$pageid = $DB->get_field('ouwiki_versions', 'pageid',
+            array('id' => $itemid), IGNORE_MISSING)) {
+        return null;
+    }
+    if (!$subwikiid = $DB->get_field('ouwiki_pages', 'subwikiid',
+            array('id' => $pageid), IGNORE_MISSING)) {
+        return null;
+    }
+    $groupid = $DB->get_field('ouwiki_subwikis', 'groupid',
+            array('id' => $subwikiid), IGNORE_MISSING);
+    // Make sure groups allow this user to see this file
+    if ($groupid) {
+        if (groups_get_activity_groupmode($cm, $course) == SEPARATEGROUPS) {
+            // Groups are being used
+            if (!groups_group_exists($groupid)) {
+                // Can't find group
+                return null;
+            }
+            if (!has_capability('moodle/site:accessallgroups', $context) &&
+                    !groups_is_member($groupid)) {
+                return null;
+            }
+        }
+    }
+    $userid = $DB->get_field('ouwiki_subwikis', 'userid',
+            array('id' => $subwikiid), IGNORE_MISSING);
+    if ($userid) {
+        if ($userid != $USER->id && !has_capability('mod/ouwiki:viewallindividuals', $context)) {
+            if (has_capability('mod/ouwiki:viewgroupindividuals', $context)) {
+                $params = array($course->id, $userid, $USER->id);
+                $query = "
+                FROM
+                    {groups} gp
+                    INNER JOIN {groups_members} gm ON gp.id = gm.groupid
+                    INNER JOIN {groups_members} gms ON gp.id = gms.groupid
+                WHERE
+                    gp.courseid = ? AND gm.userid = ? AND gms.userid = ?";
+
+                $count = $DB->count_records_sql("SELECT COUNT(1) $query", $params);
+                if ($count == 0) {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
+    }
+
+    $fs = get_file_storage();
+    $filepath = is_null($filepath) ? '/' : $filepath;
+    $filename = is_null($filename) ? '.' : $filename;
+    if (!($storedfile = $fs->get_file($context->id, 'mod_ouwiki', $filearea, $itemid,
+            $filepath, $filename))) {
+        return null;
+    }
+
+    $urlbase = $CFG->wwwroot . '/pluginfile.php';
+    return new file_info_stored($browser, $context, $storedfile, $urlbase, $filearea,
+            $itemid, true, true, false);
+}
+
+/**
  * Create grade item for given ouwiki
  *
  * @param object $ouwiki object with extra cmidnumber
