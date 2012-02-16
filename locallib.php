@@ -386,7 +386,8 @@ function ouwiki_shared_url_params($pagename, $subwiki, $cm) {
             $params['user'] = $subwiki->userid;
         }
     }
-    if (strtolower(trim($pagename)) !== strtolower(get_string('startpage', 'ouwiki'))) {
+    if (strtolower(trim($pagename)) !== strtolower(get_string('startpage', 'ouwiki')) &&
+            $pagename !== '') {
         $params['page'] = $pagename;
     }
     return $params;
