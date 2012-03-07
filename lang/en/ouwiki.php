@@ -149,7 +149,7 @@ $string['addedends']='[End of added text]';
 $string['deletedbegins']='[Deleted text follows]';
 $string['deletedends']='[End of deleted text]';
 
-
+$string['ouwiki:addinstance'] = 'Add a new OU wiki';
 $string['ouwiki:edit']='Edit wiki pages';
 $string['ouwiki:view']='View wikis';
 $string['ouwiki:overridelock']='Override locked pages';
