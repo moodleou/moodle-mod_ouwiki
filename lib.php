@@ -100,9 +100,15 @@ function ouwiki_delete_instance($id) {
     require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
 
     $cm = get_coursemodule_from_instance('ouwiki', $id, 0, false, MUST_EXIST);
+
+    // Delete search data
     if (ouwiki_search_installed()) {
         local_ousearch_document::delete_module_instance_data($cm);
     }
+
+    // Delete grade
+    $ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance));
+    ouwiki_grade_item_delete($ouwiki);
 
     // Subqueries that find all versions and pages associated with this wiki
     // and delete them all bottom up
@@ -137,9 +143,6 @@ function ouwiki_delete_instance($id) {
 
     $DB->delete_records_select('ouwiki_subwikis', 'wikiid = ?', array($id));
     $DB->delete_records('ouwiki', array('id' => $id));
-
-    ouwiki_grade_item_delete($ouwiki);
-
     return true;
 }
 
@@ -661,10 +664,10 @@ function ouwiki_grade_item_update($ouwiki, $grades = null) {
 }
 
 /**
- * Delete grade item for given ouwiki
+ * Deletes grade item for given ouwiki.
  *
- * @param object $assignment object
- * @return object assignment
+ * @param object $ouwiki object
+ * @return int GRADE_UPDATE_xx constant
  */
 function ouwiki_grade_item_delete($ouwiki) {
     global $CFG;
