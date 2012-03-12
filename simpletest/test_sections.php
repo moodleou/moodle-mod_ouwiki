@@ -2,7 +2,7 @@
 global $CFG;
 
 require_once($CFG->libdir. '/simpletestlib/unit_tester.php');
-require_once($CFG->libdir. '/simpletestlib.php');
+require_once($CFG->dirroot. '/admin/tool/unittest/simpletestlib.php');
 
 require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
 
