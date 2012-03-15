@@ -1,7 +1,7 @@
 OU wiki
 =======
 
-Copyright 2011 The Open University
+Copyright 2012 The Open University
 
 
 This is an alternative wiki that you can install into standard Moodle.
@@ -12,6 +12,13 @@ student use with minimal required training. It is in no way intended to be
 a full-fledged wiki like MediaWiki. For example, there is no wiki syntax
 except [[links]].
 
+
+Branch:
+
+This is the MOODLE_21_STABLE branch. This branch is configured to match the latest
+stable branch at the Open University that uses Moodle 2.1. Once we stop using
+Moodle 2.1, there will be no more fixes in this branch (but of course anyone can
+fork the reposistory and make a fixed version).
 
 Support:
 
@@ -27,8 +34,7 @@ version e.g. 2.1, 2.2.
 
 Status:
 
-Beta quality code. We intend to switch this project to include live quality
-code at some point after our mid-October update.
+Live quality code that matches our live Moodle 2.1 system.
 
 Please note that this code is tested on OU systems but we rely on the
 community for testing on other systems.
