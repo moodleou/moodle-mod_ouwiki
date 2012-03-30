@@ -19,11 +19,23 @@ We cannot offer direct support. Please do not contact me directly. If you
 need assistance, try the wiki forum on moodle.org. (Remember to make clear
 that you are using OU wiki and not the standard forum.)
 
+Documentation:
+
+We don't provide any documentation, but Steve Wright of Lancaster University
+has written some:
+
+http://www.lancs.ac.uk/staff/~wrightst/moodle/OU-wiki-guide.pdf
+http://www.lancs.ac.uk/staff/~wrightst/moodle/OU-wiki-guide-withTutorsNotes.pdf
+
 Bug reports:
 
-Please report bugs to the Moodle tracker using the 'contributed code' project
-and 'Module: OU wiki' component. Under Version, please select your Moodle
-version e.g. 2.1, 2.2.
+Please report bugs using the GitHub 'Issues' tab (experimental). Before
+reporting a bug, please try the latest version to verify that the problem
+hasn't already been fixed. In each bug, please remember to give:
+
+1. Exact steps to reproduce your problem, starting from creating a new wiki
+   with default or specified settings.
+2. The ouwiki version you are using (from version.php or Modules admin screen).
 
 Status:
 
