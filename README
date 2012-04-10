@@ -1,7 +1,7 @@
 OU wiki
 =======
 
-Copyright 2011 The Open University
+Copyright 2012 The Open University
 
 
 This is an alternative wiki that you can install into standard Moodle.
@@ -12,6 +12,13 @@ student use with minimal required training. It is in no way intended to be
 a full-fledged wiki like MediaWiki. For example, there is no wiki syntax
 except [[links]].
 
+
+Branch:
+
+This is the development branch including latest, untested code. If you would
+like a tested version equivalent to an OU live release, please switch to a
+branch that matches your Moodle version (e.g. MOODLE_22_STABLE) using the
+above dropdown.
 
 Support:
 
@@ -27,6 +34,9 @@ has written some:
 http://www.lancs.ac.uk/staff/~wrightst/moodle/OU-wiki-guide.pdf
 http://www.lancs.ac.uk/staff/~wrightst/moodle/OU-wiki-guide-withTutorsNotes.pdf
 
+Please feel free to also contribute documentation to the relevant areas of the
+MoodleDocs wiki.
+
 Bug reports:
 
 Please report bugs using the GitHub 'Issues' tab (experimental). Before
@@ -37,17 +47,14 @@ hasn't already been fixed. In each bug, please remember to give:
    with default or specified settings.
 2. The ouwiki version you are using (from version.php or Modules admin screen).
 
-Status:
-
-Beta quality code. We intend to switch this project to include live quality
-code at some point after our mid-October update.
+Reliability:
 
 Please note that this code is tested on OU systems but we rely on the
 community for testing on other systems.
 
 Requires:
 
-Moodle 2.1+
+Moodle 2.2+
 Postgres / MySQL
 
 Install:
@@ -60,8 +67,3 @@ If you want the forums to be searchable, you also need to install the
 local_ousearch plugin. (It is best to do this before using the wiki much,
 otherwise it takes ages to install as it builds indexes for everything.)
 When you install the ousearch plugin, a search box will automatically appear.
-
-Documentation:
-
-None. Please feel free to contribute documentation in the relevant area of
-the MoodleDocs wiki.
