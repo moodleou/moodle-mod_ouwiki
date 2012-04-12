@@ -1610,6 +1610,7 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     $version = new StdClass;
     $version->pageid = $pageversion->pageid;
     $version->xhtml = $content; // May be altered later (see below)
+    $version->xhtmlformat = FORMAT_MOODLE; // Using fixed value here is a bit rubbish
     $version->timecreated = time();
     $version->wordcount = ouwiki_count_words($content);
     $version->previousversionid = $previousversionid;
