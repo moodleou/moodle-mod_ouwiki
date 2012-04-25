@@ -228,7 +228,12 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
      * @return string Safe version of name (replaces unknown characters with _)
      */
     protected function make_filename_safe($name) {
-        return preg_replace('~[^A-Za-z0-9 _!,.-]~u', '_', $name);
+        $result = @preg_replace('~[^A-Za-z0-9 _!,.-]~u', '_', $name);
+        // Cope with Unicode support not being available
+        if ($result === null) {
+            $result = preg_replace('~[^A-Za-z0-9 _!,.-]~', '_', $name);
+        }
+        return $result;
     }
 }
 

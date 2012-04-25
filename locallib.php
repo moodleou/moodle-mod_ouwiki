@@ -1604,7 +1604,13 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     // language-specific) format [[]]
     $regex = str_replace('.*?', preg_quote(get_string('startpage', 'ouwiki')),
         OUWIKI_LINKS_SQUAREBRACKETS) . 'ui';
-    $content = preg_replace($regex, '[[]]', $content);
+    $newcontent = @preg_replace($regex, '[[]]', $content);
+    if ($newcontent === null) {
+        // Unicode support not available! Change the regex and try again
+        $regex = preg_replace('~ui$~', 'i', $regex);
+        $newcontent = preg_replace($regex, '[[]]', $content);
+    }
+    $content = $newcontent;
 
     // Create version
     $version = new StdClass;
