@@ -305,6 +305,8 @@ $customdata[1] = $pageversion;
 $customdata[2] = $pagename;
 $customdata[3] = $userid;
 $customdata[4] = has_capability('mod/ouwiki:lock', $context);
+echo html_writer::tag('h2', get_string('annotations','ouwiki'));
+
 $annotateform = new mod_ouwiki_annotate_form('annotate.php?id='.$id, $customdata);
 $annotateform->display();
 
