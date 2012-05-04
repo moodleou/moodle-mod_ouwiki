@@ -488,3 +488,4 @@ This option doesn\'t stop somebody holding on to a page and preventing other use
 they are very determined. They could edit a page and wait until the timeout is about to expire before
 saving changes then very quickly editing it again.
 </p>';
+$string['endannotation'] = 'End of annotation';

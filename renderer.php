@@ -501,6 +501,8 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 array('class' => 'ouwiki-annotation-content-title'));
         $output .= $annotation->content;
         $output .= html_writer::end_tag('span');
+        $output .= html_writer::tag('span', get_string('endannotation', 'ouwiki'),
+                array('class' => 'accesshide'));
         $output .= html_writer::end_tag('span');
 
         return $output;
