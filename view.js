@@ -174,7 +174,9 @@ function setupspans(span) {
     span.style.cursor = "pointer";
     span.tabIndex = "0";
     span.onkeydown = function(e) {
-        if(e.which == 13 || e.which == 32){
+        //Cross browser event object.
+        var evt = window.event || e;
+        if (evt.keyCode == 13 || evt.keyCode == 32) {
             ouwikiShowHideAnnotation("annotationbox" + span.id.substring(10));
         }
     };
