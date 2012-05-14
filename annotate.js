@@ -180,4 +180,3 @@ function ouwiki_yui_workaround(e) {
     input.value = 1;
     submitbutton.form.appendChild(input);
 }
-
