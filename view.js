@@ -147,17 +147,14 @@ function ouwikiShowAllAnnotations(action) {
 }
 
 function ouwikiSwapAnnotationUrl(action){
-    var showurl = document.getElementById("showhideannotations");
-    var show = document.getElementById("showallannotations");
-    var hide = document.getElementById("hideallannotations");
+    var show = document.getElementById("expandallannotations");
+    var hide = document.getElementById("collapseallannotations");
     if (action == "hide") {
         show.style.display = "none";
         hide.style.display = "inline";
     } else if (action == "show") {
         show.style.display = "inline";
         hide.style.display = "none";
-    } else if (action == "showall") {
-        showurl.style.display = "inline";
     }
 }
 
@@ -209,19 +206,60 @@ function ouwikiOnLoad() {
 
 function init() {
     ouwikiShowAllAnnotations("none");
-    ouwikiSwapAnnotationUrl("showall");
     annospans = YAHOO.util.Dom.getElementsByClassName('ouwiki-annotation-tag', 'span');
     for (var span = 0; span < annospans.length; span++) {
         setupspans(annospans[span]);
     }
+    setupAnnotationIcons();
 }
 
 M.mod_ouwiki = {
+    Y : null,
+
     /**
      * Main init function called from HTML.
      */
-    init : function() {
+    init : function(Y) {
+        this.Y = Y;
+
         // TODO: Change wiki JavaScript to actually use Moodle 2 style. At
-        // present this is only here in order to pass language strings.
+        // present this is mostly here in order to pass language strings.
+
+        // Turn the annotation icon show/hide links to use JS
+        Y.one('#showannotationicons').on('click', function(e) {
+            e.preventDefault();
+            M.mod_ouwiki.show_annotation_icons(true);
+        });
+        Y.one('#hideannotationicons').on('click', function(e) {
+            e.preventDefault();
+            M.mod_ouwiki.show_annotation_icons(false);
+        });
+    },
+
+    /**
+     * Called when user selects to show or hide the annotations. Does two
+     * things: makes AJAX call to set the option, and adds the class to hide
+     * the icons.
+     * @param show If true, shows icons
+     */
+    show_annotation_icons : function(show) {
+        // Set or remove the class
+        var container = this.Y.one('.ouwiki-content');
+        var hideclass = 'ouwiki-hide-annotations';
+        if (show) {
+            container.removeClass(hideclass);
+        } else {
+          console.log(container);
+            container.addClass(hideclass);
+        }
+
+        // Get URL from original link
+        var url = this.Y.one(show ? '#showannotationicons' : '#hideannotationicons').get('href');
+
+        // Add on the 'ajax' marker
+        url += '&ajax=1';
+
+        // Request it with AJAX, ignoring result
+        this.Y.io(url);
     }
-}
+};

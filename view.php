@@ -73,7 +73,9 @@ if ($pageversion) {
                 '</div>';
     }
     // Print page content
-    $data = $ouwikioutput->ouwiki_print_page($subwiki, $cm, $pageversion, true, 'view', $ouwiki->enablewordcount);
+    $hideannotations = get_user_preferences(OUWIKI_PREF_HIDEANNOTATIONS, 0);
+    $data = $ouwikioutput->ouwiki_print_page($subwiki, $cm, $pageversion, true, 'view',
+            $ouwiki->enablewordcount, (bool)$hideannotations);
     echo $data[0];
     if ($subwiki->canedit && $pageversion->locked != '1') {
         print ouwiki_display_create_page_form($subwiki, $cm, $pageversion);

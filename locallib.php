@@ -74,6 +74,8 @@ define('OUWIKI_MY_PARTICIPATION', 1);
 define('OUWIKI_USER_PARTICIPATION', 2);
 define('OUWIKI_PARTICIPATION_PERPAGE', 100);
 
+// User preference
+define('OUWIKI_PREF_HIDEANNOTATIONS', 'ouwiki_hide_annotations');
 
 function ouwiki_dberror($error, $source = null) {
     if (!$source) {
