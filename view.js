@@ -128,7 +128,16 @@ function ouwikiResetThisField(field) {
 function ouwikiShowAllAnnotations(action) {
     annoboxes = YAHOO.util.Dom.getElementsByClassName('ouwiki-annotation', 'span');
     for (var box = 0; box < annoboxes.length; box++) {
-            annoboxes[box].style.display = action;
+        annoboxes[box].style.display = action;
+        var annotag = annoboxes[box].parentNode;
+        var imgtag = annotag.firstChild;
+        if (action == "block") {
+            imgtag.alt = M.str.ouwiki.collapseannotation;
+            imgtag.title = M.str.ouwiki.collapseannotation;
+        } else if (action == "none") {
+            imgtag.alt = M.str.ouwiki.expandannotation;
+            imgtag.title = M.str.ouwiki.expandannotation;
+        }
     }
     if(action == "block") {
         ouwikiSwapAnnotationUrl("hide");
@@ -154,11 +163,17 @@ function ouwikiSwapAnnotationUrl(action){
 
 function ouwikiShowHideAnnotation(id) {
     var box = document.getElementById(id);
+    var annotag = box.parentNode;
+    var imgtag = annotag.firstChild;
     if (box.style.display == "block") {
         box.style.display = "none";
         ouwikiSwapAnnotationUrl("show")
+        imgtag.alt = M.str.ouwiki.expandannotation;
+        imgtag.title = M.str.ouwiki.expandannotation;
     } else {
         box.style.display = "block";
+        imgtag.alt = M.str.ouwiki.collapseannotation;
+        imgtag.title = M.str.ouwiki.collapseannotation;
         annoboxes = YAHOO.util.Dom.getElementsByClassName('ouwiki-annotation', 'span');
         var allblock = 1;
         for (var i = 0; i < annoboxes.length; i++) {

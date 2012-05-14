@@ -2287,8 +2287,8 @@ function ouwiki_highlight_existing_annotations(&$content, $annotations, $page) {
     $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 
     $icon = '<img src="'.$OUTPUT->pix_url('annotation', 'ouwiki').'" alt="'.
-            get_string('annotation', 'ouwiki').'" title="'.
-            get_string('annotation', 'ouwiki').'" />';
+            get_string('expandannotation', 'ouwiki').'" title="'.
+            get_string('expandannotation', 'ouwiki').'" />';
 
     usort($annotations, "ouwiki_internal_position_sort");
     // we only need the used annotations, not the orphaned ones.

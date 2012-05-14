@@ -105,6 +105,8 @@ if (ajaxenabled()) {
 
     $stringlist[] = array('typeinsectionname', 'ouwiki');
     $stringlist[] = array('typeinpagename', 'ouwiki');
+    $stringlist[] = array('collapseannotation', 'ouwiki');
+    $stringlist[] = array('expandannotation', 'ouwiki');
     $module = array(
             'name'      => 'mod_ouwiki',
             'fullpath'  => '/mod/ouwiki/view.js',
