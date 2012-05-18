@@ -249,7 +249,6 @@ M.mod_ouwiki = {
         if (show) {
             container.removeClass(hideclass);
         } else {
-          console.log(container);
             container.addClass(hideclass);
         }
 
