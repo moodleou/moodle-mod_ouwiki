@@ -360,7 +360,9 @@ somebody to create a page <i>and</i> make at least one edit other than that,
 set pages to 1 and edits to 2.
 </p>';
 
-$string['annotation_help'] = '<p>A user, with the appropriate permission, can add inline annotations to the wiki.</p>';
+$string['annotationsystem_help'] = 'Enables the Annotation tab, for users with the appropriate permission..
+
+With this tab you can add inline annotations to wiki pages (for example, teacher comments on student work).';
 $string['editbegin_help'] = '<p>If you enable this option the wiki enters read-only mode until the given date. In read-only mode users can see pages, navigate between them, view history, and participate in discussions, but they cannot edit pages.</p>';
 $string['editend_help'] = 'If you enable this option the wiki enters read-only mode from the given date onwards.';
 $string['createlinkedwiki'] = 'Creating a new page';
