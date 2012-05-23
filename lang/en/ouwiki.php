@@ -52,7 +52,7 @@ $string['advice_edit']='
 ';
 
 $string['advice_annotate']='
-<p>Annotate the page below.</p>
+<p>Annotate the page below, then click <strong>Save changes</strong>.</p>
 <ul>
 <li>To annotate click one of the annotation markers and enter the required text.</li>
 <li>New and existing annotations can be deleted by removing all the text in the form below.</li>
