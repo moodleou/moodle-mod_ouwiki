@@ -104,6 +104,12 @@ print '<p class="ouw_advice">'.
      get_string('returntohistory', 'ouwiki',
     'history.php?'.ouwiki_display_wiki_parameters($pagename, $subwiki, $cm)).'</p>';
 
+// Obtain pluginfile urls.
+$pageversion1->xhtml = file_rewrite_pluginfile_urls($pageversion1->xhtml, 'pluginfile.php',
+    $context->id, 'mod_ouwiki', 'content', $pageversion1->versionid);
+$pageversion2->xhtml = file_rewrite_pluginfile_urls($pageversion2->xhtml, 'pluginfile.php',
+    $context->id, 'mod_ouwiki', 'content', $pageversion2->versionid);
+
 // Obtain difference between two versions
 list($diff1, $diff2) = ouwiki_diff_html($pageversion1->xhtml, $pageversion2->xhtml);
 
