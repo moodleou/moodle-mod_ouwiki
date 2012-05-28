@@ -369,20 +369,26 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
     }
 
     public function ouwiki_print_preview($content, $page, $subwiki, $cm, $contentformat) {
+        global $CFG;
+
+        // Convert content.
+        $content = ouwiki_convert_content($content, $subwiki, $cm, null, $contentformat);
+        // Need to replace brokenfile.php with draftfile.php since switching off filters
+        // will switch off all filter.
+        $content = str_replace("\"$CFG->httpswwwroot/brokenfile.php#",
+                "\"$CFG->httpswwwroot/draftfile.php", $content);
+        // Create output to be returned for printing.
         $output = html_writer::tag('p', get_string('previewwarning', 'ouwiki'),
                 array('class' => 'ouw_warning'));
         $output .= html_writer::start_tag('div', array('class' => 'ouw_preview'));
         $output .= $this->output->box_start("generalbox boxaligncenter");
-
-        // Title & content of page
+        // Title & content of page.
         $title = $page !== null && $page !== '' ? htmlspecialchars($page) :
                 get_string('startpage', 'ouwiki');
         $output .= html_writer::tag('h1', $title);
-        $output .= ouwiki_convert_content($content, $subwiki, $cm, null, $contentformat);
-
+        $output .= $content;
         $output .= html_writer::end_tag('div');
         $output .= $this->output->box_end();
-
         return $output;
     }
 
