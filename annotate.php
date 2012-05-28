@@ -246,7 +246,7 @@ if (!$lockok) {
   </div>";
 
     add_to_log($course->id, 'ouwiki', 'annotate page', "/mod/ouwiki/annotate.php?id=$cm->id", "$ouwiki->id");
-    print_footer($course);
+    print $OUTPUT->footer();
     exit;
 }
 // The page is now locked to us! Go ahead and print edit form
