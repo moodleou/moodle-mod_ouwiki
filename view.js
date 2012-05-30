@@ -152,9 +152,11 @@ function ouwikiSwapAnnotationUrl(action){
     if (action == "hide") {
         show.style.display = "none";
         hide.style.display = "inline";
+        setTimeout(function() { hide.focus(); }, 0);
     } else if (action == "show") {
         show.style.display = "inline";
         hide.style.display = "none";
+        setTimeout(function() { show.focus(); }, 0);
     }
 }
 
@@ -229,10 +231,14 @@ M.mod_ouwiki = {
         Y.one('#showannotationicons').on('click', function(e) {
             e.preventDefault();
             M.mod_ouwiki.show_annotation_icons(true);
+            var hide = document.getElementById("hideannotationicons");
+            setTimeout(function() { hide.focus(); }, 0);
         });
         Y.one('#hideannotationicons').on('click', function(e) {
             e.preventDefault();
             M.mod_ouwiki.show_annotation_icons(false);
+            var show = document.getElementById("showannotationicons");
+            setTimeout(function() { show.focus(); }, 0);
         });
     },
 
