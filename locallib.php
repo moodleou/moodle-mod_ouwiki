@@ -2487,9 +2487,9 @@ function ouwiki_print_editlock($lock, $ouwiki) {
                     var ouw_countdowninterval=setInterval(function() {
                     var countdown=document.getElementById('ouw_countdown');
                     var timeleft=ouw_countdownto-(new Date().getTime());
-                    if(timeleft<0) {
+                    if (timeleft < 0) {
                         clearInterval(ouw_countdowninterval);
-                        document.forms['mform1'].elements['id_save'].click();
+                        document.forms['mform1'].elements['save'].click();
                         return;
                     }
                     if(timeleft<2*60*1000) {
