@@ -160,4 +160,15 @@ class mod_ouwiki_mod_form extends moodleform_mod {
             $default_values['completionedits'] = 1;
         }
     }
+
+    function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+        if ( (($data['subwikis'] == 0) || ($data['subwikis'] == 2) ) && ($data['groupmode'] > 0) ) {
+            $errors['groupmode'] = get_string('errorcoursesubwiki', 'ouwiki');
+        }
+        if ( ($data['subwikis'] == 1) && ($data['groupmode'] == 0) ) {
+            $errors['groupmode'] = get_string('errorgroupssubwiki', 'ouwiki');
+        }
+        return $errors;
+    }
 }
