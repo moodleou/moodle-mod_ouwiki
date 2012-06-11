@@ -214,6 +214,7 @@ $string['onepageview']='You can view all pages of this wiki at once for convenie
 $string['format_html']='View online';
 $string['format_rtf']='Download in word processor format';
 $string['format_template']='Download as wiki template file';
+$string['non_format_template']='Note: this wiki cannot be downloaded as a wiki template file because it contains images and/or attachments.';
 $string['savedat']='Saved at {$a}';
 
 $string['feedtitle']='{$a->course} wiki: {$a->name} - {$a->subtitle}';
