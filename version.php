@@ -17,7 +17,7 @@
 
 
 $module->version  = 2012053100;
-$module->requires = 2010112400;
+$module->requires = 2011120100;
 $module->cron     = 0;
 
 $module->displayversion = 'Unstable development version';
