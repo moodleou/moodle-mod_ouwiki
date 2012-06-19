@@ -2194,12 +2194,14 @@ function ouwiki_setup_annotation_markers(&$content) {
                 $newcontent .= ouwiki_get_annotation_marker($pos);
                 $markeradded = true;
                 $space = false;
+                continue;
             } else if ($tagpositions[$pos] == '</p>'){
                 $newcontent .= ouwiki_get_annotation_marker($pos);
                 $newcontent .= $tagpositions[$pos];
                 $pos += strlen($tagpositions[$pos]);
                 $markeradded = true;
                 $space = false;
+                continue;
             } elseif (strpos($tagpositions[$pos], '<span id="annotation') !== false) {
                 // we're at the opening annotation tag span so we need to skip past </span>
                 // which is the next tag in $tagpositions[]
@@ -2214,6 +2216,7 @@ function ouwiki_setup_annotation_markers(&$content) {
                 $newcontent .= $tagpositions[$pos];
                 $pos += strlen($tagpositions[$pos]);
                 $markeradded = true;
+                continue;
             } else if (strpos($tagpositions[$pos], '<a ') !== false) {
                 // markers are not added in the middle of an anchor tag so need to skip
                 // to after the closing </a> in $tagpositions[]
@@ -2229,9 +2232,11 @@ function ouwiki_setup_annotation_markers(&$content) {
 
                 $newcontent .= $tagpositions[$pos];
                 $pos += strlen($tagpositions[$pos]);
+                continue;
             } else {
                 $newcontent .= $tagpositions[$pos];
                 $pos += strlen($tagpositions[$pos]);
+                continue;
             }
         }
 
