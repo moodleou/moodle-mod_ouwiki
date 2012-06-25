@@ -474,8 +474,10 @@ function ouwiki_get_parameter($name, $value, $type) {
  * @param object $cm Course-module object
  * @param object $context Context for permissions
  * @param object $course Course object
+ * @param string $actionurl
+ * @param string $querytext for use when changing groups against search criteria
  */
-function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $course, $actionurl = 'view.php') {
+function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $course, $actionurl = 'view.php', $querytext = '') {
     global $USER, $DB;
 
     if ($ouwiki->subwikis == OUWIKI_SUBWIKIS_SINGLE) {
@@ -547,9 +549,14 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
             '</label>';
     if ($choicefield && count($choices) > 1) {
         $selectedid = $choicefield == 'user' ? $subwiki->userid : $subwiki->groupid;
-        $out .= '<form method="get" action="'.$actionurl.'" class="ouwiki_otherwikis">
-            <div><input type="hidden" name="id" value="'.$cm->id.'"/>
-            <select name="'.$choicefield.'" id="wikiselect">';
+        $out .= '<form method="get" action="'.$actionurl.'" class="ouwiki_otherwikis"><div>';
+        $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id',
+                'value' => $cm->id));
+        if (!empty($querytext)) {
+            $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'query',
+                    'value' => $querytext));
+        }
+        $out .= '<select name="'.$choicefield.'" id="wikiselect">';
         foreach ($choices as $choice) {
             $selected = $choice->id == $selectedid ? ' selected="selected"' : '';
             $out .= '<option value="'.$choice->id.'"'.$selected.'>'.

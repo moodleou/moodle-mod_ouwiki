@@ -564,9 +564,10 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      * @param bool $notabs If true, prints the after-tabs div here
      * @param string $head Things to include inside html head
      * @param string $title
+     * @param string $querytext for use when changing groups against search criteria
      */
     public function ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagename, $context,
-            $afterpage = null, $hideindex = null, $notabs = null, $head = '', $title='') {
+            $afterpage = null, $hideindex = null, $notabs = null, $head = '', $title='', $querytext = '') {
             global $USER;
         $output = '';
 
@@ -584,7 +585,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         }
         if ($showselector) {
             $selector = ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm,
-                $context, $course, $page);
+                $context, $course, $page, $querytext);
             $output .= $selector;
         }
 
