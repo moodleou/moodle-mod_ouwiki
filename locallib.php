@@ -42,6 +42,7 @@ define('OUWIKI_SUBWIKIS_INDIVIDUAL', 2);
 define('OUWIKI_LOCK_PERSISTENCE', 120);
 define('OUWIKI_LOCK_RECONFIRM', 60);
 define('OUWIKI_LOCK_NOJS', 15*60);
+define('OUWIKI_LOCK_TIMEOUT', 30*60);
 define('OUWIKI_SESSION_LOCKS', 'ouwikilocks'); // Session variable used to store wiki locks
 
 // format params

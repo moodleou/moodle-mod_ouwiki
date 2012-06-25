@@ -16,8 +16,8 @@
 // along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 
-$module->version  = 2012053100;
+$module->version  = 2012061500;
 $module->requires = 2011120100;
-$module->cron     = 0;
+$module->cron     = 60*60*24; // Once per day
 
 $module->displayversion = 'Unstable development version';
