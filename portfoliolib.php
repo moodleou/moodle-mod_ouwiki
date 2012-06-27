@@ -278,14 +278,16 @@ class ouwiki_page_portfolio_caller extends ouwiki_portfolio_caller_base {
     public function get_navigation() {
         global $CFG;
 
-        list($navlinks, $cm) = parent::get_navigation();
+        $title = format_string($this->pageversion->title);
+        $name = $title === '' ? get_string('startpage', 'ouwiki') : $title;
+
         $navlinks[] = array(
-            'name' => format_string($this->pageversion->title),
+            'name' => $name,
             'link' => $CFG->wwwroot . '/mod/ouwiki/view.php?id=' . $this->cm->id . '&page=' .
                 $this->pageversion->title,
             'type' => 'title'
         );
-        return array($navlinks, $cm);
+        return array($navlinks, $this->cm);
     }
 
     /**
