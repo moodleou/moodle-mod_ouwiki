@@ -16,9 +16,10 @@ except [[links]].
 Branch:
 
 This is the MOODLE_21_STABLE branch. This branch is configured to match the latest
-stable branch at the Open University that uses Moodle 2.1. Once we stop using
-Moodle 2.1, there will be no more fixes in this branch (but of course anyone can
-fork the reposistory and make a fixed version).
+stable branch at the Open University that uses Moodle 2.1.
+
+We have stopped using Moodle 2.1, there will be no more fixes in this branch
+(but of course anyone can fork the reposistory and make a fixed version).
 
 Support:
 
