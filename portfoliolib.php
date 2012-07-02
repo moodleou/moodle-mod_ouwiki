@@ -191,6 +191,8 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
             $output .= html_writer::end_tag('div');
         }
 
+        // Replace all user links with user name so that you can not access user links from within exported document.
+        $output = preg_replace('~<a href="[^"]*/user/view.php[^"]*"\s*>(.*?)</a>~', '$1', $output);
         return $output;
     }
 
