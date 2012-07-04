@@ -74,6 +74,8 @@ define('OUWIKI_MY_PARTICIPATION', 1);
 define('OUWIKI_USER_PARTICIPATION', 2);
 define('OUWIKI_PARTICIPATION_PERPAGE', 100);
 
+// User preference
+define('OUWIKI_PREF_HIDEANNOTATIONS', 'ouwiki_hide_annotations');
 
 function ouwiki_dberror($error, $source = null) {
     if (!$source) {
@@ -1604,12 +1606,19 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     // language-specific) format [[]]
     $regex = str_replace('.*?', preg_quote(get_string('startpage', 'ouwiki')),
         OUWIKI_LINKS_SQUAREBRACKETS) . 'ui';
-    $content = preg_replace($regex, '[[]]', $content);
+    $newcontent = @preg_replace($regex, '[[]]', $content);
+    if ($newcontent === null) {
+        // Unicode support not available! Change the regex and try again
+        $regex = preg_replace('~ui$~', 'i', $regex);
+        $newcontent = preg_replace($regex, '[[]]', $content);
+    }
+    $content = $newcontent;
 
     // Create version
     $version = new StdClass;
     $version->pageid = $pageversion->pageid;
     $version->xhtml = $content; // May be altered later (see below)
+    $version->xhtmlformat = FORMAT_MOODLE; // Using fixed value here is a bit rubbish
     $version->timecreated = time();
     $version->wordcount = ouwiki_count_words($content);
     $version->previousversionid = $previousversionid;
@@ -2280,8 +2289,8 @@ function ouwiki_highlight_existing_annotations(&$content, $annotations, $page) {
     $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 
     $icon = '<img src="'.$OUTPUT->pix_url('annotation', 'ouwiki').'" alt="'.
-            get_string('annotation', 'ouwiki').'" title="'.
-            get_string('annotation', 'ouwiki').'" />';
+            get_string('expandannotation', 'ouwiki').'" title="'.
+            get_string('expandannotation', 'ouwiki').'" />';
 
     usort($annotations, "ouwiki_internal_position_sort");
     // we only need the used annotations, not the orphaned ones.
@@ -2478,9 +2487,9 @@ function ouwiki_print_editlock($lock, $ouwiki) {
                     var ouw_countdowninterval=setInterval(function() {
                     var countdown=document.getElementById('ouw_countdown');
                     var timeleft=ouw_countdownto-(new Date().getTime());
-                    if(timeleft<0) {
+                    if (timeleft < 0) {
                         clearInterval(ouw_countdowninterval);
-                        document.forms['mform1'].elements['id_save'].click();
+                        document.forms['mform1'].elements['save'].click();
                         return;
                     }
                     if(timeleft<2*60*1000) {

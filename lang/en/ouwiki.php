@@ -52,10 +52,11 @@ $string['advice_edit']='
 ';
 
 $string['advice_annotate']='
-<p>Annotate the page below.</p>
+<p>Annotate the page below, then click <strong>Save changes</strong>.</p>
 <ul>
 <li>To annotate click one of the annotation markers and enter the required text.</li>
 <li>New and existing annotations can be deleted by removing all the text in the form below.</li>
+<li>The numbers in brackets refer to annotations.</li>
 </ul>
 ';
 
@@ -213,6 +214,7 @@ $string['onepageview']='You can view all pages of this wiki at once for convenie
 $string['format_html']='View online';
 $string['format_rtf']='Download in word processor format';
 $string['format_template']='Download as wiki template file';
+$string['non_format_template']='Note: this wiki cannot be downloaded as a wiki template file because it contains images and/or attachments.';
 $string['savedat']='Saved at {$a}';
 
 $string['feedtitle']='{$a->course} wiki: {$a->name} - {$a->subtitle}';
@@ -281,7 +283,8 @@ $string['lockediting'] = 'Lock wiki - no editing';
 $string['lockpage'] = 'Lock page';
 $string['unlockpage'] = 'Unlock page';
 $string['annotate'] = 'Annotate';
-$string['annotation'] = 'Annotation';
+$string['collapseannotation'] = 'Collapse annotation';
+$string['expandannotation'] = 'Expand annotation';
 $string['annotationmarker'] = 'Annotation marker';
 $string['cannotlockpage'] = 'The page could not be locked, your changes have not been saved.';
 $string['thispageislocked'] = 'This wiki page is locked and cannot be edited.';
@@ -358,7 +361,9 @@ somebody to create a page <i>and</i> make at least one edit other than that,
 set pages to 1 and edits to 2.
 </p>';
 
-$string['annotation_help'] = '<p>A user, with the appropriate permission, can add inline annotations to the wiki.</p>';
+$string['annotationsystem_help'] = 'Enables the Annotation tab, for users with the appropriate permission..
+
+With this tab you can add inline annotations to wiki pages (for example, teacher comments on student work).';
 $string['editbegin_help'] = '<p>If you enable this option the wiki enters read-only mode until the given date. In read-only mode users can see pages, navigate between them, view history, and participate in discussions, but they cannot edit pages.</p>';
 $string['editend_help'] = 'If you enable this option the wiki enters read-only mode from the given date onwards.';
 $string['createlinkedwiki'] = 'Creating a new page';
@@ -488,3 +493,10 @@ This option doesn\'t stop somebody holding on to a page and preventing other use
 they are very determined. They could edit a page and wait until the timeout is about to expire before
 saving changes then very quickly editing it again.
 </p>';
+$string['endannotation'] = 'End of annotation';
+$string['expandallannotations'] = 'Expand annotations';
+$string['collapseallannotations'] = 'Collapse annotations';
+$string['showannotationicons'] = 'Show annotations';
+$string['hideannotationicons'] = 'Hide annotations';
+$string['errorcoursesubwiki'] = 'Must be &lsquo;No groups&rsquo; unless sub-wikis option is &lsquo;One wiki per group&rsquo;';
+$string['errorgroupssubwiki'] = 'Must be enabled when sub-wikis option is &lsquo;One wiki per group&rsquo;';

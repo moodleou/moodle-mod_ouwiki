@@ -51,7 +51,7 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         // Annotation
         $annotationoptions = array('0' => get_string('no'), '1' => get_string('yes'));
         $mform->addElement('select', 'annotation', get_string('annotationsystem', 'ouwiki'), $annotationoptions);
-        $mform->addHelpButton('annotation', 'annotation', 'ouwiki');
+        $mform->addHelpButton('annotation', 'annotationsystem', 'ouwiki');
 
         // Editing timeout
         $timeoutoptions = array();
@@ -159,5 +159,16 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         if (empty($default_values['completionedits'])) {
             $default_values['completionedits'] = 1;
         }
+    }
+
+    function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+        if ( (($data['subwikis'] == 0) || ($data['subwikis'] == 2) ) && ($data['groupmode'] > 0) ) {
+            $errors['groupmode'] = get_string('errorcoursesubwiki', 'ouwiki');
+        }
+        if ( ($data['subwikis'] == 1) && ($data['groupmode'] == 0) ) {
+            $errors['groupmode'] = get_string('errorgroupssubwiki', 'ouwiki');
+        }
+        return $errors;
     }
 }

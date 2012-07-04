@@ -35,10 +35,11 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      *   we can make links
      * @param object $cm Course-module object (again for making links)
      * @param object $pageversion Data from page and version tables.
+     * @param bool $hideannotations If true, adds extra class to hide annotations
      * @return string HTML content for page
      */
     public function ouwiki_print_page($subwiki, $cm, $pageversion, $gewgaws = null,
-            $page = 'history', $showwordcount = 0) {
+            $page = 'history', $showwordcount = 0, $hideannotations = false) {
         $output = '';
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
 
@@ -79,7 +80,8 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $files = $fs->get_area_files($modcontext->id, 'mod_ouwiki', 'attachment',
                 $pageversion->versionid, "timemodified", false);
 
-        $output .= html_writer::start_tag('div', array('class' => 'ouwiki-content'));
+        $output .= html_writer::start_tag('div', array('class' => 'ouwiki-content' .
+                ($hideannotations ? ' ouwiki-hide-annotations' : '')));
         $output .= html_writer::start_tag('div', array('class' => 'ouw_topheading'));
         $output .= html_writer::start_tag('div', array('class' => 'ouw_heading'));
         $output .= html_writer::tag('h1', format_string($title),
@@ -265,7 +267,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                         'class' => 'ouw_annotate'));
             }
 
-            // 'Show all' annotation controls
+            // 'Expand/collapse all' and 'Show/hide all' annotation controls
             if ($annotations != false) {
                 $orphancount = 0;
                 foreach ($annotations as $annotation) {
@@ -274,16 +276,29 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                     }
                 }
                 if (count($annotations) > $orphancount) {
-                    $output .= html_writer::start_tag('span', array('id' => 'showhideannotations'));
-                    $output .= ' '.html_writer::tag('a', 'Show all annotations',
+                    // Show and hide annotation icon links. Visibility controlled by CSS.
+                    $output .= html_writer::start_tag('span', array('id' => 'showhideannotationicons'));
+                    $output .= ' '.html_writer::tag('a', get_string('showannotationicons', 'ouwiki'),
+                            array('href' => 'hideannotations.php?hide=0&' . ouwiki_display_wiki_parameters(
+                            $pagename, $subwiki, $cm, OUWIKI_PARAMS_URL) . '&sesskey=' . sesskey(),
+                            'id' => 'showannotationicons'));
+                    $output .= html_writer::tag('a', get_string('hideannotationicons', 'ouwiki'),
+                            array('href' => 'hideannotations.php?hide=1&' . ouwiki_display_wiki_parameters(
+                            $pagename, $subwiki, $cm, OUWIKI_PARAMS_URL) . '&sesskey=' . sesskey(),
+                            'id' => 'hideannotationicons'));
+                    $output .= html_writer::end_tag('span');
+
+                    // Expand and collapse annotations links.
+                    $output .= html_writer::start_tag('span', array('id' => 'expandcollapseannotations'));
+                    $output .= ' '.html_writer::tag('a', get_string('expandallannotations', 'ouwiki'),
                         array(
                             'href' => 'javascript:ouwikiShowAllAnnotations("block")',
-                            'id' => 'showallannotations'
+                            'id' => 'expandallannotations'
                         ));
-                    $output .= html_writer::tag('a', 'Hide all annotations',
+                    $output .= html_writer::tag('a', get_string('collapseallannotations', 'ouwiki'),
                         array(
                             'href' => 'javascript:ouwikiShowAllAnnotations("none")',
-                            'id' => 'hideallannotations'
+                            'id' => 'collapseallannotations'
                         ));
                     $output .= html_writer::end_tag('span');
                 }
@@ -354,20 +369,26 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
     }
 
     public function ouwiki_print_preview($content, $page, $subwiki, $cm, $contentformat) {
+        global $CFG;
+
+        // Convert content.
+        $content = ouwiki_convert_content($content, $subwiki, $cm, null, $contentformat);
+        // Need to replace brokenfile.php with draftfile.php since switching off filters
+        // will switch off all filter.
+        $content = str_replace("\"$CFG->httpswwwroot/brokenfile.php#",
+                "\"$CFG->httpswwwroot/draftfile.php", $content);
+        // Create output to be returned for printing.
         $output = html_writer::tag('p', get_string('previewwarning', 'ouwiki'),
                 array('class' => 'ouw_warning'));
         $output .= html_writer::start_tag('div', array('class' => 'ouw_preview'));
         $output .= $this->output->box_start("generalbox boxaligncenter");
-
-        // Title & content of page
+        // Title & content of page.
         $title = $page !== null && $page !== '' ? htmlspecialchars($page) :
                 get_string('startpage', 'ouwiki');
         $output .= html_writer::tag('h1', $title);
-        $output .= ouwiki_convert_content($content, $subwiki, $cm, null, $contentformat);
-
+        $output .= $content;
         $output .= html_writer::end_tag('div');
         $output .= $this->output->box_end();
-
         return $output;
     }
 
@@ -501,6 +522,8 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 array('class' => 'ouwiki-annotation-content-title'));
         $output .= $annotation->content;
         $output .= html_writer::end_tag('span');
+        $output .= html_writer::tag('span', get_string('endannotation', 'ouwiki'),
+                array('class' => 'accesshide'));
         $output .= html_writer::end_tag('span');
 
         return $output;

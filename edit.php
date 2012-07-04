@@ -223,13 +223,13 @@ if ($save) {
     }
 
     if ($section) {
-        ouwiki_save_new_version_section($course, $cm, $ouwiki, $subwiki, $pagename, $pageversion->xhtml, $formdata->content['text'], $sectiondetails, null);
+        ouwiki_save_new_version_section($course, $cm, $ouwiki, $subwiki, $pagename, $pageversion->xhtml, $formdata->content['text'], $sectiondetails, $formdata);
     } else {
         if ($addpage) {
             ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $frompage, $pagename, $content, $formdata);
         } else {
             if ($addsection) {
-                ouwiki_create_new_section($course, $cm, $ouwiki, $subwiki, $pagename, $formdata->content['text'], $sectionheader, null);
+                ouwiki_create_new_section($course, $cm, $ouwiki, $subwiki, $pagename, $formdata->content['text'], $sectionheader, $formdata);
             } else {
                 // Normal save
                 ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $content, -1, -1, -1, null, $formdata);

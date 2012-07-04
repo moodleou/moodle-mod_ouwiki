@@ -128,7 +128,16 @@ function ouwikiResetThisField(field) {
 function ouwikiShowAllAnnotations(action) {
     annoboxes = YAHOO.util.Dom.getElementsByClassName('ouwiki-annotation', 'span');
     for (var box = 0; box < annoboxes.length; box++) {
-            annoboxes[box].style.display = action;
+        annoboxes[box].style.display = action;
+        var annotag = annoboxes[box].parentNode;
+        var imgtag = annotag.firstChild;
+        if (action == "block") {
+            imgtag.alt = M.str.ouwiki.collapseannotation;
+            imgtag.title = M.str.ouwiki.collapseannotation;
+        } else if (action == "none") {
+            imgtag.alt = M.str.ouwiki.expandannotation;
+            imgtag.title = M.str.ouwiki.expandannotation;
+        }
     }
     if(action == "block") {
         ouwikiSwapAnnotationUrl("hide");
@@ -138,27 +147,32 @@ function ouwikiShowAllAnnotations(action) {
 }
 
 function ouwikiSwapAnnotationUrl(action){
-    var showurl = document.getElementById("showhideannotations");
-    var show = document.getElementById("showallannotations");
-    var hide = document.getElementById("hideallannotations");
+    var show = document.getElementById("expandallannotations");
+    var hide = document.getElementById("collapseallannotations");
     if (action == "hide") {
         show.style.display = "none";
         hide.style.display = "inline";
+        setTimeout(function() { hide.focus(); }, 0);
     } else if (action == "show") {
         show.style.display = "inline";
         hide.style.display = "none";
-    } else if (action == "showall") {
-        showurl.style.display = "inline";
+        setTimeout(function() { show.focus(); }, 0);
     }
 }
 
 function ouwikiShowHideAnnotation(id) {
     var box = document.getElementById(id);
+    var annotag = box.parentNode;
+    var imgtag = annotag.firstChild;
     if (box.style.display == "block") {
         box.style.display = "none";
         ouwikiSwapAnnotationUrl("show")
+        imgtag.alt = M.str.ouwiki.expandannotation;
+        imgtag.title = M.str.ouwiki.expandannotation;
     } else {
         box.style.display = "block";
+        imgtag.alt = M.str.ouwiki.collapseannotation;
+        imgtag.title = M.str.ouwiki.collapseannotation;
         annoboxes = YAHOO.util.Dom.getElementsByClassName('ouwiki-annotation', 'span');
         var allblock = 1;
         for (var i = 0; i < annoboxes.length; i++) {
@@ -174,7 +188,9 @@ function setupspans(span) {
     span.style.cursor = "pointer";
     span.tabIndex = "0";
     span.onkeydown = function(e) {
-        if(e.which == 13 || e.which == 32){
+        //Cross browser event object.
+        var evt = window.event || e;
+        if (evt.keyCode == 13 || evt.keyCode == 32) {
             ouwikiShowHideAnnotation("annotationbox" + span.id.substring(10));
         }
     };
@@ -192,19 +208,63 @@ function ouwikiOnLoad() {
 
 function init() {
     ouwikiShowAllAnnotations("none");
-    ouwikiSwapAnnotationUrl("showall");
     annospans = YAHOO.util.Dom.getElementsByClassName('ouwiki-annotation-tag', 'span');
     for (var span = 0; span < annospans.length; span++) {
         setupspans(annospans[span]);
     }
+    setupAnnotationIcons();
 }
 
 M.mod_ouwiki = {
+    Y : null,
+
     /**
      * Main init function called from HTML.
      */
-    init : function() {
+    init : function(Y) {
+        this.Y = Y;
+
         // TODO: Change wiki JavaScript to actually use Moodle 2 style. At
-        // present this is only here in order to pass language strings.
+        // present this is mostly here in order to pass language strings.
+
+        // Turn the annotation icon show/hide links to use JS
+        Y.one('#showannotationicons').on('click', function(e) {
+            e.preventDefault();
+            M.mod_ouwiki.show_annotation_icons(true);
+            var hide = document.getElementById("hideannotationicons");
+            setTimeout(function() { hide.focus(); }, 0);
+        });
+        Y.one('#hideannotationicons').on('click', function(e) {
+            e.preventDefault();
+            M.mod_ouwiki.show_annotation_icons(false);
+            var show = document.getElementById("showannotationicons");
+            setTimeout(function() { show.focus(); }, 0);
+        });
+    },
+
+    /**
+     * Called when user selects to show or hide the annotations. Does two
+     * things: makes AJAX call to set the option, and adds the class to hide
+     * the icons.
+     * @param show If true, shows icons
+     */
+    show_annotation_icons : function(show) {
+        // Set or remove the class
+        var container = this.Y.one('.ouwiki-content');
+        var hideclass = 'ouwiki-hide-annotations';
+        if (show) {
+            container.removeClass(hideclass);
+        } else {
+            container.addClass(hideclass);
+        }
+
+        // Get URL from original link
+        var url = this.Y.one(show ? '#showannotationicons' : '#hideannotationicons').get('href');
+
+        // Add on the 'ajax' marker
+        url += '&ajax=1';
+
+        // Request it with AJAX, ignoring result
+        this.Y.io(url);
     }
-}
+};

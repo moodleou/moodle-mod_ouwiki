@@ -161,8 +161,13 @@ WHERE
     print $ouwikioutput->render_export_all_li($subwiki, $anyfiles);
 
     if (has_capability('moodle/course:manageactivities', $context)) {
-        print '<li id="ouwiki_down_template"><a href="entirewiki.php?'.$wikiparams.'&amp;format=template">'.
-            get_string('format_template', 'ouwiki').'</a></li>';
+        if (!$anyfiles) {
+            // No images or attachment files found.
+            print '<li id="ouwiki_down_template"><a href="entirewiki.php?' . $wikiparams . '&amp;format=template">' .
+               get_string('format_template', 'ouwiki') . '</a></li>';
+        } else {
+            print '<li id="ouwiki_down_template">' . get_string('non_format_template', 'ouwiki') . '</li>';
+        }
     }
     print '</ul></div>';
 }

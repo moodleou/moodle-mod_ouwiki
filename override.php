@@ -32,7 +32,7 @@ if (!data_submitted()) {
     print_error("Only POST requests accepted");
 }
 
-if (!has_capability('mod/wiki:overridelock', $context)) {
+if (!has_capability('mod/ouwiki:overridelock', $context)) {
     print_error("You do not have the capability to override editing locks");
 }
 

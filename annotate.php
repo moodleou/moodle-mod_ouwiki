@@ -115,7 +115,7 @@ if ($save) {
                 $DB->delete_records('ouwiki_annotations', array('id' => $annotation->id));
                 $deleted_annotations[$annotation->id] = '';
             }
-        }    
+        }
     }
 
     foreach ($edited_annotations as $key => $value) {
@@ -246,15 +246,15 @@ if (!$lockok) {
   </div>";
 
     add_to_log($course->id, 'ouwiki', 'annotate page', "/mod/ouwiki/annotate.php?id=$cm->id", "$ouwiki->id");
-    print_footer($course);
+    print $OUTPUT->footer();
     exit;
-} 
+}
 // The page is now locked to us! Go ahead and print edit form
 
 // get title of the page
 $title = get_string('annotatingpage', 'ouwiki');
 $wikiname = format_string(htmlspecialchars($ouwiki->name));
-$name = $pagename; 
+$name = $pagename;
 if ($pagename) {
     $title = $wikiname.' - '.$title.' : '.$pagename;
 } else {
@@ -305,6 +305,8 @@ $customdata[1] = $pageversion;
 $customdata[2] = $pagename;
 $customdata[3] = $userid;
 $customdata[4] = has_capability('mod/ouwiki:lock', $context);
+echo html_writer::tag('h2', get_string('annotations','ouwiki'));
+
 $annotateform = new mod_ouwiki_annotate_form('annotate.php?id='.$id, $customdata);
 $annotateform->display();
 
@@ -318,10 +320,11 @@ echo '<div id="annotationcount" style="display:none;">'.count($usedannotations).
 
 echo '<div class="yui-skin-sam">';
 echo '    <div id="annotationdialog" class="yui-pe-content">';
-echo '        <div class="hd">'.get_string('addannotation','ouwiki').'</div>';
+echo '        <div class="hd">'.get_string('addannotation', 'ouwiki').'</div>';
 echo '        <div class="bd">';
 echo '            <form method="POST" action="post.php">';
-echo '                <label for="annotationtext">'.get_string('addannotation','ouwiki').':</label><textarea name="annotationtext" "rows="4" cols="30"></textarea>';
+echo '                <label for="annotationtext">'.get_string('addannotation', 'ouwiki').':</label>';
+echo '                <textarea name="annotationtext" id="annotationtext" "rows="4" cols="30"></textarea>';
 echo '            </form>';
 echo '        </div>';
 echo '    </div>';

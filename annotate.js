@@ -151,23 +151,64 @@ function newAnnotation(newtext) {
     newfitem.appendChild(felement);
 
     // insert the new fitem before the last fitem (which is the delete orphaned checkbox)
-    var fcontainer = YAHOO.util.Dom.getElementsByClassName('fcontainer', 'div');
     var endmarker = document.getElementById('end');
-    fcontainer[0].insertBefore(newfitem, endmarker.parentNode.parentNode);
+    var fcontainer = endmarker.parentNode.parentNode.parentNode;
+    fcontainer.insertBefore(newfitem, endmarker.parentNode.parentNode);
 
-    markNewAnnotation(annotationnum);
+    var markerid = markNewAnnotation(annotationnum);
 
     newfitem.style.display = 'block';
     annotationcount.firstChild.nodeValue = annotationnum;
+
+    // Set focus to next marker or list of annotations to be added if last marker.
+    if (markerid != 0) {
+        // Another annotation marker found.
+        var nextmarker = document.getElementById(markerid);
+        setTimeout(function() { nextmarker.focus(); }, 0);
+    } else {
+        // At end so focus on first annotation text if it exists.
+        var divannotext = YAHOO.util.Dom.getElementsByClassName('felement ftextarea', 'div');
+        if (divannotext.length > 0) {
+            var annotext = divannotext[0].firstChild;
+            setTimeout(function() { annotext.focus(); }, 0);
+        } else {
+            // Do nothing.
+        }
+    }
+
 }
 
 function markNewAnnotation(annotationnum) {
+
+    // Get next marker using currentMarker as the starting point.
+    var markers = YAHOO.util.Dom.getElementsByClassName('ouwiki-annotation-marker', 'span');
+    // Loop through markers getting next marker object after current marker
+    var id = 0;
+    var nextmarkerid = 0;
+    for (var i = 0; i < markers.length; i++) {
+        id = markers[i].id;
+        if (currentMarker == id) {
+            if (i == (markers.length - 1) ) {
+                // We are at the end - just break
+                break;
+            } else {
+                // Get next marker id - and get out
+                nextmarkerid = markers[i+1].id;
+                break;
+            }
+        }
+    }
+    markers = null;
+
     var theMarker = document.getElementById(currentMarker);
+    // Create new strong element and replace current marker
     var visualmarker = document.createElement('strong');
     var visualtext = document.createTextNode('('+annotationnum+')');
     visualmarker.appendChild(visualtext);
     theMarker.parentNode.insertBefore(visualmarker, theMarker);
     theMarker.parentNode.removeChild(theMarker);
+
+    return nextmarkerid;
 }
 
 function ouwiki_yui_workaround(e) {
@@ -180,4 +221,3 @@ function ouwiki_yui_workaround(e) {
     input.value = 1;
     submitbutton.form.appendChild(input);
 }
-

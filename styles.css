@@ -352,8 +352,26 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
 #page-mod-ouwiki-view .ouw_editsection,
 #page-mod-ouwiki-view .ouw_annotate,
 #page-mod-ouwiki-view .ouw_editpage,
-#page-mod-ouwiki-view #showhideannotations {
+#page-mod-ouwiki-view #expandcollapseannotations,
+#page-mod-ouwiki-view #showhideannotationicons {
     margin-right:1em;
+}
+
+/* Annotation icon show/hide link logic */
+#page-mod-ouwiki-view .ouwiki-hide-annotations #hideannotationicons {
+    display: none;
+}
+#page-mod-ouwiki-view #showannotationicons {
+    display: none;
+}
+#page-mod-ouwiki-view .ouwiki-hide-annotations #showannotationicons {
+    display: inline;
+}
+#page-mod-ouwiki-view .ouwiki-hide-annotations .ouwiki-annotation-tag {
+    display: none;
+}
+#page-mod-ouwiki-view.jsenabled .ouwiki-hide-annotations #expandcollapseannotations {
+    display: none;
 }
 
 .ouwiki_content h1,
@@ -683,9 +701,11 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
 
 .ouwiki-annotation-marker:hover{background-color:#99ccff;}
 
-#showhideannotations {display:none;}
-#showallannotations {display:inline;}
-#hideallannotations {display:none;}
+#page-mod-ouwiki-view #expandcollapseannotations {display:none;}
+#page-mod-ouwiki-view.jsenabled #expandcollapseannotations {display:inline;}
+#page-mod-ouwiki-view #expandallannotations {display:inline;}
+#page-mod-ouwiki-view #collapseallannotations {display:none;}
+
 
 #ouwiki_addannotation label {
     display:block;
