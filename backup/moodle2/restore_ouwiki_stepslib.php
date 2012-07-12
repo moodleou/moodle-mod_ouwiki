@@ -26,6 +26,7 @@
  */
 class restore_ouwiki_activity_structure_step extends restore_activity_structure_step {
     private $versions = array();
+    private $processingversion = null;
 
     protected function define_structure() {
 
@@ -121,6 +122,11 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
         // order (Moodle backup doesn't let you sort it) and there is no way
         // to fix this before getting here...
         $this->versions[$oldid] = $data;
+
+        // Store the current version in memory so we can store links inside
+        // it from the process_ouwiki_link function.
+        $data->links = array();
+        $this->processingversion = $data;
     }
 
     /**
@@ -138,15 +144,24 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
         // Loop through, saving each one.
         $transaction = $DB->start_delegated_transaction();
         foreach ($this->versions as $data) {
+            // Insert version.
             $oldid = $data->id;
-            $newitemid = $DB->insert_record('ouwiki_versions', $data);
-            $this->set_mapping('ouwiki_version', $oldid, $newitemid, true);
+            $newversionid = $DB->insert_record('ouwiki_versions', $data);
+
+            // Insert any links.
+            foreach ($data->links as $link) {
+                $link->fromversionid = $newversionid;
+                // Note: The 'topageid' is still pointing to old id - we cannot
+                // use mapping yet because not all pages have been retrieved,
+                // so this needs to be update after_execute.
+                $DB->insert_record('ouwiki_links', $link);
+            }
 
             // If this version was the "currentversion" in the old database, update it.
             $page = $DB->get_record('ouwiki_pages', array('id' => $data->pageid),
                     'id, currentversionid');
             if ($oldid == $page->currentversionid) {
-                $page->currentversionid = $newitemid;
+                $page->currentversionid = $newversionid;
                 $DB->update_record('ouwiki_pages', $page);
             }
         }
@@ -157,15 +172,12 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
     }
 
     protected function process_ouwiki_link($data) {
-        global $DB;
-
         $data = (object)$data;
-        $oldid = $data->id;
 
-        $data->fromversionid = $this->get_new_parentid('ouwiki_version');
-        $data->topageid = $this->get_mappingid('ouwiki_page', $data->topageid);
-
-        $newitemid = $DB->insert_record('ouwiki_links', $data);
+        // The new page id and parent version id are both not yet known, so
+        // 'topageid' points to the old page id, and 'fromversionid' is not set
+        // at all. Add to list, we will fill this data in later.
+        $this->processingversion->links[] = $data;
     }
 
     protected function process_ouwiki_annotation($data) {
@@ -240,6 +252,32 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
             }
         }
         $rs->close();
+
+        // Update all the page ids for links.
+        $sql = 'SELECT l.id AS linkid, l.topageid
+                FROM
+                    {ouwiki} o
+                    JOIN {ouwiki_subwikis} s ON s.wikiid = o.id
+                    JOIN {ouwiki_pages} p ON p.subwikiid = s.id
+                    JOIN {ouwiki_versions} v ON v.pageid = p.id
+                    JOIN {ouwiki_links} l ON l.fromversionid = v.id
+                WHERE
+                    o.id = ? AND l.topageid IS NOT NULL';
+        $rs = $DB->get_recordset_sql($sql, array($ouwikiid));
+        $errors = array();
+        foreach ($rs as $entry) {
+            $newpageid = $this->get_mappingid('ouwiki_page', $entry->topageid, null);
+            if (!$newpageid && empty($errors[$entry->topageid])) {
+            print '<h1>What</h1>';
+            print_object($entry);
+                $errors[$entry->topageid] = true;
+                $this->get_logger()->process('OU wiki: link to missing pageid ' .
+                        $entry->topageid . ' not restored properly.', backup::LOG_WARNING);
+            }
+            $DB->set_field('ouwiki_links', 'topageid', $newpageid, array('id' => $entry->linkid));
+        }
+        $rs->close();
+
         $transaction->allow_commit();
     }
 }
