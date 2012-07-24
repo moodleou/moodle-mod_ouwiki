@@ -207,12 +207,17 @@ function ouwikiOnLoad() {
 }
 
 function init() {
-    ouwikiShowAllAnnotations("none");
-    annospans = YAHOO.util.Dom.getElementsByClassName('ouwiki-annotation-tag', 'span');
-    for (var span = 0; span < annospans.length; span++) {
-        setupspans(annospans[span]);
+
+    // check to see whether there anno tags to show - either because there are none
+    // or show annotations is disabled in ouwiki settings
+    var annospans = YAHOO.util.Dom.getElementsByClassName('ouwiki-annotation-tag', 'span');
+    if (annospans.length > 0) {
+        ouwikiShowAllAnnotations("none");
+        for (var span = 0; span < annospans.length; span++) {
+            setupspans(annospans[span]);
+        }
+        setupAnnotationIcons();
     }
-    setupAnnotationIcons();
 }
 
 M.mod_ouwiki = {
@@ -227,19 +232,27 @@ M.mod_ouwiki = {
         // TODO: Change wiki JavaScript to actually use Moodle 2 style. At
         // present this is mostly here in order to pass language strings.
 
-        // Turn the annotation icon show/hide links to use JS
-        Y.one('#showannotationicons').on('click', function(e) {
-            e.preventDefault();
-            M.mod_ouwiki.show_annotation_icons(true);
-            var hide = document.getElementById("hideannotationicons");
-            setTimeout(function() { hide.focus(); }, 0);
-        });
-        Y.one('#hideannotationicons').on('click', function(e) {
-            e.preventDefault();
-            M.mod_ouwiki.show_annotation_icons(false);
-            var show = document.getElementById("showannotationicons");
-            setTimeout(function() { show.focus(); }, 0);
-        });
+        // check to see whether there anno tags to show - either because there are none
+        // or show annotations is disabled in ouwiki settings
+        var icon = Y.one('#showannotationicons');
+        if (icon) {
+            // Turn the annotation icon show/hide links to use JS
+            icon.on('click', function(e) {
+                e.preventDefault();
+                M.mod_ouwiki.show_annotation_icons(true);
+                var hide = document.getElementById("hideannotationicons");
+                setTimeout(function() { hide.focus(); }, 0);
+            });
+        }
+        icon = Y.one('#hideannotationicons');
+        if (icon) {
+            icon.on('click', function(e) {
+                e.preventDefault();
+                M.mod_ouwiki.show_annotation_icons(false);
+                var show = document.getElementById("showannotationicons");
+                setTimeout(function() { show.focus(); }, 0);
+            });
+        }
     },
 
     /**
