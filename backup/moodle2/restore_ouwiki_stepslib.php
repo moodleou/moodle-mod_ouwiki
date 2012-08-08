@@ -25,6 +25,8 @@
  * Structure step to restore one ouwiki activity
  */
 class restore_ouwiki_activity_structure_step extends restore_activity_structure_step {
+    private $versions = array();
+    private $processingversion = null;
 
     protected function define_structure() {
 
@@ -95,10 +97,13 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
         $newitemid = $DB->insert_record('ouwiki_pages', $data);
 
         $this->set_mapping('ouwiki_page', $oldid, $newitemid);
+
+        // Flush out any unsaved versions.
+        $this->flush_versions();
     }
 
     protected function process_ouwiki_version($data) {
-        global $DB, $CFG;
+        global $CFG;
 
         $data = (object)$data;
         $oldid = $data->id;
@@ -112,28 +117,67 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
             $data->wordcount = $wordcount;
         }
 
-        $newitemid = $DB->insert_record('ouwiki_versions', $data);
-        $this->set_mapping('ouwiki_version', $oldid, $newitemid, true);
+        // Store the version in memory. We cannot write it out now because
+        // they need to be in id order, but the stupid backup can be in random
+        // order (Moodle backup doesn't let you sort it) and there is no way
+        // to fix this before getting here...
+        $this->versions[$oldid] = $data;
 
-        // see if this version was the "currentversion" in the old database
-        $page = $DB->get_record('ouwiki_pages', array('id' => $data->pageid), 'id, currentversionid');
+        // Store the current version in memory so we can store links inside
+        // it from the process_ouwiki_link function.
+        $data->links = array();
+        $this->processingversion = $data;
+    }
 
-        if ($oldid == $page->currentversionid) {
-            $page->currentversionid = $newitemid;
-            $DB->update_record('ouwiki_pages', $page);
+    /**
+     * Saves out all versions currently in memory (if any), in id order. This
+     * function should be called before each new page, so saving may be delayed,
+     * but it shouldn't need to hold more than one page's worth of versions in
+     * memory at once.
+     */
+    private function flush_versions() {
+        global $DB;
+
+        // Sort versions into id order.
+        ksort($this->versions);
+
+        // Loop through, saving each one.
+        $transaction = $DB->start_delegated_transaction();
+        foreach ($this->versions as $data) {
+            // Insert version.
+            $oldid = $data->id;
+            $newversionid = $DB->insert_record('ouwiki_versions', $data);
+
+            // Insert any links.
+            foreach ($data->links as $link) {
+                $link->fromversionid = $newversionid;
+                // Note: The 'topageid' is still pointing to old id - we cannot
+                // use mapping yet because not all pages have been retrieved,
+                // so this needs to be update after_execute.
+                $DB->insert_record('ouwiki_links', $link);
+            }
+
+            // If this version was the "currentversion" in the old database, update it.
+            $page = $DB->get_record('ouwiki_pages', array('id' => $data->pageid),
+                    'id, currentversionid');
+            if ($oldid == $page->currentversionid) {
+                $page->currentversionid = $newversionid;
+                $DB->update_record('ouwiki_pages', $page);
+            }
         }
+        $transaction->allow_commit();
+
+        // Clear array.
+        $this->versions = array();
     }
 
     protected function process_ouwiki_link($data) {
-        global $DB;
-
         $data = (object)$data;
-        $oldid = $data->id;
 
-        $data->fromversionid = $this->get_new_parentid('ouwiki_version');
-        $data->topageid = $this->get_mappingid('ouwiki_page', $data->topageid);
-
-        $newitemid = $DB->insert_record('ouwiki_links', $data);
+        // The new page id and parent version id are both not yet known, so
+        // 'topageid' points to the old page id, and 'fromversionid' is not set
+        // at all. Add to list, we will fill this data in later.
+        $this->processingversion->links[] = $data;
     }
 
     protected function process_ouwiki_annotation($data) {
@@ -146,11 +190,15 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
         $data->userid = $this->get_mappingid('user', $data->userid);
 
         $newitemid = $DB->insert_record('ouwiki_annotations', $data);
-
     }
 
     protected function after_execute() {
         global $DB;
+        $transaction = $DB->start_delegated_transaction();
+        $ouwikiid = $this->get_task()->get_activityid();
+
+        // Flush out any unsaved versions.
+        $this->flush_versions();
 
         // Add ouwiki related files, no need to match by itemname (just internally handled context)
         $this->add_related_files('mod_ouwiki', 'intro', null);
@@ -159,43 +207,77 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
         $this->add_related_files('mod_ouwiki', 'attachment', 'ouwiki_version');
         $this->add_related_files('mod_ouwiki', 'content', 'ouwiki_version');
 
-        // update firstversionid
+        // Update firstversionid.
         $sql = 'SELECT v.pageid,
                     (SELECT MIN(id)
-                        FROM {ouwiki_versions} v3
-                        WHERE v3.pageid = p.id AND v3.deletedat IS NULL)
+                    FROM {ouwiki_versions} v3
+                    WHERE v3.pageid = p.id AND v3.deletedat IS NULL)
                     AS firstversionid
-                        FROM {ouwiki_pages} p
-                        JOIN {ouwiki_versions} v ON v.pageid = p.id
-                    GROUP BY v.pageid, p.id ORDER BY v.pageid';
-        $rs = $DB->get_recordset_sql($sql);
-        if ($rs->valid()) {
-            foreach ($rs as $entry) {
-                if (isset($entry->firstversionid)) {
-                    $DB->set_field('ouwiki_pages', 'firstversionid', $entry->firstversionid,
-                        array('id' => $entry->pageid));
-                }
+                FROM
+                    {ouwiki} o
+                    JOIN {ouwiki_subwikis} s ON s.wikiid = o.id
+                    JOIN {ouwiki_pages} p ON p.subwikiid = s.id
+                    JOIN {ouwiki_versions} v ON v.pageid = p.id
+                WHERE
+                    o.id = ?
+                GROUP BY v.pageid, p.id
+                ORDER BY v.pageid';
+        $rs = $DB->get_recordset_sql($sql, array($ouwikiid));
+        foreach ($rs as $entry) {
+            if ($entry->firstversionid) {
+                $DB->set_field('ouwiki_pages', 'firstversionid', $entry->firstversionid,
+                    array('id' => $entry->pageid));
             }
         }
         $rs->close();
 
-        // update previousversionid
+        // Update previousversionid.
         $sql = 'SELECT v.id AS versionid,
                     (SELECT MAX(v2.id)
-                        FROM {ouwiki_versions} v2
-                        WHERE v2.pageid = p.id AND v2.id < v.id)
+                    FROM {ouwiki_versions} v2
+                    WHERE v2.pageid = p.id AND v2.id < v.id)
                     AS previousversionid
-                        FROM {ouwiki_pages} p
-                        JOIN {ouwiki_versions} v ON v.pageid = p.id';
-        $rs = $DB->get_recordset_sql($sql);
-        if ($rs->valid()) {
-            foreach ($rs as $entry) {
-                if (isset($entry->previousversionid)) {
-                    $DB->set_field('ouwiki_versions', 'previousversionid',
-                        $entry->previousversionid, array('id' => $entry->versionid));
-                }
+                FROM
+                    {ouwiki} o
+                    JOIN {ouwiki_subwikis} s ON s.wikiid = o.id
+                    JOIN {ouwiki_pages} p ON p.subwikiid = s.id
+                    JOIN {ouwiki_versions} v ON v.pageid = p.id
+                WHERE
+                    o.id = ?';
+        $rs = $DB->get_recordset_sql($sql, array($ouwikiid));
+        foreach ($rs as $entry) {
+            if ($entry->previousversionid) {
+                $DB->set_field('ouwiki_versions', 'previousversionid',
+                    $entry->previousversionid, array('id' => $entry->versionid));
             }
         }
         $rs->close();
+
+        // Update all the page ids for links.
+        $sql = 'SELECT l.id AS linkid, l.topageid
+                FROM
+                    {ouwiki} o
+                    JOIN {ouwiki_subwikis} s ON s.wikiid = o.id
+                    JOIN {ouwiki_pages} p ON p.subwikiid = s.id
+                    JOIN {ouwiki_versions} v ON v.pageid = p.id
+                    JOIN {ouwiki_links} l ON l.fromversionid = v.id
+                WHERE
+                    o.id = ? AND l.topageid IS NOT NULL';
+        $rs = $DB->get_recordset_sql($sql, array($ouwikiid));
+        $errors = array();
+        foreach ($rs as $entry) {
+            $newpageid = $this->get_mappingid('ouwiki_page', $entry->topageid, null);
+            if (!$newpageid && empty($errors[$entry->topageid])) {
+            print '<h1>What</h1>';
+            print_object($entry);
+                $errors[$entry->topageid] = true;
+                $this->get_logger()->process('OU wiki: link to missing pageid ' .
+                        $entry->topageid . ' not restored properly.', backup::LOG_WARNING);
+            }
+            $DB->set_field('ouwiki_links', 'topageid', $newpageid, array('id' => $entry->linkid));
+        }
+        $rs->close();
+
+        $transaction->allow_commit();
     }
 }
