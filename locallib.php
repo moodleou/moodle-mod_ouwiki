@@ -2649,7 +2649,7 @@ function ouwiki_get_search_form($subwiki, $cmid) {
         return '';
     }
     global $OUTPUT, $CFG;
-    $queryhtml = ($query = optional_param('query', '', PARAM_RAW)) ? htmlspecialchars($query) : '';
+    $query = optional_param('query', '', PARAM_RAW);
     $out = html_writer::start_tag('form', array('action' => 'search.php', 'method' => 'get'));
     $out .= html_writer::start_tag('div');
     $out .= html_writer::tag('label', get_string('search', 'ouwiki'),
@@ -2668,7 +2668,7 @@ function ouwiki_get_search_form($subwiki, $cmid) {
         }
     }
     $out .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'query',
-            'id' => 'ouwiki_searchquery', 'value' => $queryhtml));
+            'id' => 'ouwiki_searchquery', 'value' => $query));
     $out .= html_writer::empty_tag('input', array('type' => 'submit',
             'id' => 'ousearch_searchbutton', 'value' => '', 'alt' => get_string('search'),
             'title' => get_string('search')));
