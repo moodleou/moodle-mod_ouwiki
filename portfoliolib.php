@@ -191,6 +191,8 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
             $output .= html_writer::end_tag('div');
         }
 
+        // Replace all user links with user name so that you can not access user links from within exported document.
+        $output = preg_replace('~<a href="[^"]*/user/view.php[^"]*"\s*>(.*?)</a>~', '$1', $output);
         return $output;
     }
 
@@ -278,14 +280,16 @@ class ouwiki_page_portfolio_caller extends ouwiki_portfolio_caller_base {
     public function get_navigation() {
         global $CFG;
 
-        list($navlinks, $cm) = parent::get_navigation();
+        $title = format_string($this->pageversion->title);
+        $name = $title === '' ? get_string('startpage', 'ouwiki') : $title;
+
         $navlinks[] = array(
-            'name' => format_string($this->pageversion->title),
+            'name' => $name,
             'link' => $CFG->wwwroot . '/mod/ouwiki/view.php?id=' . $this->cm->id . '&page=' .
                 $this->pageversion->title,
             'type' => 'title'
         );
-        return array($navlinks, $cm);
+        return array($navlinks, $this->cm);
     }
 
     /**

@@ -42,6 +42,7 @@ define('OUWIKI_SUBWIKIS_INDIVIDUAL', 2);
 define('OUWIKI_LOCK_PERSISTENCE', 120);
 define('OUWIKI_LOCK_RECONFIRM', 60);
 define('OUWIKI_LOCK_NOJS', 15*60);
+define('OUWIKI_LOCK_TIMEOUT', 30*60);
 define('OUWIKI_SESSION_LOCKS', 'ouwikilocks'); // Session variable used to store wiki locks
 
 // format params
@@ -473,8 +474,10 @@ function ouwiki_get_parameter($name, $value, $type) {
  * @param object $cm Course-module object
  * @param object $context Context for permissions
  * @param object $course Course object
+ * @param string $actionurl
+ * @param string $querytext for use when changing groups against search criteria
  */
-function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $course, $actionurl = 'view.php') {
+function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $course, $actionurl = 'view.php', $querytext = '') {
     global $USER, $DB;
 
     if ($ouwiki->subwikis == OUWIKI_SUBWIKIS_SINGLE) {
@@ -546,9 +549,14 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
             '</label>';
     if ($choicefield && count($choices) > 1) {
         $selectedid = $choicefield == 'user' ? $subwiki->userid : $subwiki->groupid;
-        $out .= '<form method="get" action="'.$actionurl.'" class="ouwiki_otherwikis">
-            <div><input type="hidden" name="id" value="'.$cm->id.'"/>
-            <select name="'.$choicefield.'" id="wikiselect">';
+        $out .= '<form method="get" action="'.$actionurl.'" class="ouwiki_otherwikis"><div>';
+        $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id',
+                'value' => $cm->id));
+        if (!empty($querytext)) {
+            $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'query',
+                    'value' => $querytext));
+        }
+        $out .= '<select name="'.$choicefield.'" id="wikiselect">';
         foreach ($choices as $choice) {
             $selected = $choice->id == $selectedid ? ' selected="selected"' : '';
             $out .= '<option value="'.$choice->id.'"'.$selected.'>'.
@@ -2194,12 +2202,14 @@ function ouwiki_setup_annotation_markers(&$content) {
                 $newcontent .= ouwiki_get_annotation_marker($pos);
                 $markeradded = true;
                 $space = false;
+                continue;
             } else if ($tagpositions[$pos] == '</p>'){
                 $newcontent .= ouwiki_get_annotation_marker($pos);
                 $newcontent .= $tagpositions[$pos];
                 $pos += strlen($tagpositions[$pos]);
                 $markeradded = true;
                 $space = false;
+                continue;
             } elseif (strpos($tagpositions[$pos], '<span id="annotation') !== false) {
                 // we're at the opening annotation tag span so we need to skip past </span>
                 // which is the next tag in $tagpositions[]
@@ -2214,6 +2224,7 @@ function ouwiki_setup_annotation_markers(&$content) {
                 $newcontent .= $tagpositions[$pos];
                 $pos += strlen($tagpositions[$pos]);
                 $markeradded = true;
+                continue;
             } else if (strpos($tagpositions[$pos], '<a ') !== false) {
                 // markers are not added in the middle of an anchor tag so need to skip
                 // to after the closing </a> in $tagpositions[]
@@ -2229,9 +2240,11 @@ function ouwiki_setup_annotation_markers(&$content) {
 
                 $newcontent .= $tagpositions[$pos];
                 $pos += strlen($tagpositions[$pos]);
+                continue;
             } else {
                 $newcontent .= $tagpositions[$pos];
                 $pos += strlen($tagpositions[$pos]);
+                continue;
             }
         }
 

@@ -28,6 +28,8 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
     private $versions = array();
     private $processingversion = null;
 
+    protected $elementsids; // Array to store last oldid and newid as a key/value pair used for each annotation.
+
     protected function define_structure() {
 
         $paths = array();
@@ -40,7 +42,9 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
         $paths[] = new restore_path_element('ouwiki_annotation', '/activity/ouwiki/subs/subwiki/pages/page/annotations/annotation');
         $paths[] = new restore_path_element('ouwiki_link', '/activity/ouwiki/subs/subwiki/pages/page/versions/version/links/link');
 
-        // Return the paths wrapped into standard activity structure
+        // Set annotation elements id array.
+        $this->elementsids = array();
+        // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
     }
 
@@ -62,6 +66,8 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
         $newitemid = $DB->insert_record('ouwiki', $data);
         // immediately after inserting "activity" record, call this
         $this->apply_activity_instance($newitemid);
+        // Get OU Wiki id for later use.
+        $this->ouwikiid = $newitemid;
     }
 
     protected function process_ouwiki_subwiki($data) {
@@ -190,6 +196,9 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
         $data->userid = $this->get_mappingid('user', $data->userid);
 
         $newitemid = $DB->insert_record('ouwiki_annotations', $data);
+
+        // Add old and new annotation id to element ids array.
+        $this->elementsids['annotation'.$oldid] = 'annotation'.$newitemid;
     }
 
     protected function after_execute() {
@@ -200,10 +209,10 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
         // Flush out any unsaved versions.
         $this->flush_versions();
 
-        // Add ouwiki related files, no need to match by itemname (just internally handled context)
+        // Add ouwiki related files, no need to match by itemname (just internally handled context).
         $this->add_related_files('mod_ouwiki', 'intro', null);
 
-        // Add post related files
+        // Add post related files.
         $this->add_related_files('mod_ouwiki', 'attachment', 'ouwiki_version');
         $this->add_related_files('mod_ouwiki', 'content', 'ouwiki_version');
 
@@ -268,14 +277,43 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
         foreach ($rs as $entry) {
             $newpageid = $this->get_mappingid('ouwiki_page', $entry->topageid, null);
             if (!$newpageid && empty($errors[$entry->topageid])) {
-            print '<h1>What</h1>';
-            print_object($entry);
                 $errors[$entry->topageid] = true;
                 $this->get_logger()->process('OU wiki: link to missing pageid ' .
                         $entry->topageid . ' not restored properly.', backup::LOG_WARNING);
             }
             $DB->set_field('ouwiki_links', 'topageid', $newpageid, array('id' => $entry->linkid));
         }
+        $rs->close();
+
+        // Update xhtml field with correct annotations.
+        // Get all table entries in ouwiki_versions table for this wiki.
+        $sql = "SELECT v.id, v.xhtml
+                    FROM {ouwiki_subwikis} s
+                    JOIN {ouwiki_pages} p ON p.subwikiid = s.id
+                    JOIN {ouwiki_versions} v ON v.pageid = p.id
+                    WHERE s.wikiid = ?
+                    ORDER BY v.id";
+        $rs = $DB->get_recordset_sql($sql, array($ouwikiid));
+
+        // Go through annotation elements ids replacing old annotation ids with new annotation ids in xhtml field of result set.
+        foreach ($rs as $entry) {
+            $matches = array();
+            // Check to see whether this contains any annotations to be replaced.
+            $found = preg_match_all('~(span id=")(annotation[0-9]+)(")~', $entry->xhtml, $matches, PREG_SET_ORDER);
+            if ($found) {
+                foreach ($matches as $arr) {
+                    // Check to see whether an old array key exist.
+                    if (array_key_exists($arr[2], $this->elementsids)) {
+                        // Do the replace.
+                        $replacestr = 'span id="' .$this->elementsids[$arr[2]]. '"';
+                        $entry->xhtml = str_replace($arr[0], $replacestr, $entry->xhtml);
+                    }
+                }
+                // Set the xhtml field if any annotation ids replaced.
+                $DB->set_field('ouwiki_versions', 'xhtml', $entry->xhtml, array('id' => $entry->id));
+            }
+        }
+        // Close the result set.
         $rs->close();
 
         $transaction->allow_commit();
