@@ -123,6 +123,7 @@ if ($save) {
             $DB->delete_records('ouwiki_annotations', array('id' => $key));
             $deleted_annotations[$key] = '';
         } else if ($value != $stored[$key]->content) {
+            $dataobject = new stdClass();
             $dataobject->id = $key;
             $dataobject->pageid = $pageversion->pageid;
             $dataobject->userid = $userid;
@@ -140,6 +141,7 @@ if ($save) {
     $spanlength = 0;
     foreach ($new_annotations as $key => $value) {
         if ($value != '') {
+            $dataobject = new stdClass();
             $dataobject->pageid = $pageversion->pageid;
             $dataobject->userid = $userid;
             $dataobject->timemodified = time();

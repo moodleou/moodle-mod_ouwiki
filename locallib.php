@@ -589,9 +589,8 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
     global $DB;
 
     $params = array($subwiki->id);
-    $tl = textlib_get_instance();
     $pagename_s = 'UPPER(p.title) = ?';
-    $params[] = $tl->strtoupper($pagename);
+    $params[] = textlib::strtoupper($pagename);
 
     $jointype = $option == OUWIKI_GETPAGE_REQUIREVERSION ? 'JOIN' : 'LEFT JOIN';
 
@@ -622,7 +621,7 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
         }
 
         // Update any missing link records that might exist
-        $uppertitle = $tl->strtoupper($pagename);
+        $uppertitle = textlib::strtoupper($pagename);
         try {
             $DB->execute("UPDATE {ouwiki_links}
                 SET tomissingpage = NULL, topageid = ?
@@ -708,8 +707,7 @@ function ouwiki_get_page_version($subwiki, $pagename, $versionid) {
             LEFT JOIN {user} u ON v.userid = u.id
             WHERE p.subwikiid = ? AND v.id = ? AND UPPER(p.title) = ?";
 
-    $tl = textlib_get_instance();
-    $pagename = $tl->strtoupper($pagename);
+    $pagename = textlib::strtoupper($pagename);
     $pageversion = $DB->get_record_sql($sql, array($subwiki->id, $versionid, $pagename));
 
     $pageversion->recentversions = false;
@@ -1604,6 +1602,7 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
 
     // Replace existing empty headings with an ID including version count plus another index
     $ouwiki_count = 0;
+    $ouwikiinternalre = new stdClass();
     $ouwikiinternalre->version = $versionnumber;
     $ouwikiinternalre->count = 0;
     $sizebefore = strlen($content);
@@ -1760,11 +1759,10 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     }
     $link->topageid = null;
     $link->tomissingpage = null;
-    $tl = textlib_get_instance();
     foreach ($externallinks as $url) {
         // Restrict length of URL
-        if ($tl->strlen($url) > 255) {
-            $url = $tl->substr($url, 0, 255);
+        if (textlib::strlen($url) > 255) {
+            $url = textlib::substr($url, 0, 255);
         }
         $link->tourl = $url;
         try {
@@ -1824,12 +1822,11 @@ function ouwiki_get_wiki_link_details($wikilink) {
 
     // Trim to 200 characters or less (note: because we don't want to cut it off
     // in the middle of a character, we use proper UTF-8 functions)
-    $tl = textlib_get_instance();
-    if ($tl->strlen($wikilink) > 200) {
-        $wikilink = $tl->substr($wikilink, 0, 200);
-        $space = $tl->strrpos($wikilink, ' ');
+    if (textlib::strlen($wikilink) > 200) {
+        $wikilink = textlib::substr($wikilink, 0, 200);
+        $space = textlib::strrpos($wikilink, ' ');
         if ($space > 150) {
-            $wikilink = $tl->substr($wikilink, 0, $space);
+            $wikilink = textlib::substr($wikilink, 0, $space);
         }
     }
 
@@ -2163,11 +2160,12 @@ function ouwiki_get_annotations($pageversion) {
 /**
  * Sets up the annotation markers
  *
- * @param string $content The content (xhtml) to be displayed
+ * @param string $xhtmlcontent The content (xhtml) to be displayed
  * @param int $pageid ID of wiki page
  * @return array annotations indexed by annotation id. Returns an empty array if none found.
  */
-function ouwiki_setup_annotation_markers(&$content) {
+function ouwiki_setup_annotation_markers($xhtmlcontent) {
+    $content = $xhtmlcontent;
     // get lists of all the tags
     $pattern = '~</?.+?>~';
     $taglist = array();
@@ -2272,6 +2270,7 @@ function ouwiki_setup_annotation_markers(&$content) {
     }
 
     $content = $newcontent;
+    return $content;
 }
 
 /**
@@ -2292,14 +2291,16 @@ function ouwiki_get_annotation_marker($position) {
 /**
  * Highlights existing annotations in the xhtml for display.
  *
- * @param string &$content The content (xhtml) to be displayed: output variable
+ * @param string $xhtmlcontent The content (xhtml) to be displayed: output variable
  * @param object $annotations List of annotions in a object
  * @param string $page The page being displayed
- * @return void nothing
+ * @return string content (xhtml) to be displayed
  */
-function ouwiki_highlight_existing_annotations(&$content, $annotations, $page) {
+function ouwiki_highlight_existing_annotations($xhtmlcontent, $annotations, $page) {
     global $OUTPUT, $PAGE;
     $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
+
+    $content = $xhtmlcontent;
 
     $icon = '<img src="'.$OUTPUT->pix_url('annotation', 'ouwiki').'" alt="'.
             get_string('expandannotation', 'ouwiki').'" title="'.
@@ -2348,6 +2349,7 @@ function ouwiki_highlight_existing_annotations(&$content, $annotations, $page) {
             $content = str_replace('<span></span>', '', $content);
         }
     }
+    return $content;
 }
 
 /**

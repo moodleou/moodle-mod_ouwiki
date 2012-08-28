@@ -222,6 +222,7 @@ if ($count > OUWIKI_PAGESIZE || $from > 0) {
     print '&nbsp;</div></div>';
 }
 
+$a = new stdClass();
 $a->atom = $atomurl;
 $a->rss = $rssurl;
 print '<p class="ouw_subscribe"><a href="'.$atomurl.'" title="'.get_string('feedalt', 'ouwiki').

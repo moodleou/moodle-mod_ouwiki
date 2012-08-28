@@ -62,12 +62,12 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         if ($page == 'view') {
             // create the annotations
             if ($subwiki->annotation && count($annotations)) {
-                ouwiki_highlight_existing_annotations(&$pageversion->xhtml, $annotations, 'view');
+                $pageversion->xhtml = ouwiki_highlight_existing_annotations($pageversion->xhtml, $annotations, 'view');
             }
         } else if ($page == 'annotate') {
             // call function for the annotate page
-            ouwiki_setup_annotation_markers(&$pageversion->xhtml);
-            ouwiki_highlight_existing_annotations(&$pageversion->xhtml, $annotations, 'annotate');
+            $pageversion->xhtml = ouwiki_setup_annotation_markers($pageversion->xhtml);
+            $pageversion->xhtml = ouwiki_highlight_existing_annotations($pageversion->xhtml, $annotations, 'annotate');
         }
 
         // Must rewrite plugin urls AFTER doing annotations because they depend on byte
@@ -142,7 +142,8 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $pageversion->xhtmlformat);
 
         if ($gewgaws) {
-            // Add in links/etc. around headings
+            // Add in links/etc. around headings.
+            $ouwikiinternalre = new stdClass();
             $ouwikiinternalre->pagename = $pageversion->title;
             $ouwikiinternalre->subwiki = $subwiki;
             $ouwikiinternalre->cm = $cm;
