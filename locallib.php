@@ -2406,6 +2406,7 @@ function ouwiki_lock_editing($pageid, $lock) {
     $locked = ouwiki_is_page_editing_locked($pageid);
 
     if ($lock != $locked) {
+        $dataobject = new stdClass();
         $dataobject->id = $pageid;
         $dataobject->locked = ($lock) ? 1 : 0;
 
