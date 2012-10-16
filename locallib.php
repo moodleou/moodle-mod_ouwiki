@@ -2533,8 +2533,8 @@ function ouwiki_print_editlock($lock, $ouwiki) {
             var intervalID;
             function handleResponse(o) {
                 if(o.responseText=='cancel') {
-                    document.forms['mform1'].elements['id_preview'].disabled=true;
-                    document.forms['mform1'].elements['id_save'].disabled=true;
+                    document.forms['mform1'].elements['preview'].disabled=true;
+                    document.forms['mform1'].elements['save'].disabled=true;
                     clearInterval(intervalID);
                     alert(\"$strlockcancelled\");
                 }
