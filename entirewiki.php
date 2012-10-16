@@ -56,7 +56,7 @@ $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 $format = required_param('format', PARAM_ALPHA);
 if ($format !== OUWIKI_FORMAT_HTML && $format !== OUWIKI_FORMAT_RTF && $format !== OUWIKI_FORMAT_TEMPLATE) {
     print_error('Unexpected format');
-} 
+}
 
 // Get basic wiki details for filename
 $filename = $course->shortname.'.'.$ouwiki->name;
@@ -85,12 +85,15 @@ $index = ouwiki_get_subwiki_index($subwiki->id);
 foreach ($index as $pageinfo) {
     // Get page details
     $pageversion = ouwiki_get_current_page($subwiki, $pageinfo->title);
-    // If the page hasn't really been created yet, skip it 
+    // If the page hasn't really been created yet, skip it
     if (is_null($pageversion->xhtml)) {
-        continue;        
+        continue;
     }
     $visibletitle = $pageversion->title === '' ? get_string('startpage', 'ouwiki') : $pageversion->title;
-    
+
+    $pageversion->xhtml = file_rewrite_pluginfile_urls($pageversion->xhtml, 'pluginfile.php',
+            $context->id, 'mod_ouwiki', 'content', $pageversion->versionid);
+
     switch ($format) {
         case OUWIKI_FORMAT_TEMPLATE:
             print '<page>';
@@ -113,22 +116,22 @@ foreach ($index as $pageinfo) {
             print '</div>';
             break;
     }
-    
+
     if ($first) {
         $first = false;
-    }    
+    }
 }
 
 switch ($format) {
     case OUWIKI_FORMAT_TEMPLATE:
         print '</wiki>';
         break;
-        
+
     case OUWIKI_FORMAT_RTF:
         $html .= '</root>';
         rtf_from_html($filename.'.rtf', $html);
         break;
-        
+
     case OUWIKI_FORMAT_HTML:
         print '</div>';
         ouwiki_print_footer($course, $cm, $subwiki);
