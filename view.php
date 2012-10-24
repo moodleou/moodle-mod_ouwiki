@@ -62,7 +62,10 @@ ouwiki_print_tabs('view', $pagename, $subwiki, $cm, $context, $pageversion ? tru
 
 if (($pagename === '' || $pagename === null) && strlen(preg_replace('/\s|<br\s*\/?>|<p>|<\/p>/',
         '', $ouwiki->intro)) > 0) {
-    print '<div class="ouw_intro">'.format_text($ouwiki->intro).'</div>';
+    $intro = format_text($ouwiki->intro);
+    $intro = file_rewrite_pluginfile_urls($intro, 'pluginfile.php', $context->id,
+            'mod_ouwiki', 'intro', null);
+    print '<div class="ouw_intro">' . $intro . '</div>';
 }
 
 if ($pageversion) {

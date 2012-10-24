@@ -153,6 +153,7 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
             // Insert version.
             $oldid = $data->id;
             $newversionid = $DB->insert_record('ouwiki_versions', $data);
+            $this->set_mapping('ouwiki_version', $oldid, $newversionid, true);
 
             // Insert any links.
             foreach ($data->links as $link) {
