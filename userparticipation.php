@@ -99,5 +99,5 @@ echo $ouwikioutput->ouwiki_render_user_participation($user, $changes, $cm, $cour
 
 // Footer
 if (empty($download)) {
-    ouwiki_print_footer($course, $cm, $subwiki, $pagename);
+    ouwiki_print_footer($course, $cm, $subwiki, $pagename, null, 'view');
 }

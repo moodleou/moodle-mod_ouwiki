@@ -103,5 +103,5 @@ $ouwikioutput->ouwiki_render_participation_list($cm, $course, $pagename, $groupi
 
 // Footer
 if (empty($download)) {
-    ouwiki_print_footer($course, $cm, $subwiki, $pagename);
+    ouwiki_print_footer($course, $cm, $subwiki, $pagename, null, 'view');
 }
