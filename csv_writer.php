@@ -78,8 +78,7 @@ class csv_writer {
      */
     public function quote($varstr) {
         if ($this->_excelcsv) {
-            $tl = textlib_get_instance();
-            return $tl->convert('"'.str_replace('"', "'", $varstr).'"', 'UTF-8', 'UTF-16LE');
+            return textlib::convert('"'.str_replace('"', "'", $varstr).'"', 'UTF-8', 'UTF-16LE');
         } else {
             return '"'.str_replace('"', "'", $varstr).'"';
         }
