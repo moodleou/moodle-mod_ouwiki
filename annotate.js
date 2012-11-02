@@ -68,12 +68,6 @@ function ouwiki_annotate_init() {
             document, {keys:[27]}, function(types, args, obj) { ouwiki_annotate.annotationdialog.hide();
     })]);
 
-    // Make the form cancel button close the dialogue.
-    YAHOO.util.Event.addListener('id_cancel', 'click', function(e) {
-        ouwiki_annotate.annotationdialog.hide();
-        YAHOO.util.Event.preventDefault(e);
-    });
-
     // Nasty hack, remove once the YUI bug causing MDL-17594 is fixed.
     // https://sourceforge.net/tracker/index.php?func=detail&aid=2493426&group_id=165715&atid=836476
     var elementcauseinglayoutproblem = document.getElementById('_yuiResizeMonitor');
