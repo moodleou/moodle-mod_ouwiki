@@ -1787,6 +1787,37 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
         $doc->update($title, $content);
     }
 
+    // Check and remove any files not included in new version.
+    $unknownfiles = array();
+    $versioncontent = $DB->get_field('ouwiki_versions', 'xhtml', array('id' => $versionid));
+    if (! empty($version->previousversionid)) {
+        // Get any filenames in content.
+        preg_match_all("#@@PLUGINFILE@@/(\S)+([.]\w+)#", $versioncontent, $matches);
+        if (! empty($matches)) {
+            // Extract the file names from the matches.
+            $filenames = array();
+            foreach ($matches[0] as $match) {
+                // Get file name.
+                $match = str_replace('@@PLUGINFILE@@/', '', $match);
+                array_push($filenames, urldecode($match));
+            }
+
+            // Get version files.
+            if ($ouwikifiles = $fs->get_area_files($modcontext->id, 'mod_ouwiki', 'content',
+                $versionid)) {
+                // For each file check to see whether there is a match.
+                foreach ($ouwikifiles as $storedfile) {
+                    $storedfilename = $storedfile->get_filename();
+                    // If filename is a directory ignore - must be a valid file.
+                    if (!$storedfile->is_directory() && !in_array($storedfilename, $filenames)) {
+                        // Delete file.
+                        $storedfile->delete();
+                    }
+                }
+            }
+        }
+    }
+
     $transaction->allow_commit();
 }
 
