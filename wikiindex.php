@@ -155,7 +155,8 @@ FROM
     JOIN {ouwiki_versions} v ON v.pageid = p.id
     JOIN {files} f ON f.itemid = v.id
 WHERE
-    sw.id = ? AND f.contextid = ? AND f.component = 'mod_ouwiki'
+    sw.id = ? AND f.contextid = ? AND f.component = 'mod_ouwiki' AND f.filename NOT LIKE '.'
+    AND v.id IN (SELECT MAX(v.id) from {ouwiki_versions} v WHERE v.pageid = p.id)
     ", array($subwiki->id, $context->id), 0, 1);
     $anyfiles = count($result) > 0;
     print $ouwikioutput->render_export_all_li($subwiki, $anyfiles);
