@@ -252,8 +252,9 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
     $filepath = '/'.$context->id.'/mod_ouwiki/template/'.$ouwiki->id.$ouwiki->template;
     if ($file = $fs->get_file_by_hash(sha1($filepath)) AND !$file->is_directory()) {
-        $content = $file->get_content();;
-        $xml = DOMDocument::loadXML($content);
+        $content = $file->get_content();
+        $xml =  new DOMDocument();
+        $xml->loadXML($content);
         if (!$xml) {
             ouwiki_error('Failed to load wiki template - not valid XML.
                     Check file in XML viewer and correct.');
