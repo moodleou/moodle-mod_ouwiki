@@ -257,8 +257,11 @@ function ouwiki_ousearch_get_document($document) {
 
     $params = array($document->coursemoduleid);
 
-    $titlecondition = ' AND p.title = ?';
-    $params[] = $document->stringref;
+    $titlecondition = 'AND p.title =  \'\'';
+    if (!empty($document->stringref)) {
+        $titlecondition = ' AND p.title = ?';
+        $params[] = $document->stringref;
+    }
 
     $groupconditions = '';
     if (is_null($document->groupid)) {
