@@ -222,7 +222,7 @@ if (!$lockok) {
     $overridelock = get_string('overridelock', 'ouwiki');
     $overridebutton = $canoverride ? "
 <form class='ouwiki_overridelock' action='override.php' method='post'>
-  <input type='hidden' name='redirpage' value='annotate'>
+  <input type='hidden' name='redirpage' value='annotate' />
   $wikiformfields
   <input type='submit' value='$overridelock' />
 </form>
@@ -245,10 +245,9 @@ if (!$lockok) {
     </form>
     $overridebutton
   </div>
-  </div>";
+  </div><div>";
 
-    add_to_log($course->id, 'ouwiki', 'annotate page', "/mod/ouwiki/annotate.php?id=$cm->id", "$ouwiki->id");
-    print $OUTPUT->footer();
+    ouwiki_print_footer($course, $cm, $subwiki, $pagename);
     exit;
 }
 // The page is now locked to us! Go ahead and print edit form

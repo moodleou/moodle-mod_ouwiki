@@ -215,10 +215,9 @@ if ($save) {
             .'</form>'
             .'<p>'.$savefailcontent.'</p>'
             .'<div class="ouwiki_savefailcontent">'.$actualcontent.'</div>'
-            .'</div>';
+            .'</div><div>';
 
-        add_to_log($course->id, 'ouwiki', 'edit', "/mod/ouwiki/edit.php?id=$cm->id", "$ouwiki->id");
-        echo $OUTPUT->footer();
+        ouwiki_print_footer($course, $cm, $subwiki, $pagename);
         exit;
     }
 
@@ -335,10 +334,9 @@ if (!$lockok) {
         <input type='submit' value='$overridelock' /></form>"
         : '';
 
-    print "</div></div>";
+    print "</div></div><div>";
 
-    add_to_log($course->id, 'ouwiki', 'edit', "/mod/ouwiki/edit.php?id=$cm->id", "$ouwiki->id");
-    echo $OUTPUT->footer();
+    ouwiki_print_footer($course, $cm, $subwiki, $pagename);
     exit;
 }
 

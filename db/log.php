@@ -31,7 +31,6 @@ global $DB;
 $logs = array(
     array('module' => 'ouwiki', 'action' => 'add', 'mtable' => 'ouwiki', 'field' => 'name'),
     array('module' => 'ouwiki', 'action' => 'annotate', 'mtable' => 'ouwiki', 'field' => 'name'),
-    array('module' => 'ouwiki', 'action' => 'annotate page', 'mtable' => 'ouwiki', 'field' => 'name'),
     array('module' => 'ouwiki', 'action' => 'diff', 'mtable' => 'ouwiki', 'field' => 'name'),
     array('module' => 'ouwiki', 'action' => 'edit', 'mtable' => 'ouwiki', 'field' => 'name'),
     array('module' => 'ouwiki', 'action' => 'entirewiki', 'mtable' => 'ouwiki', 'field' => 'name'),
