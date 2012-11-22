@@ -203,7 +203,7 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
     }
 
     protected function after_execute() {
-        global $DB;
+        global $DB, $CFG;
         $transaction = $DB->start_delegated_transaction();
         $ouwikiid = $this->get_task()->get_activityid();
 
@@ -318,5 +318,11 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
         $rs->close();
 
         $transaction->allow_commit();
+
+        require_once($CFG->dirroot . '/mod/ouwiki/locallib.php');
+        // Create search index if user data restored.
+        if ($this->get_setting_value('userinfo') && ouwiki_search_installed()) {
+            ouwiki_ousearch_update_all(false, $this->get_courseid());
+        }
     }
 }
