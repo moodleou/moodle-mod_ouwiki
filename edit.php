@@ -119,7 +119,7 @@ $formdata = null;
 if ($formdata = $mform->get_data()) {
     if ($content = $formdata->content['text']) {
         // Check if they used the plaintext editor, if so fixup linefeeds
-        if ($formdata->content['format'] != FORMAT_HTML) {
+        if ((isset($formdata->content['format'])) && ($formdata->content['format'] != FORMAT_HTML)) {
             $content = ouwiki_plain_to_xhtml($content);
         }
         $content = ouwiki_format_xhtml_a_bit($content); // Tidy up HTML
