@@ -15,10 +15,10 @@ except [[links]].
 
 Branch:
 
-This is the development branch including latest, untested code. If you would
-like a tested version equivalent to an OU live release, please switch to a
-branch that matches your Moodle version (e.g. MOODLE_22_STABLE) using the
-above dropdown.
+This is the MOODLE_23_STABLE branch. This branch is configured to match the latest
+stable branch at the Open University that uses Moodle 2.3. Once we stop using
+Moodle 2.3, there will be no more fixes in this branch (but of course anyone can
+fork the reposistory and make a fixed version).
 
 Support:
 
@@ -53,7 +53,7 @@ community for testing on other systems.
 
 Requires:
 
-Moodle 2.2+
+Moodle 2.3+
 Postgres / MySQL
 
 Install:
