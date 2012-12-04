@@ -631,11 +631,11 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                         ouwiki_display_wiki_parameters('', $subwiki, $cm, OUWIKI_PARAMS_URL);
                 $participationpage .= '&user='.$USER->id;
             }
+            if (($cm->groupmode != 0) && isset($subwiki->groupid)) {
+                $participationpage .= '&group='.$subwiki->groupid;
+            }
 
             if ($canview > OUWIKI_NO_PARTICIPATION) {
-                if (($cm->groupmode != 0) && isset($subwiki->groupid)) {
-                    $participationpage .= '&group='.$subwiki->groupid;
-                }
                 if ($page == 'participation.php' || $page == 'userparticipation.php') {
                     $output .= html_writer::start_tag('li',
                         array('id' => 'ouwiki_nav_participation'));

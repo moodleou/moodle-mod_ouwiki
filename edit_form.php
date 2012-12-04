@@ -32,6 +32,7 @@ class mod_ouwiki_edit_page_form extends moodleform {
         //editor
         $mform->addElement('editor', 'content', get_string('content'), null, array('maxfiles' => EDITOR_UNLIMITED_FILES));
         $mform->addHelpButton('content', 'formathtml', 'wiki');
+        $mform->addRule('content', '', 'required', null, 'server');
 
         // attachments
         if ($this->_customdata->attachments) {
