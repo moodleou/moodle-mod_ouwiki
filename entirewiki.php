@@ -29,6 +29,7 @@ require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
 $id = required_param('id', PARAM_INT); // Course Module ID
 $pagename = optional_param('page', '', PARAM_TEXT);
+$filesexist = optional_param('filesexist', 0, PARAM_INT);
 
 $url = new moodle_url('/mod/ouwiki/view.php', array('id' => $id, 'page' => $pagename));
 $PAGE->set_url($url);
@@ -82,6 +83,11 @@ switch ($format) {
 // Get list of all pages
 $first = true;
 $index = ouwiki_get_subwiki_index($subwiki->id);
+
+// Set up remove any links to files variables in xhtml.
+$pattern = '#<img(.*?)src="'. $CFG->wwwroot .'/pluginfile.php(.*?)/>#';
+$brokenimagestr = get_string('brokenimage', 'ouwiki');
+
 foreach ($index as $pageinfo) {
     // Get page details
     $pageversion = ouwiki_get_current_page($subwiki, $pageinfo->title);
@@ -96,6 +102,11 @@ foreach ($index as $pageinfo) {
 
     switch ($format) {
         case OUWIKI_FORMAT_TEMPLATE:
+            // Remove any links to files in the xhtml.
+            if ($filesexist) {
+                $pageversion->xhtml = preg_replace($pattern, $brokenimagestr, $pageversion->xhtml);
+            }
+            // Print template wiki page.
             print '<page>';
             if ($pageversion->title !== '') {
                 print '<title>'.htmlspecialchars($pageversion->title).'</title>';

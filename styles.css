@@ -807,3 +807,8 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
 #page-mod-ouwiki-user-participation .qgprefs #optiontable {text-align:right;margin-left:auto;}
 
 #page-mod-ouwiki-user-participation .savegradesbutton {text-align: center;}
+
+/** Style for missing template images message **/
+.imgremoved {
+    font-weight:bold;
+}
