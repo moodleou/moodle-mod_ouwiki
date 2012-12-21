@@ -87,6 +87,10 @@ if ($save) {
         print_error('cannotlockpage', 'ouwiki', 'view.php?'.ouwiki_display_wiki_parameters($pagename, $subwiki, $cm, OUWIKI_PARAMS_URL));
     }
 
+    // Format XHTML so it matches that sent to annotation marker creation code.
+    $pageversion->xhtml = ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, null,
+            $pageversion->xhtmlformat);
+
     $userid = !$userid ? $USER->id : $userid;
     $neednewversion = false;
 
