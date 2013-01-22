@@ -58,6 +58,8 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $title = $pageversion->title === '' ? get_string('startpage', 'ouwiki') :
                 htmlspecialchars($pageversion->title);
 
+        $pageversion->xhtml = ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, null,
+                $pageversion->xhtmlformat);
         // setup annotations according to the page we are on
         if ($page == 'view') {
             // create the annotations
@@ -70,8 +72,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             $pageversion->xhtml = ouwiki_highlight_existing_annotations($pageversion->xhtml, $annotations, 'annotate');
         }
 
-        // Must rewrite plugin urls AFTER doing annotations because they depend on byte
-        // position in unmolested data from db
+        // Must rewrite plugin urls AFTER doing annotations because they depend on byte position.
         $pageversion->xhtml = file_rewrite_pluginfile_urls($pageversion->xhtml, 'pluginfile.php',
                 $modcontext->id, 'mod_ouwiki', 'content', $pageversion->versionid);
 
@@ -138,8 +139,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $output .= html_writer::end_tag('div');
 
         // Content of page
-        $output .= ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, null,
-                $pageversion->xhtmlformat);
+        $output .= $pageversion->xhtml;
 
         if ($gewgaws) {
             // Add in links/etc. around headings.
