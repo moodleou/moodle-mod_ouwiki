@@ -293,12 +293,12 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                     $output .= html_writer::start_tag('span', array('id' => 'expandcollapseannotations'));
                     $output .= ' '.html_writer::tag('a', get_string('expandallannotations', 'ouwiki'),
                         array(
-                            'href' => 'javascript:ouwikiShowAllAnnotations("block")',
+                            'href' => 'javascript:M.mod_ouwiki_view.ouwikiShowAllAnnotations("block")',
                             'id' => 'expandallannotations'
                         ));
                     $output .= html_writer::tag('a', get_string('collapseallannotations', 'ouwiki'),
                         array(
-                            'href' => 'javascript:ouwikiShowAllAnnotations("none")',
+                            'href' => 'javascript:M.mod_ouwiki_view.ouwikiShowAllAnnotations("none")',
                             'id' => 'collapseallannotations'
                         ));
                     $output .= html_writer::end_tag('span');

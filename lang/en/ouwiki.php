@@ -501,3 +501,6 @@ $string['hideannotationicons'] = 'Hide annotations';
 $string['errorcoursesubwiki'] = 'Must be &lsquo;No groups&rsquo; unless sub-wikis option is &lsquo;One wiki per group&rsquo;';
 $string['errorgroupssubwiki'] = 'Must be enabled when sub-wikis option is &lsquo;One wiki per group&rsquo;';
 $string['brokenimage'] = '<span class="imgremoved"> Uploaded images are not included in wiki templates. </span>';
+
+$string['add']='Add';
+$string['cancel']='Cancel';

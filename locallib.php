@@ -2527,7 +2527,6 @@ function ouwiki_print_editlock($lock, $ouwiki) {
         $nojs = $nojsstart.$nojsdisabled.' '.$nojswarning.
             '<img src="nojslock.php?lockid='.$lock->id.'" alt=""/></p>';
 
-        $PAGE->requires->yui2_lib(array('yahoo', 'event', 'connection'));
         $strlockcancelled = ouwiki_javascript_escape(get_string('lockcancelled', 'ouwiki'));
         $intervalms = OUWIKI_LOCK_RECONFIRM * 1000;
 
@@ -2567,7 +2566,7 @@ function ouwiki_print_editlock($lock, $ouwiki) {
         print "<script type='text/javascript'>
             var intervalID;
             function handleResponse(o) {
-                if(o.responseText=='cancel') {
+                if (o.responseText=='cancel') {
                     document.forms['mform1'].elements['preview'].disabled=true;
                     document.forms['mform1'].elements['save'].disabled=true;
                     clearInterval(intervalID);
@@ -2578,9 +2577,16 @@ function ouwiki_print_editlock($lock, $ouwiki) {
                 // Ignore for now
             }
             intervalID=setInterval(function() {
-                YAHOO.util.Connect.asyncRequest('POST','confirmlock.php',
-                    {success:handleResponse,failure:handleFailure},'lockid={$lock->id}');
-                },$intervalms);
+                var cfg = {
+                    method: 'POST',
+                    data: 'lockid={$lock->id}',
+                    on: {
+                        success: handleResponse,
+                        failure: handleFailure
+                    }
+                };
+                Y.io('confirmlock.php', cfg);
+            }, $intervalms);
             $timeoutscript
             </script>
             <noscript>

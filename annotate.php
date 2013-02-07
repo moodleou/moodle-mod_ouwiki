@@ -80,7 +80,7 @@ if (!$cancel) {
     list($lockok, $lock) = ouwiki_obtain_lock($ouwiki, $pageversion->pageid);
 }
 
-// Handle save 
+// Handle save
 if ($save) {
     if (!$lockok) {
         ouwiki_release_lock($pageversion->pageid);
@@ -99,7 +99,7 @@ if ($save) {
     $edited_annotations = array();
     foreach ($_POST as $key => $value){
         if (strpos($key, 'edit') === 0) {
-            $edited_annotations[substr($key,4)] = optional_param($key, null, PARAM_TEXT);            
+            $edited_annotations[substr($key,4)] = optional_param($key, null, PARAM_TEXT);
         } else if (strpos($key, 'new') === 0) {
             $new_annotations[substr($key,3)] = optional_param($key, null, PARAM_TEXT);
         }
@@ -230,7 +230,7 @@ if (!$lockok) {
   $wikiformfields
   <input type='submit' value='$overridelock' />
 </form>
-" : '';    
+" : '';
     $cancel = get_string('cancel');
     $tryagain = get_string('tryagain', 'ouwiki');
     print "
@@ -336,15 +336,16 @@ echo '    </div>';
 echo '</div>';
 
 // init JS module
-if(ajaxenabled()) {
-    $annotateconfig = new stdClass;
-    $annotateconfig->url = $url->out(true, array());
-    $annotateconfig->save = get_string('add');
-    $annotateconfig->cancel = get_string('cancel');
-    $PAGE->requires->yui2_lib('container');
-    $PAGE->requires->yui2_lib('dragdrop');
-    $PAGE->requires->data_for_js('ouwiki_annotate_config', $annotateconfig);
-    $PAGE->requires->js('/mod/ouwiki/annotate.js');
+if (ajaxenabled()) {
+    $stringlist[] = array('add', 'ouwiki');
+    $stringlist[] = array('cancel', 'ouwiki');
+    $jsmodule = array('name'     => 'mod_ouwiki_annotate',
+                      'fullpath' => '/mod/ouwiki/module.js',
+                      'requires' => array('base', 'event', 'io', 'node', 'anim', 'panel',
+                                          'yui2-container', 'yui2-dragdrop'),
+                      'strings'  => $stringlist
+                     );
+    $PAGE->requires->js_init_call('M.mod_ouwiki_annotate.init', array(), true, $jsmodule);
 }
 
 // close <div id="#ouwiki_belowtabs_annotate">

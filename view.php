@@ -103,22 +103,16 @@ if ($timelocked = ouwiki_timelocked($subwiki, $ouwiki, $context)) {
 
 // init JS module
 if (ajaxenabled()) {
-    $PAGE->requires->yui2_lib('event');
-    $PAGE->requires->yui2_lib('connection');
-    $PAGE->requires->yui2_lib('dom');
-    $PAGE->requires->yui2_lib('annimation');
-
     $stringlist[] = array('typeinsectionname', 'ouwiki');
     $stringlist[] = array('typeinpagename', 'ouwiki');
     $stringlist[] = array('collapseannotation', 'ouwiki');
     $stringlist[] = array('expandannotation', 'ouwiki');
-    $module = array(
-            'name'      => 'mod_ouwiki',
-            'fullpath'  => '/mod/ouwiki/view.js',
-            'requires'  => array('base'),
-            'strings'   => $stringlist
-    );
-    $PAGE->requires->js_init_call('M.mod_ouwiki.init', array(), false, $module);
+    $jsmodule = array('name'     => 'mod_ouwiki_view',
+                      'fullpath' => '/mod/ouwiki/module.js',
+                      'requires' => array('base', 'event', 'io', 'node', 'anim', 'panel'),
+                      'strings'  => $stringlist
+                     );
+    $PAGE->requires->js_init_call('M.mod_ouwiki_view.init', array(), true, $jsmodule);
 }
 
 // Footer
