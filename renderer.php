@@ -846,6 +846,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 echo $table->grade_form_footer();
             }
         }
+        $table->finish_output();
     }
 
     /**
@@ -984,6 +985,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $this->ouwiki_render_user_grade($course, $cm, $ouwiki, $user, $pagename, $groupid);
             }
         }
+        $table->finish_output();
     }
 
     /**
