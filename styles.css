@@ -782,6 +782,10 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
     margin-right:5px;
 }
 
+#page-mod-ouwiki-edit .fp-pathbar {
+    display: none;
+}
+
 /** Styles for participation.php **/
 #page-mod-ouwiki-participation fieldset.felement {margin-left: 16%;}
 #page-mod-ouwiki-participation form#options div {text-align:right;margin-left:auto;margin-right:20px;}
@@ -807,3 +811,8 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
 #page-mod-ouwiki-user-participation .qgprefs #optiontable {text-align:right;margin-left:auto;}
 
 #page-mod-ouwiki-user-participation .savegradesbutton {text-align: center;}
+
+/** Style for missing template images message **/
+.imgremoved {
+    font-weight:bold;
+}

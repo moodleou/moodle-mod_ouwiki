@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Save template feature. Saves entire subwiki contents as an XML template.
@@ -29,6 +28,7 @@ require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
 $id = required_param('id', PARAM_INT); // Course Module ID
 $pagename = optional_param('page', '', PARAM_TEXT);
+$filesexist = optional_param('filesexist', 0, PARAM_INT);
 
 $url = new moodle_url('/mod/ouwiki/view.php', array('id' => $id, 'page' => $pagename));
 $PAGE->set_url($url);
@@ -60,11 +60,14 @@ if ($format !== OUWIKI_FORMAT_HTML && $format !== OUWIKI_FORMAT_RTF && $format !
 
 // Get basic wiki details for filename
 $filename = $course->shortname.'.'.$ouwiki->name;
-$filename = preg_replace('/[^A-Za-z0-9.-]/','_', $filename);
+$filename = preg_replace('/[^A-Za-z0-9.-]/' , '_', $filename);
 
 switch ($format) {
     case OUWIKI_FORMAT_TEMPLATE:
         header('Content-Type: text/xml; encoding=UTF-8');
+        header('Cache-Control: public');
+        header('Pragma: public');
+        header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
         header('Content-Disposition: attachment; filename="'.$filename.'.template.xml"');
         print '<wiki>';
         break;
@@ -82,6 +85,11 @@ switch ($format) {
 // Get list of all pages
 $first = true;
 $index = ouwiki_get_subwiki_index($subwiki->id);
+
+// Set up remove any links to files variables in xhtml.
+$pattern = '#<img(.*?)src="'. $CFG->wwwroot .'/pluginfile.php(.*?)/>#';
+$brokenimagestr = get_string('brokenimage', 'ouwiki');
+
 foreach ($index as $pageinfo) {
     // Get page details
     $pageversion = ouwiki_get_current_page($subwiki, $pageinfo->title);
@@ -96,6 +104,11 @@ foreach ($index as $pageinfo) {
 
     switch ($format) {
         case OUWIKI_FORMAT_TEMPLATE:
+            // Remove any links to files in the xhtml.
+            if ($filesexist) {
+                $pageversion->xhtml = preg_replace($pattern, $brokenimagestr, $pageversion->xhtml);
+            }
+            // Print template wiki page.
             print '<page>';
             if ($pageversion->title !== '') {
                 print '<title>'.htmlspecialchars($pageversion->title).'</title>';

@@ -479,7 +479,7 @@ function ouwiki_get_parameter($name, $value, $type) {
  * @param string $querytext for use when changing groups against search criteria
  */
 function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $course, $actionurl = 'view.php', $querytext = '') {
-    global $USER, $DB;
+    global $USER, $DB, $OUTPUT;
 
     if ($ouwiki->subwikis == OUWIKI_SUBWIKIS_SINGLE) {
         return '';
@@ -546,27 +546,30 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
             ouwiki_error("Unexpected subwikis value: {$ouwiki->subwikis}");
     }
 
-    $out = '<div class="ouw_subwiki"><label for="wikiselect">'.get_string('wikifor', 'ouwiki').
-            '</label>';
+    $out = '<div class="ouw_subwiki">';
     if ($choicefield && count($choices) > 1) {
-        $selectedid = $choicefield == 'user' ? $subwiki->userid : $subwiki->groupid;
-        $out .= '<form method="get" action="'.$actionurl.'" class="ouwiki_otherwikis"><div>';
-        $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id',
-                'value' => $cm->id));
+        $actionquery = '';
         if (!empty($querytext)) {
-            $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'query',
-                    'value' => $querytext));
+            $actionquery = '&amp;query=' . rawurlencode($querytext);
         }
-        $out .= '<select name="'.$choicefield.'" id="wikiselect">';
-        foreach ($choices as $choice) {
-            $selected = $choice->id == $selectedid ? ' selected="selected"' : '';
-            $out .= '<option value="'.$choice->id.'"'.$selected.'>'.
-                    htmlspecialchars($choice->name).'</option>';
+        $actionurl = '/mod/ouwiki/'. $actionurl .'?id=' . $cm->id . $actionquery;
+        $urlroot = new moodle_url($actionurl);
+        if ($choicefield == 'user') {
+            // Individuals.
+            $individualsmenu = array();
+            foreach ($choices as $choice) {
+                $individualsmenu[$choice->id] = $choice->name;
+            }
+            $select = new single_select($urlroot, 'user', $individualsmenu, $subwiki->userid, null, 'selectuser');
+            $select->label = get_string('wikifor', 'ouwiki');
+            $output = $OUTPUT->render($select);
+            $out .= '<div class="individualselector">'.$output.'</div>';
+        } else if ($choicefield == 'group') {
+            // Group mode.
+            $out .= groups_print_activity_menu($cm, $urlroot, true, true);
         }
-        $out .= '</select> <input type="submit" value="'.get_string('changebutton', 'ouwiki').
-                '" /></div></form>';
     } else {
-        $out .= $wikifor;
+        $out .= get_string('wikifor', 'ouwiki') . $wikifor;
     }
     $out .= '</div>';
 
@@ -2704,9 +2707,9 @@ function ouwiki_get_search_form($subwiki, $cmid) {
     }
     $out .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'query',
             'id' => 'ouwiki_searchquery', 'value' => $query));
-    $out .= html_writer::empty_tag('input', array('type' => 'submit',
-            'id' => 'ousearch_searchbutton', 'value' => '', 'alt' => get_string('search'),
-            'title' => get_string('search')));
+    $out .= html_writer::empty_tag('input', array('type' => 'image',
+            'id' => 'ousearch_searchbutton', 'alt' => get_string('search'),
+            'title' => get_string('search'), 'src' => $OUTPUT->pix_url('i/search')));
     $out .= html_writer::end_tag('div');
     $out .= html_writer::end_tag('form');
     return $out;
