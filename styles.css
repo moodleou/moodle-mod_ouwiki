@@ -249,7 +249,7 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
 #page-mod-ouwiki-wikiindex .ouw_missingfrom {
     font-size:0.85em;
 }
-#page-mod-ouwiki-wikiindex h2 {
+#page-mod-ouwiki-wikiindex #ouwiki_belowtabs h2 {
     font-size:1.0em;
     margin-bottom:0.5em;
     margin-top:2em;
