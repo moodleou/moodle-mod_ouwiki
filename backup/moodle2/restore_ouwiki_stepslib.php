@@ -68,6 +68,7 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
         $this->apply_activity_instance($newitemid);
         // Get OU Wiki id for later use.
         $this->ouwikiid = $newitemid;
+        $this->set_mapping('ouwiki', $oldid, $newitemid);
     }
 
     protected function process_ouwiki_subwiki($data) {
@@ -212,6 +213,7 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
 
         // Add ouwiki related files, no need to match by itemname (just internally handled context).
         $this->add_related_files('mod_ouwiki', 'intro', null);
+        $this->add_related_files('mod_ouwiki', 'template', 'ouwiki');
 
         // Add post related files.
         $this->add_related_files('mod_ouwiki', 'attachment', 'ouwiki_version');

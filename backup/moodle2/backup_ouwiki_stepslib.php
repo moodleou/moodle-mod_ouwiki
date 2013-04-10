@@ -36,8 +36,13 @@ class backup_ouwiki_activity_structure_step extends backup_activity_structure_st
         // To know if we are including userinfo
         $userinfo = $this->get_setting_value('userinfo');
 
+        $els = array('name', 'subwikis', 'intro', 'editbegin', 'editend', 'annotation',
+                'introformat', 'completionedits', 'completionpages', 'enablewordcount');
+        if (!$userinfo) {
+            $els[] = 'template';
+        }
         // Define each element separated
-        $ouwiki = new backup_nested_element('ouwiki', array('id'), array('name', 'subwikis', 'intro', 'editbegin', 'editend', 'annotation' , 'introformat', 'completionedits', 'completionpages', 'enablewordcount'));
+        $ouwiki = new backup_nested_element('ouwiki', array('id'), $els);
 
         $subwikis = new backup_nested_element('subs');
 
@@ -102,6 +107,9 @@ class backup_ouwiki_activity_structure_step extends backup_activity_structure_st
 
         // Define file annotations
         $ouwiki->annotate_files('mod_ouwiki', 'intro', null); // This file area hasn't itemid
+        if (!$userinfo) {
+            $ouwiki->annotate_files('mod_ouwiki', 'template', 'id');
+        }
         $version->annotate_files('mod_ouwiki', 'attachment', 'id');
         $version->annotate_files('mod_ouwiki', 'content', 'id');
 
