@@ -78,7 +78,7 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         // Template (only on creation)
         if (empty($this->_cm)) {
             $filepickeroptions = array();
-            $filepickeroptions['filetypes'] = '*';
+            $filepickeroptions['accepted_types'] = array('.xml', '.zip');
             $filepickeroptions['maxbytes'] = $COURSE->maxbytes;
             $mform->addElement('filepicker', 'template_file', get_string('template', 'ouwiki'), null, $filepickeroptions);
             $mform->addHelpButton('template_file', 'template', 'ouwiki');

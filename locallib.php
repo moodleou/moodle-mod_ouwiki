@@ -250,10 +250,20 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
     }
 
     $fs = get_file_storage();
+    $zip = get_file_packer();
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
     $filepath = '/'.$context->id.'/mod_ouwiki/template/'.$ouwiki->id.$ouwiki->template;
     if ($file = $fs->get_file_by_hash(sha1($filepath)) AND !$file->is_directory()) {
-        $content = $file->get_content();
+        $xmlfilename = strtolower(get_string('template', 'mod_ouwiki')) . '.xml';
+        if (!$xmlfile = $fs->get_file($context->id, 'mod_ouwiki', 'template', $ouwiki->id, '/',
+                $xmlfilename)) {
+            // XML (and other files) not extracted yet. Do once only.
+            $zip->extract_to_storage($file, $context->id, 'mod_ouwiki', 'template', $ouwiki->id, '/');
+            $xmlfile = $fs->get_file($context->id, 'mod_ouwiki', 'template', $ouwiki->id, '/',
+                $xmlfilename);
+        }
+
+        $content = $xmlfile->get_content();
         $xml =  new DOMDocument();
         $xml->loadXML($content);
         if (!$xml) {
@@ -272,6 +282,8 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
             }
             $title = null;
             $xhtml = null;
+            $oldcontextid = null;
+            $oldpagever = null;
             for ($child = $page->firstChild; $child; $child = $child->nextSibling) {
                 if ($child->nodeType != XML_ELEMENT_NODE) {
                     continue;
@@ -296,6 +308,9 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
                     case 'xhtml':
                         $xhtml = $text;
                         break;
+                    case 'versionid':
+                        $oldversionid = (int) $text;
+                        break;
                     default:
                         ouwiki_error('Failed to load wiki template - unexpected element &lt;'.
                                 $child->tagName.'>.');
@@ -304,11 +319,23 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
             if ($xhtml === null) {
                 ouwiki_error('Failed to load wiki template - required &lt;xhtml>.');
             }
-
             // note: because templates are created in code outside of ouwiki this does not
             // handle page attachments
-            ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $title, $xhtml, -1, -1, -1,
-                    true);
+            $newverid = ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $title, $xhtml,
+                     -1, -1, -1, true);
+
+            //copy any images associated with old version id.
+            if ($oldfiles = $fs->get_directory_files($context->id, 'mod_ouwiki', 'template',
+                    $ouwiki->id, "/$oldversionid/")) {
+                foreach ($oldfiles as $oldfile) {
+                    // copy this file to the version record.
+                    $fs->create_file_from_storedfile(array(
+                            'contextid' => $context->id,
+                            'filearea' => 'content',
+                            'itemid' => $newverid,
+                            'filepath' => '/'), $oldfile);
+                }
+            }
         }
     } else {
         ouwiki_error('Failed to load wiki template - file missing.');
@@ -1824,6 +1851,7 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     }
 
     $transaction->allow_commit();
+    return $versionid;
 }
 
 /**

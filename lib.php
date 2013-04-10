@@ -101,6 +101,11 @@ function ouwiki_delete_instance($id) {
 
     $cm = get_coursemodule_from_instance('ouwiki', $id, 0, false, MUST_EXIST);
 
+    // Delete associated template data.
+    $context = context_module::instance($cm->id);
+    $fs = get_file_storage();
+    $fs->delete_area_files($context->id, 'mod_ouwiki', 'template', $id);
+
     // Delete search data
     if (ouwiki_search_installed()) {
         local_ousearch_document::delete_module_instance_data($cm);

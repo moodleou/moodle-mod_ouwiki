@@ -64,12 +64,9 @@ $filename = preg_replace('/[^A-Za-z0-9.-]/' , '_', $filename);
 
 switch ($format) {
     case OUWIKI_FORMAT_TEMPLATE:
-        header('Content-Type: text/xml; encoding=UTF-8');
-        header('Cache-Control: public');
-        header('Pragma: public');
-        header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
-        header('Content-Disposition: attachment; filename="'.$filename.'.template.xml"');
-        print '<wiki>';
+        $xml = '<wiki>';
+        $files = array();
+        $fs = get_file_storage();
         break;
     case OUWIKI_FORMAT_RTF:
         require_once($CFG->dirroot.'/local/rtf.php');
@@ -85,9 +82,6 @@ switch ($format) {
 // Get list of all pages
 $first = true;
 $index = ouwiki_get_subwiki_index($subwiki->id);
-
-// Set up remove any links to files variables in xhtml.
-$pattern = '#<img(.*?)src="'. $CFG->wwwroot .'/pluginfile.php(.*?)/>#';
 $brokenimagestr = get_string('brokenimage', 'ouwiki');
 
 foreach ($index as $pageinfo) {
@@ -99,22 +93,38 @@ foreach ($index as $pageinfo) {
     }
     $visibletitle = $pageversion->title === '' ? get_string('startpage', 'ouwiki') : $pageversion->title;
 
-    $pageversion->xhtml = file_rewrite_pluginfile_urls($pageversion->xhtml, 'pluginfile.php',
-            $context->id, 'mod_ouwiki', 'content', $pageversion->versionid);
+    if ($format != OUWIKI_FORMAT_TEMPLATE) {
+        $pageversion->xhtml = file_rewrite_pluginfile_urls($pageversion->xhtml, 'pluginfile.php',
+                $context->id, 'mod_ouwiki', 'content', $pageversion->versionid);
+    }
 
     switch ($format) {
         case OUWIKI_FORMAT_TEMPLATE:
-            // Remove any links to files in the xhtml.
-            if ($filesexist) {
-                $pageversion->xhtml = preg_replace($pattern, $brokenimagestr, $pageversion->xhtml);
-            }
             // Print template wiki page.
-            print '<page>';
+            $xml .= '<page>';
             if ($pageversion->title !== '') {
-                print '<title>'.htmlspecialchars($pageversion->title).'</title>';
+                $xml .= '<title>'.htmlspecialchars($pageversion->title).'</title>';
             }
-            print '<xhtml>'.htmlspecialchars($pageversion->xhtml).'</xhtml>';
-            print '</page>';
+            $xml .= '<versionid>' . $pageversion->versionid . '</versionid>';
+            // Copy images found in content.
+            preg_match_all('#<img.*?src="@@PLUGINFILE@@/(.*?)".*?/>#', $pageversion->xhtml, $matches);
+            if (! empty($matches)) {
+                // Extract the file names from the matches.
+                foreach ($matches[1] as $key => $match) {
+                    // Get file name and copy to zip.
+                    $match = urldecode($match);
+                    // copy image - on fail swap tag with string.
+                    if ($file = $fs->get_file($context->id, 'mod_ouwiki', 'content',
+                            $pageversion->versionid, '/', $match)) {
+                        $files["/$pageversion->versionid/$match/"] = $file;
+                    } else {
+                        $pageversion->xhtml = str_replace($matches[0][$key], $brokenimagestr,
+                                $pageversion->xhtml);
+                    }
+                }
+            }
+            $xml .= '<xhtml>'.htmlspecialchars($pageversion->xhtml).'</xhtml>';
+            $xml .= '</page>';
             break;
         case OUWIKI_FORMAT_RTF:
             $html .= '<h1>'.htmlspecialchars($visibletitle).'</h1>';
@@ -137,7 +147,22 @@ foreach ($index as $pageinfo) {
 
 switch ($format) {
     case OUWIKI_FORMAT_TEMPLATE:
-        print '</wiki>';
+        $xml .= '</wiki>';
+        // Create temp xml file.
+        $filerec = new stdClass();
+        $filerec->contextid = $context->id;
+        $filerec->component = 'mod_ouwiki';
+        $filerec->filearea = 'temp';
+        $filerec->filepath = '/';
+        $filerec->itemid = $id;
+        $filerec->filename = strtolower(get_string('template', 'mod_ouwiki')) . '.xml';
+        $files[$filerec->filename] = $fs->create_file_from_string($filerec, $xml);
+        $zip = get_file_packer();
+        $file = $zip->archive_to_storage($files, $context->id, 'mod_ouwiki', 'temp', $id, '/', $filename . '.zip');
+        send_stored_file($file, 0, 0, true, array('dontdie' => true));
+        // Delete all our temp files used in this process.
+        $fs->delete_area_files($context->id, 'mod_ouwiki', 'temp', $id);
+        exit;
         break;
 
     case OUWIKI_FORMAT_RTF:
