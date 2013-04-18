@@ -1701,26 +1701,27 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
                     'attachment', $versionid, array('subdirs' => 0));
         }
     } else {
-        // need to copy over attached files from the previous version when
-        // editing without using form
-        if ($oldfiles = $fs->get_area_files($modcontext->id, 'mod_ouwiki', 'attachment',
-                $prevversion)) {
-            foreach ($oldfiles as $oldfile) {
-                // copy this file to the version record.
-                $fs->create_file_from_storedfile(array(
-                    'contextid' => $modcontext->id,
-                    'filearea' => 'attachment',
-                    'itemid' => $versionid), $oldfile);
-            }
-        }
         if ($oldfiles = $fs->get_area_files($modcontext->id, 'mod_ouwiki', 'content',
-            $prevversion)) {
+                $prevversion)) {
             foreach ($oldfiles as $oldfile) {
                 // copy this file to the version record.
                 $fs->create_file_from_storedfile(array(
                     'contextid' => $modcontext->id,
                     'filearea' => 'content',
                     'itemid' => $versionid), $oldfile);
+            }
+        }
+    }
+    if (!$formdata || (!empty($formdata->section) || !empty($formdata->newsection))) {
+        // copy attached files from previous version when no form or no attachments element.
+        if ($oldfiles = $fs->get_area_files($modcontext->id, 'mod_ouwiki', 'attachment',
+                $prevversion)) {
+            foreach ($oldfiles as $oldfile) {
+                // copy this file to the version record.
+                $fs->create_file_from_storedfile(array(
+                        'contextid' => $modcontext->id,
+                        'filearea' => 'attachment',
+                        'itemid' => $versionid), $oldfile);
             }
         }
     }
