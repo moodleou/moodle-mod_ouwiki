@@ -444,5 +444,17 @@ $mform->set_data($data);
 
 $mform->display();
 
+$stringlist = array(
+        array('savefailnetwork', 'ouwiki'),
+        array('savefailtitle', 'ouwiki'),
+);
+$jsmodule = array(
+        'name' => 'mod_ouwiki_edit',
+        'fullpath' => '/mod/ouwiki/module.js',
+        'requires' => array('base', 'event', 'io', 'node', 'anim', 'moodle-core-notification', 'button'),
+        'strings'  => $stringlist
+);
+$PAGE->requires->js_init_call('M.mod_ouwiki_edit.init', null, true, $jsmodule);
+
 // Footer
 ouwiki_print_footer($course, $cm, $subwiki, $pagename);

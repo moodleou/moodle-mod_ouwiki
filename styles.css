@@ -816,3 +816,11 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
 .imgremoved {
     font-weight:bold;
 }
+
+/** Styles for edit save fail dialogue **/
+#page-mod-ouwiki-edit .moodle-dialogue-base .moodle-dialogue-lightbox {
+    z-index: 5000 !important;
+}
+#page-mod-ouwiki-edit .moodle-dialogue-base .moodle-dialogue {
+    z-index: 5000 !important;
+}

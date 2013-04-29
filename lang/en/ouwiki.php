@@ -84,6 +84,9 @@ $string['savefailcontent']='Your version of the page is shown below so that you 
 the relevant parts into another program. If you put your changes back on the wiki later, be careful
 you don\'t overwrite somebody else\'s work.';
 $string['returntoview']='View current page';
+$string['savefailnetwork'] = '<p>Unfortunately, your changes cannot be saved at this time. This is due to a
+network error; the website is temporarily unavailable or you have been signed out. </p><p>Saving has been disabled
+on this page. In order to retain any changes you must copy the edited page content, access the Edit page again and then paste in your changes.</p>';
 
 $string['lockcancelled'] = 'Your editing lock has been overridden and somebody else is now editing this page. If you wish to keep your changes, please select and copy them before clicking Cancel; then try to edit again.';
 $string['nojsbrowser'] = 'Our apologies, but you are using a browser we do not fully support.';

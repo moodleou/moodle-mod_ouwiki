@@ -473,3 +473,72 @@ M.mod_ouwiki_annotate = {
         return nextmarkerid;
     }
 };
+
+M.mod_ouwiki_edit = {
+        Y : null,
+        init : function(Y, args) {
+            this.Y = Y;
+            this.YAHOO = Y.YUI2;
+            // Trap edit saving and test server is up.
+            var btns = Y.all('#save, #preview');
+            btns.on('click', function(e) {
+                function savefail() {
+                    // Save failed, alert of network or session issue.
+                    btns.set('disabled', true);
+                    var content = M.util.get_string('savefailnetwork', 'ouwiki');
+                    var panel = new M.core.dialogue({
+                        headerContent: M.util.get_string('savefailtitle', 'ouwiki'),
+                        bodyContent: content,
+                        width: 400,
+                        centered: true,
+                        render: true,
+                        zIndex: 5000,
+                        buttons: {
+                            footer: [
+                                {
+                                    name: 'ok',
+                                    label: M.util.get_string('close', 'form'),
+                                    action: oncancel
+                                }
+                            ]
+                        },
+                        plugins: [Y.Plugin.Drag],
+                        modal: true
+                    });
+                    function oncancel(evt) {
+                        evt.preventDefault();
+                        panel.hide();
+                    }
+                    e.preventDefault();
+                    // Trap cancel and make it a GET - so works with login.
+                    var cancel = Y.one('#cancel');
+                    cancel.on('click', function(e) {
+                        var form = Y.one('#ouwiki_belowtabs #mform1');
+                        var text = form.one('#fitem_id_content');
+                        var attach = form.one('#fitem_id_attachments');
+                        text.remove();
+                        attach.remove();
+                        form.set('method', 'get');
+                    });
+                }
+                function checksave(transactionid, response, args) {
+                    // Check response OK.
+                    if (response.responseText != 'ok') {
+                        // Send save failed due to login/session error.
+                        savefail();
+                    }
+                }
+                var cfg = {
+                    method: 'POST',
+                    data: 'sesskey=' + M.cfg.sesskey,
+                    on: {
+                        success: checksave,
+                        failure: savefail
+                    },
+                    sync: true,// Wait for result so we can cancel submit.
+                    timeout: 10000
+                };
+                Y.io('confirmloggedin.php', cfg);
+            });
+        }
+};
