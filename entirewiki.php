@@ -84,64 +84,75 @@ $first = true;
 $index = ouwiki_get_subwiki_index($subwiki->id);
 $brokenimagestr = get_string('brokenimage', 'ouwiki');
 
-foreach ($index as $pageinfo) {
-    // Get page details
-    $pageversion = ouwiki_get_current_page($subwiki, $pageinfo->title);
-    // If the page hasn't really been created yet, skip it
-    if (is_null($pageversion->xhtml)) {
-        continue;
-    }
-    $visibletitle = $pageversion->title === '' ? get_string('startpage', 'ouwiki') : $pageversion->title;
+$treemode = optional_param('type', '', PARAM_ALPHA) == 'tree';
+// If tree view specified.
+if (($treemode) && ($format == OUWIKI_FORMAT_HTML) ) {
+    ouwiki_build_tree($index);
+    // Print out in hierarchical form...
+    print '<ul class="ouw_indextree">';
+    $functionname = 'ouwiki_display_entirewiki_page_in_index';
+    print ouwiki_tree_index($functionname, reset($index)->pageid, $index, $subwiki, $cm, $context);
+    print '</ul>';
+} else {
+    foreach ($index as $pageinfo) {
+        // Get page details.
+        $pageversion = ouwiki_get_current_page($subwiki, $pageinfo->title);
+        // If the page hasn't really been created yet, skip it.
+        if (is_null($pageversion->xhtml)) {
+            continue;
+        }
+        $visibletitle = $pageversion->title === '' ? get_string('startpage', 'ouwiki') : $pageversion->title;
 
-    if ($format != OUWIKI_FORMAT_TEMPLATE) {
-        $pageversion->xhtml = file_rewrite_pluginfile_urls($pageversion->xhtml, 'pluginfile.php',
-                $context->id, 'mod_ouwiki', 'content', $pageversion->versionid);
-    }
+        if ($format != OUWIKI_FORMAT_TEMPLATE) {
+            $pageversion->xhtml = file_rewrite_pluginfile_urls($pageversion->xhtml, 'pluginfile.php',
+                    $context->id, 'mod_ouwiki', 'content', $pageversion->versionid);
+        }
 
-    switch ($format) {
-        case OUWIKI_FORMAT_TEMPLATE:
-            // Print template wiki page.
-            $xml .= '<page>';
-            if ($pageversion->title !== '') {
-                $xml .= '<title>'.htmlspecialchars($pageversion->title).'</title>';
-            }
-            $xml .= '<versionid>' . $pageversion->versionid . '</versionid>';
-            // Copy images found in content.
-            preg_match_all('#<img.*?src="@@PLUGINFILE@@/(.*?)".*?/>#', $pageversion->xhtml, $matches);
-            if (! empty($matches)) {
-                // Extract the file names from the matches.
-                foreach ($matches[1] as $key => $match) {
-                    // Get file name and copy to zip.
-                    $match = urldecode($match);
-                    // copy image - on fail swap tag with string.
-                    if ($file = $fs->get_file($context->id, 'mod_ouwiki', 'content',
-                            $pageversion->versionid, '/', $match)) {
-                        $files["/$pageversion->versionid/$match/"] = $file;
-                    } else {
-                        $pageversion->xhtml = str_replace($matches[0][$key], $brokenimagestr,
-                                $pageversion->xhtml);
+        switch ($format) {
+            case OUWIKI_FORMAT_TEMPLATE:
+                // Print template wiki page.
+                $xml .= '<page>';
+                if ($pageversion->title !== '') {
+                    $xml .= '<title>' . htmlspecialchars($pageversion->title) . '</title>';
+                }
+                $xml .= '<versionid>' . $pageversion->versionid . '</versionid>';
+                // Copy images found in content.
+                preg_match_all('#<img.*?src="@@PLUGINFILE@@/(.*?)".*?/>#', $pageversion->xhtml, $matches);
+                if (! empty($matches)) {
+                    // Extract the file names from the matches.
+                    foreach ($matches[1] as $key => $match) {
+                        // Get file name and copy to zip.
+                        $match = urldecode($match);
+                        // Copy image - on fail swap tag with string.
+                        if ($file = $fs->get_file($context->id, 'mod_ouwiki', 'content',
+                                $pageversion->versionid, '/', $match)) {
+                            $files["/$pageversion->versionid/$match/"] = $file;
+                        } else {
+                            $pageversion->xhtml = str_replace($matches[0][$key], $brokenimagestr,
+                                    $pageversion->xhtml);
+                        }
                     }
                 }
-            }
-            $xml .= '<xhtml>'.htmlspecialchars($pageversion->xhtml).'</xhtml>';
-            $xml .= '</page>';
-            break;
-        case OUWIKI_FORMAT_RTF:
-            $html .= '<h1>'.htmlspecialchars($visibletitle).'</h1>';
-            $html .= trim($pageversion->xhtml);
-            $html .= '<br /><br /><hr />';
-            break;
-        case OUWIKI_FORMAT_HTML:
-            print '<div class="ouw_entry"><a name="'.$pageversion->pageid.'"></a><h1 class="ouw_entry_heading"><a href="view.php?'.
-                ouwiki_display_wiki_parameters($pageversion->title, $subwiki, $cm).
-                '">'.htmlspecialchars($visibletitle).'</a></h1>';
-            print ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, $index, $pageversion->xhtmlformat);
-            print '</div>';
-            break;
-    }
+                $xml .= '<xhtml>' . htmlspecialchars($pageversion->xhtml) . '</xhtml>';
+                $xml .= '</page>';
+                break;
+            case OUWIKI_FORMAT_RTF:
+                $html .= '<h1>' . htmlspecialchars($visibletitle) . '</h1>';
+                $html .= trim($pageversion->xhtml);
+                $html .= '<br /><br /><hr />';
+                break;
+            case OUWIKI_FORMAT_HTML:
+                print '<div class="ouw_entry"><a name="' . $pageversion->pageid . '"></a><h1 class="ouw_entry_heading">' .
+                    '<a href="view.php?' . ouwiki_display_wiki_parameters($pageversion->title, $subwiki, $cm) .
+                    '">' . htmlspecialchars($visibletitle) . '</a></h1>';
+                print ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, $index, $pageversion->xhtmlformat);
+                print '</div>';
+                break;
+        }
 
-    if ($first) {
-        $first = false;
+        if ($first) {
+            $first = false;
+        }
     }
 }
 

@@ -607,6 +607,12 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
     border:none;
 }
 
+
+.ouw_indextree,
+.ouw_indextree li {
+    list-style-type:none;
+}
+
 #page-mod-ouwiki-entirewiki .ouw_entry h1.ouw_entry_heading {
     background:#dcedff;
     padding:4px 8px 8px;

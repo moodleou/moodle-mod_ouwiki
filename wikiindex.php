@@ -76,15 +76,15 @@ global $orphans;
 $index = ouwiki_get_subwiki_index($subwiki->id);
 
 $orphans = false;
+$func = 'ouwiki_display_wikiindex_page_in_index';
 if (count($index) == 0) {
     print '<p>'.get_string('startpagedoesnotexist', 'ouwiki').'</p>';
 } else if ($treemode) {
     ouwiki_build_tree($index);
     // Print out in hierarchical form...
     print '<ul class="ouw_indextree">';
-    print ouwiki_tree_index(reset($index)->pageid, $index, $subwiki, $cm);
+    print ouwiki_tree_index($func, reset($index)->pageid, $index, $subwiki, $cm);
     print '</ul>';
-
     foreach ($index as $indexitem) {
         if (count($indexitem->linksfrom) == 0 && $indexitem->title !== '') {
             $orphans = true;
@@ -95,7 +95,7 @@ if (count($index) == 0) {
     print '<ul class="ouw_index">';
     foreach ($index as $indexitem) {
         if (count($indexitem->linksfrom)!= 0 || $indexitem->title === '') {
-            print '<li>'.ouwiki_display_page_in_index($indexitem, $subwiki, $cm).'</li>';
+            print '<li>' . ouwiki_display_wikiindex_page_in_index($indexitem, $subwiki, $cm) . '</li>';
         } else {
             $orphans = true;
         }
@@ -108,7 +108,7 @@ if ($orphans) {
     print '<ul class="ouw_index">';
     foreach ($index as $indexitem) {
         if (count($indexitem->linksfrom) == 0 && $indexitem->title !== '') {
-            print '<li>'.ouwiki_display_page_in_index($indexitem, $subwiki, $cm).'</li>';
+            print '<li>' . ouwiki_display_wikiindex_page_in_index($indexitem, $subwiki, $cm) . '</li>';
         }
     }
     print '</ul>';
@@ -138,6 +138,12 @@ if (count($missing) > 0) {
     print '</div>';
 }
 
+$tree = 0;
+if (!empty($treemode)) {
+    $wikiparams.= '&amp;type=tree';
+    $tree = 1;
+}
+
 if (count($index) != 0) {
     print '<div class="ouw_entirewiki"><h2>'.get_string('entirewiki', 'ouwiki').'</h2>';
     print '<p>'.get_string('onepageview', 'ouwiki').'</p><ul>';
@@ -159,7 +165,8 @@ WHERE
     AND f.filearea = 'attachment' AND v.id IN (SELECT MAX(v.id) from {ouwiki_versions} v WHERE v.pageid = p.id)
     ", array($subwiki->id, $context->id), 0, 1);
     $anyfiles = count($result) > 0;
-    print $ouwikioutput->render_export_all_li($subwiki, $anyfiles);
+    $wikiparamsarray = array('subwikiid' => $subwiki->id, 'tree' => $tree);
+    print $ouwikioutput->render_export_all_li($subwiki, $anyfiles, $wikiparamsarray);
 
     if (has_capability('moodle/course:manageactivities', $context)) {
         $str = get_string('format_template', 'ouwiki');
@@ -179,86 +186,3 @@ WHERE
 
 // Footer
 ouwiki_print_footer($course, $cm, $subwiki, $pagename);
-
-/* Helper functions */
-
-function ouwiki_display_page_in_index($indexitem, $subwiki, $cm) {
-    global $ouwiki;
-    if ($startpage = $indexitem->title === '') {
-        $title = get_string('startpage', 'ouwiki');
-        $output = '<div class="ouw_index_startpage">';
-    } else {
-        $title = $indexitem->title;
-        $output = '';
-    }
-
-    $output .= '<a class="ouw_title" href="view.php?'.
-        ouwiki_display_wiki_parameters($indexitem->title, $subwiki, $cm).
-        '">'.htmlspecialchars($title).'</a>';
-    $lastchange = new StdClass;
-    $lastchange->userlink = ouwiki_display_user($indexitem, $cm->course);
-    $lastchange->date = ouwiki_recent_span($indexitem->timecreated).ouwiki_nice_date($indexitem->timecreated).'</span>';
-    $output .= '<div class="ouw_indexinfo">';
-    if ($ouwiki->enablewordcount) {
-        $output .= '<span class="ouw_wordcount">'.get_string('numwords', 'ouwiki', $indexitem->wordcount).'</span>';
-        $output .= '<div class="spacer"></div>';
-    }
-    $output .= ' <span class="ouw_lastchange">'.get_string('lastchange', 'ouwiki', $lastchange).'</span>';
-    $output .= '</div>';
-    if ($startpage) {
-        $output .= '</div>';
-    }
-    return $output;
-}
-
-/**
- * Builds the tree structure for the hierarchical index. This is basically
- * a breadth-first search: we place each page on the nearest-to-home level
- * that we can find for it.
- */
-function ouwiki_build_tree(&$index) {
-    // Set up new data to fill
-    foreach ($index as $indexitem) {
-        $indexitem->linksto = array();
-        $indexitem->children = array();
-    }
-
-    // Preprocess: build links TO as well as FROM
-    foreach ($index as $indexitem) {
-        foreach ($indexitem->linksfrom as $fromid) {
-            $index[$fromid]->linksto[] = $indexitem->pageid;
-        }
-    }
-
-    // Begin with top level, which is first in results
-    reset($index);
-    $index[key($index)]->placed = true;
-    $nextlevel = array(reset($index)->pageid);
-    do {
-        $thislevel = $nextlevel;
-        $nextlevel = array();
-        foreach ($thislevel as $sourcepageid) {
-            foreach ($index[$sourcepageid]->linksto as $linkto) {
-                if (empty($index[$linkto]->placed)) {
-                    $index[$linkto]->placed = true;
-                    $index[$sourcepageid]->children[] = $linkto;
-                    $nextlevel[] = $linkto;
-                }
-            }
-        }
-    } while (count($nextlevel) > 0);
-}
-
-function ouwiki_tree_index($pageid, &$index, $subwiki, $cm) {
-    $thispage = $index[$pageid];
-    $output = '<li>'.ouwiki_display_page_in_index($thispage, $subwiki, $cm);
-    if (count($thispage->children) > 0) {
-        $output .= '<ul>';
-        foreach ($thispage->children as $childid) {
-            $output .= ouwiki_tree_index($childid, $index, $subwiki, $cm);
-        }
-        $output .= '</ul>';
-    }
-    $output .= '</li>';
-    return $output;
-}

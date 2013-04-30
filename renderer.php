@@ -330,9 +330,10 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      * Renders the 'export entire wiki' link.
      * @param object $subwiki Subwiki data object
      * @param bool $anyfiles True if any page of subwiki contains files
+     * @param array $wikiparamsarray associative array
      * @return string HTML content of list item with link, or nothing if none
      */
-    public function render_export_all_li($subwiki, $anyfiles) {
+    public function render_export_all_li($subwiki, $anyfiles, $wikiparamsarray) {
         global $CFG;
 
         if (!$CFG->enableportfolios) {
@@ -342,7 +343,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         require_once($CFG->libdir . '/portfoliolib.php');
         $button = new portfolio_add_button();
         $button->set_callback_options('ouwiki_all_portfolio_caller',
-                array('subwikiid' => $subwiki->id), 'mod_ouwiki');
+               $wikiparamsarray, 'mod_ouwiki');
         if ($anyfiles) {
             $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
         } else {

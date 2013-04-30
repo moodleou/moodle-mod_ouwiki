@@ -1263,6 +1263,61 @@ function ouwiki_get_subwiki_index($subwikiid, $limitfrom = '', $limitnum = '') {
 }
 
 /**
+ * Obtains the index information of a subwiki.
+ *
+ * @param object $subwiki
+ * @return array Array of objects, one per page, containing the following fields:
+ *   pageid, title, versionid, timecreated, (user) id, username, firstname, lastname,
+ *   and linksfrom which is an array of page IDs of pages that currently link to this
+ *   one.
+ */
+function ouwiki_get_subwiki_allpages_index($subwiki) {
+    global $DB;
+
+    // Get all the pages...
+    $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
+    p.locked, v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
+    v.wordcount, v.previousversionid, u.firstname, u.lastname
+    FROM {ouwiki_pages} p
+    JOIN {ouwiki_versions} v ON p.currentversionid = v.id
+    LEFT JOIN {user} u ON u.id = v.userid
+    WHERE p.subwikiid = ? AND v.deletedat IS NULL
+    ORDER BY CASE WHEN p.title IS NULL THEN '' ELSE UPPER(p.title) END";
+
+    $pages = $DB->get_records_sql($sql, array($subwiki->id));
+
+    // Fix confusing behaviour when no results.
+    if (!$pages) {
+        $pages = array();
+    }
+    foreach ($pages as $page) {
+        $page->linksfrom = array();
+    }
+
+    // ...and now get all the links for those pages.
+    if (count($pages)) {
+        list($usql, $params) = $DB->get_in_or_equal(array_keys($pages));
+        $sql = 'SELECT l.id, l.topageid, p.id AS frompage
+        FROM {ouwiki_links} l
+        INNER JOIN {ouwiki_pages} p ON p.currentversionid = l.fromversionid
+        WHERE l.topageid ' . $usql;
+        $links = $DB->get_records_sql($sql, $params);
+    } else {
+        $links = false;
+    }
+    if (!$links) {
+        $links = array();
+    }
+
+    // Add links into pages array.
+    foreach ($links as $obj) {
+        $pages[$obj->topageid]->linksfrom[] = $obj->frompage;
+    }
+
+    return $pages;
+}
+
+/**
  * Obtains list of recent changes across subwiki.
  *
  * @param int $subwikiid ID of subwiki
@@ -3074,6 +3129,128 @@ function ouwiki_update_grades($newgrades, $cm, $ouwiki, $course) {
     }
 }
 
+
+/* Display ouwiki in structured view helper functions */
+
+function ouwiki_display_wikiindex_page_in_index($indexitem, $subwiki, $cm) {
+    global $ouwiki;
+    if ($startpage = $indexitem->title === '') {
+        $title = get_string('startpage', 'ouwiki');
+        $output = '<div class="ouw_index_startpage">';
+    } else {
+        $title = $indexitem->title;
+        $output = '';
+    }
+
+    $output .= '<a class="ouw_title" href="view.php?' .
+            ouwiki_display_wiki_parameters($indexitem->title, $subwiki, $cm).
+            '">' . htmlspecialchars($title) . '</a>';
+    $lastchange = new StdClass;
+    $lastchange->userlink = ouwiki_display_user($indexitem, $cm->course);
+    $lastchange->date = ouwiki_recent_span($indexitem->timecreated).ouwiki_nice_date($indexitem->timecreated) . '</span>';
+    $output .= '<div class="ouw_indexinfo">';
+    if ($ouwiki->enablewordcount) {
+        $output .= '<span class="ouw_wordcount">' . get_string('numwords', 'ouwiki', $indexitem->wordcount) . '</span>';
+        $output .= '<div class="spacer"></div>';
+    }
+    $output .= ' <span class="ouw_lastchange">' . get_string('lastchange', 'ouwiki', $lastchange) . '</span>';
+    $output .= '</div>';
+    if ($startpage) {
+        $output .= '</div>';
+    }
+    return $output;
+}
+
+function ouwiki_display_entirewiki_page_in_index($pageinfo, $subwiki, $cm, $index, $context) {
+    global $ouwiki;
+
+    // Get page details.
+    $pageversion = ouwiki_get_current_page($subwiki, $pageinfo->title);
+    // If the page hasn't really been created yet, skip it.
+    if (is_null($pageversion->xhtml)) {
+        continue;
+    }
+    $visibletitle = $pageversion->title === '' ? get_string('startpage', 'ouwiki') : $pageversion->title;
+
+    $pageversion->xhtml = file_rewrite_pluginfile_urls($pageversion->xhtml, 'pluginfile.php',
+            $context->id, 'mod_ouwiki', 'content', $pageversion->versionid);
+
+    $output = '<div class="ouw_entry"><a name="' . $pageversion->pageid . '"></a><h1 class="ouw_entry_heading"><a href="view.php?' .
+            ouwiki_display_wiki_parameters($pageversion->title, $subwiki, $cm) .
+            '">' . htmlspecialchars($visibletitle) . '</a></h1>';
+    $output .=  ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, $index, $pageversion->xhtmlformat);
+    $output .=  '</div>';
+
+    return $output;
+}
+
+function ouwiki_display_portfolio_page_in_index($pageversion) {
+
+    if (is_null($pageversion->xhtml)) {
+        return;
+    }
+
+    $output = '<div class="ouw_entry">';
+    $output .=  $pageversion->xhtml;
+    $output .=  '</div>';
+    return $output;
+}
+
+function ouwiki_tree_index($func, $pageid, &$index = null, $subwiki = null, $cm = null, $context = null) {
+    $thispage = $index[$pageid];
+    $output = '<li>' . $func($thispage, $subwiki, $cm, $index, $context);
+    if (count($thispage->children) > 0) {
+        $output .= '<ul>';
+        foreach ($thispage->children as $childid) {
+            $output .= ouwiki_tree_index($func, $childid, $index, $subwiki, $cm, $context);
+        }
+        $output .= '</ul>';
+    }
+    $output .= '</li>';
+    return $output;
+}
+
+/**
+ * Builds the tree structure for the hierarchical index. This is basically
+ * a breadth-first search: we place each page on the nearest-to-home level
+ * that we can find for it.
+ */
+function ouwiki_build_tree(&$index) {
+    // Set up new data to fill.
+    foreach ($index as $indexitem) {
+        $indexitem->linksto = array();
+        $indexitem->children = array();
+    }
+
+    // Preprocess: build links TO as well as FROM.
+    foreach ($index as $indexitem) {
+        foreach ($indexitem->linksfrom as $fromid) {
+            $index[$fromid]->linksto[] = $indexitem->pageid;
+        }
+    }
+
+    // Begin with top level, which is first in results.
+    reset($index);
+    $index[key($index)]->placed = true;
+    $nextlevel = array(reset($index)->pageid);
+    do {
+        $thislevel = $nextlevel;
+        $nextlevel = array();
+        foreach ($thislevel as $sourcepageid) {
+            foreach ($index[$sourcepageid]->linksto as $linkto) {
+                if (empty($index[$linkto]->placed)) {
+                    $index[$linkto]->placed = true;
+                    $index[$sourcepageid]->children[] = $linkto;
+                    $nextlevel[] = $linkto;
+                }
+            }
+        }
+    } while (count($nextlevel) > 0);
+}
+
+/**
+ * ouwiki_portfolio_caller_base abstract class to extend portfolio_module_caller_base
+ */
 abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base {
     protected $withannotations;
 
@@ -3188,7 +3365,7 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
 
         // Do overall page, starting with title.
         $title = $pageversion->title;
-        if ($title === null) {
+        if ($title === '') {
             $title = get_string('startpage', 'ouwiki');
         }
         $output = html_writer::tag('h2', s($title));
@@ -3395,7 +3572,7 @@ class ouwiki_page_portfolio_caller extends ouwiki_portfolio_caller_base {
  * Portfolio class for exporting the entire subwiki contents (all pages).
  */
 class ouwiki_all_portfolio_caller extends ouwiki_portfolio_caller_base {
-    protected $subwikiid;
+    protected $subwikiid, $tree;
 
     // Pageversions: array of data objects with fields from ouwiki_pages and _versions.
     private $pageversions;
@@ -3403,7 +3580,8 @@ class ouwiki_all_portfolio_caller extends ouwiki_portfolio_caller_base {
     public static function expected_callbackargs() {
         return array(
                 'subwikiid' => true,
-                'withannotations' => false
+                'withannotations' => false,
+                'tree' => false
         );
     }
 
@@ -3414,7 +3592,12 @@ class ouwiki_all_portfolio_caller extends ouwiki_portfolio_caller_base {
         $this->load_base_data($this->subwikiid);
 
         // Load all page-versions.
-        $this->pageversions = ouwiki_get_subwiki_allpages($this->subwiki);
+        if ($this->tree) {
+            $this->pageversions = ouwiki_get_subwiki_allpages_index($this->subwiki);
+            ouwiki_build_tree($this->pageversions);
+        } else {
+            $this->pageversions = ouwiki_get_subwiki_allpages($this->subwiki);
+        }
 
         // Get all files used in subwiki.
         $this->add_files($this->pageversions);
@@ -3424,25 +3607,63 @@ class ouwiki_all_portfolio_caller extends ouwiki_portfolio_caller_base {
         return new moodle_url('/mod/ouwiki/wikiindex.php', array('id' => $this->cm->id));
     }
 
+    private function prepare_tree_inline_styles() {
+        $pagehtml = '';
+        $pagehtml .= html_writer::start_tag('style', array('type' => 'text/css')) . "\n";
+        $pagehtml .= 'ul.ouw_index,
+        ul.ouw_index li,
+        ul.ouw_indextree,
+        ul.ouw_indextree li {
+        list-style-type:none;
+        margin:0;
+        padding:0;
+        }
+
+        ul.ouw_indextree ul {
+            margin-left:2.5em;
+        } ';
+
+        $pagehtml .= html_writer::end_tag('style') . "\n";
+        return $pagehtml;
+    }
+
     public function prepare_package() {
         global $CFG;
 
         $pagehtml = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" ' .
                 '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' .
                 html_writer::start_tag('html', array('xmlns' => 'http://www.w3.org/1999/xhtml'));
-        $pagehtml .= html_writer::tag('head',
-                html_writer::empty_tag('meta',
-                        array('http-equiv' => 'Content-Type', 'content' => 'text/html; charset=utf-8')) .
-        html_writer::tag('title', get_string('export', 'forumngfeature_export')));
+        $content =  html_writer::empty_tag('meta',
+                        array('http-equiv' => 'Content-Type', 'content' => 'text/html; charset=utf-8')).
+                        html_writer::tag('title', get_string('export', 'forumngfeature_export'));
+        if ($this->tree) {
+            $content .= $this->prepare_tree_inline_styles();
+        }
+        $pagehtml .= html_writer::tag('head', $content);
         $pagehtml .= html_writer::start_tag('body') . "\n";
         $pagehtml .= html_writer::tag('h1', s($this->ouwiki->name));
 
-        foreach ($this->pageversions as $pageversion) {
-            $pagehtml .= $this->prepare_page($pageversion);
+        if ($this->tree) {
+            $pagehtml .=  '</ul>';
+            foreach ($this->pageversions as $pageversion) {
+                $pageversion->xhtml = $this->prepare_page($pageversion);
+            }
+            $pagehtml .= '<ul class="ouw_indextree">';
+            $func = 'ouwiki_display_portfolio_page_in_index';
+            $pagehtml .= ouwiki_tree_index(
+                    $func,
+                    reset($this->pageversions)->pageid,
+                    $this->pageversions,
+                    $this->subwiki,
+                    $this->cm);
+            $pagehtml .=  '</ul>';
+        } else {
+            foreach ($this->pageversions as $pageversion) {
+                $pagehtml .= $this->prepare_page($pageversion);
+            }
         }
 
         $pagehtml .= html_writer::end_tag('body') . html_writer::end_tag('html');
-
         $content = $pagehtml;
         $name = $this->make_filename_safe($this->ouwiki->name) . '.html';
         $manifest = ($this->exporter->get('format') instanceof PORTFOLIO_FORMAT_RICH);
