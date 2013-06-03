@@ -2650,7 +2650,7 @@ function ouwiki_print_editlock($lock, $ouwiki) {
 
         print "<script type='text/javascript'>
             var intervalID;
-            function handleResponse(o) {
+            function handleResponse(id, o) {
                 if (o.responseText=='cancel') {
                     document.forms['mform1'].elements['preview'].disabled=true;
                     document.forms['mform1'].elements['save'].disabled=true;
