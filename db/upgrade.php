@@ -331,6 +331,100 @@ WHERE
         upgrade_mod_savepoint(true, 2011102802, 'ouwiki');
     }
 
+    if ($oldversion < 2013060600) {
+        // Fix broken links due to annotations (current version unlocked page only).
+        $likes = $DB->sql_like('l.tourl', '?');
+        $params = array('view.php%');
+        // Fix where relative has been turned into incorrect absolute.
+        $likes .= ' or ' . $DB->sql_like('l.tourl', '?');
+        $params[] = "$CFG->wwwroot/view.php%";
+        // Only pickup links on pages where annotations have been used.
+        $pagelike = $DB->sql_like('v.xhtml', '?');
+        $params[] = '<div class="ouwiki_content"%';
+        $params[] = 0;
+        $sql = "select l.id as lid, l.tourl, v.id as vid, v.xhtml, p.id as pageid, p.subwikiid
+            from {ouwiki_links} l
+            inner join {ouwiki_versions} v on v.id = l.fromversionid
+            inner join {ouwiki_pages} p on v.id = p.currentversionid
+            where ($likes)
+            and $pagelike and p.locked = ?
+            order by p.id";
+        $links = $DB->get_records_sql($sql, $params);
+        $pagesprocessed = array();
+        $subwikipages = array();
+        foreach ($links as $linkdetails) {
+            // For each link found fix content of page it belongs to (once per page).
+            if (!in_array($linkdetails->pageid, $pagesprocessed)) {
+                // Tidy up and revert converted content (links) back to original format.
+                $pattern = '(<a\b[^>]*?href="(' . preg_quote($CFG->wwwroot . '/') . ')?view\.php[^"]*?page=([^"]*?)"[^>]*?>(.*?)<\/a>)';
+                preg_match_all($pattern, $linkdetails->xhtml, $matches);
+                $newxhtml = $linkdetails->xhtml;
+                for ($i = 0; $i < count($matches[0]); $i++) {
+                    $tag = $matches[0][$i];
+                    $page = urldecode($matches[2][$i]);
+                    $text = $matches[3][$i];
+                    if (strip_tags($text) == $text) {
+                        // Only create 'proper' link where tag contents not formatted.
+                        $newxhtml = str_replace($tag, "[[$page]]", $newxhtml);
+                    } else if (!empty($matches[1][$i])) {
+                        // Fix link if absolute to incorrect path.
+                        $newtag = str_replace("{$CFG->wwwroot}/view.php",
+                            "{$CFG->wwwroot}/mod/ouwiki/view.php", $tag);
+                        $newxhtml = str_replace($tag, $newtag, $newxhtml);
+                    } else {
+                        // Fix relative links to view.php as these break when page is edited.
+                        $newtag = str_replace('"view.php',
+                            "\"{$CFG->wwwroot}/mod/ouwiki/view.php", $tag);
+                        $newxhtml = str_replace($tag, $newtag, $newxhtml);
+                    }
+                }
+                if ($newxhtml != $linkdetails->xhtml) {
+                    // Save updated page content.
+                    $update = new stdClass();
+                    $update->id = $linkdetails->vid;
+                    $update->xhtml = $newxhtml;
+                    $DB->update_record('ouwiki_versions', $update);
+                }
+                $pagesprocessed[] = $linkdetails->pageid; // Don't process again.
+            }
+            // Attempt to turn tourl link into 'proper' wiki link so structure is correct.
+            if (!isset($subwikipages[$linkdetails->subwikiid])) {
+                // Store all pages from the subwiki (once) so we can find the relevant page.
+                $subwikipages[$linkdetails->subwikiid] = $DB->get_records('ouwiki_pages',
+                        array('subwikiid' => $linkdetails->subwikiid), '', 'id,title');
+            }
+            $pagetitle = '';
+            if ($pagechar = strpos($linkdetails->tourl, 'page=')) {
+                // Get page title from url (always at end of url).
+                $pagetitle = urldecode(substr($linkdetails->tourl , $pagechar + 5));
+            }
+            $pageid = 0;
+            // Find page title in sub wiki pages (includes start page match).
+            if (!empty($subwikipages[$linkdetails->subwikiid])) {
+                foreach ($subwikipages[$linkdetails->subwikiid] as $page) {
+                    if ($page->title === $pagetitle) {
+                        $pageid = $page->id;
+                        break;
+                    }
+                }
+            }
+            // Update link record (will always tidy regardless).
+            $update = new stdClass();
+            $update->id = $linkdetails->lid;
+            $update->tourl = null;
+            if ($pageid) {
+                $update->topageid = $pageid;
+            } else {
+                $update->tomissingpage = strtoupper($pagetitle);
+            }
+            $DB->update_record('ouwiki_links', $update);
+        }
+        $links = null;
+        $subwikipages = null;
+        // ouwiki savepoint reached.
+        upgrade_mod_savepoint(true, 2013060600, 'ouwiki');
+    }
+
     // Must always return true from these functions
     return true;
 }

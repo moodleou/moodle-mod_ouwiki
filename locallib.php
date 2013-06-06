@@ -869,7 +869,17 @@ function ouwiki_convert_content($content, $subwiki, $cm, $internallinks = null,
     // We do not use FORMAT_MOODLE (which adds linebreaks etc) because that was
     // already handled manually.
     $options = ouwiki_format_text_options();
-    return '<div class="ouwiki_content">'.format_text($content, $xhtmlformat, $options).'</div>';
+    $options->para = false;
+    $addwrapperdivs = true;
+    if (strpos($content, '<div class="ouwiki_content">') !== false) {
+        // Stop adding text wrapper divs when already in data.
+        $addwrapperdivs = false;
+    }
+    $toreturn = format_text($content, $xhtmlformat, $options);
+    if ($addwrapperdivs) {
+        $toreturn = html_writer::tag('div', $toreturn, array('class' => 'ouwiki_content'));
+    }
+    return $toreturn;
 }
 
 /**

@@ -182,6 +182,19 @@ if ($save) {
     }
 
     if ($neednewversion) {
+        if (strpos($pageversion->xhtml, '"view.php') !== false) {
+            // Tidy up and revert converted content (links) back to original format.
+            $pattern = '(<a\b[^>]*?href="view\.php[^>]*?>(.*?)<\/a>)';
+            $pageversion->xhtml = preg_replace($pattern, "[[$1]]", $pageversion->xhtml);
+        }
+        if ($contenttag = strpos($pageversion->xhtml, '<div class="ouwiki_content">') !== false) {
+            // Strip out content tag.
+            $pageversion->xhtml = substr_replace($pageversion->xhtml, '', $contenttag, 28);
+            $endtag = strrpos($pageversion->xhtml, '</div>');
+            if ($endtag !== false) {
+                $pageversion->xhtml = substr_replace($pageversion->xhtml, '', $endtag, 6);
+            }
+        }
         ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $pageversion->xhtml);
     }
 
