@@ -324,11 +324,18 @@ class ouwiki_line {
             // Aaaand find the next space after that
             $space2 = strpos($data, ' ', $pos);
             if ($space2 === false) {
-                // No more spaces? Everything left must be a word
-                $this->words[] = new ouwiki_word(substr($data, $pos), $pos+$linepos);
+                // No more spaces? Everything left must be a word.
+                $word = ltrim(substr($data, $pos), chr(0xC2) . chr(0xA0));
+                if (!empty($word)) {
+                    $this->words[] = new ouwiki_word($word, $pos + $linepos);
+                }
                 break;
             } else {
-                $this->words[] = new ouwiki_word(substr($data, $pos, $space2-$pos), $pos+$linepos);
+                // Specially trim nbsp; see http://www.php.net/manual/en/function.trim.php#98812.
+                $word = trim(substr($data, $pos, $space2-$pos), chr(0xC2) . chr(0xA0));
+                if (!empty($word)) {
+                    $this->words[] = new ouwiki_word($word, $pos + $linepos);
+                }
                 $pos = $space2;
             }
         }
