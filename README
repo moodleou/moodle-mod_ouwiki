@@ -1,7 +1,7 @@
 OU wiki
 =======
 
-Copyright 2012 The Open University
+Copyright 2013 The Open University
 
 
 This is an alternative wiki that you can install into standard Moodle.
@@ -15,10 +15,10 @@ except [[links]].
 
 Branch:
 
-This is the development branch including latest, untested code. If you would
-like a tested version equivalent to an OU live release, please switch to a
-branch that matches your Moodle version (e.g. MOODLE_22_STABLE) using the
-above dropdown.
+This is the MOODLE_24_STABLE branch. This branch is configured to match the latest
+stable branch at the Open University that uses Moodle 2.4. Once we stop using
+Moodle 2.4, there will be no more fixes in this branch (but of course anyone can
+fork the reposistory and make a fixed version).
 
 Support:
 
@@ -38,13 +38,14 @@ MoodleDocs wiki.
 
 Bug reports:
 
-Please report bugs using the GitHub 'Issues' tab (experimental). Before
-reporting a bug, please try the latest version to verify that the problem
-hasn't already been fixed. In each bug, please remember to give:
+Please report bugs using the GitHub 'Issues' tab. Before reporting a bug,
+please try the latest version to verify that the problem hasn't already been
+fixed. In each bug, please remember to give:
 
 1. Exact steps to reproduce your problem, starting from creating a new wiki
    with default or specified settings.
 2. The ouwiki version you are using (from version.php or Modules admin screen).
+3. The Moodle version you are using.
 
 Reliability:
 
@@ -53,7 +54,7 @@ community for testing on other systems.
 
 Requires:
 
-Moodle 2.2+
+Moodle 2.4+
 Postgres / MySQL
 
 Install:
@@ -62,7 +63,7 @@ Place the contents of this source tree into your Moodle installation so that
 within your Moodle root, this file is mod/ouwiki/README. Then visit the
 Moodle notifications page to install.
 
-If you want the forums to be searchable, you also need to install the
+If you want the wiki to be searchable, you also need to install the
 local_ousearch plugin. (It is best to do this before using the wiki much,
 otherwise it takes ages to install as it builds indexes for everything.)
 When you install the ousearch plugin, a search box will automatically appear.
