@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * 'Wiki changes' page. Displays a list of recent changes to the wiki. You
@@ -66,12 +65,12 @@ $a = new StdClass;
 $a->course = htmlspecialchars($course->shortname);
 $a->name = htmlspecialchars($ouwiki->name);
 $a->subtitle = get_string($newpages ? 'tab_index_pages' : 'tab_index_changes', 'ouwiki');
-$feedtitle = get_string('feedtitle','ouwiki',$a);
+$feedtitle = get_string('feedtitle', 'ouwiki', $a);
 $feedlink = 'http://'.htmlspecialchars($_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
 $feeddescription=get_string('feeddescription'. ($newpages ? 'pages' : 'changes'), 'ouwiki');
 
 // Domain name, used for IDs (we assume this is owned by site operator in 2007)
-$domainname = preg_replace('/^.*\/\/(www\.)?(.*?)\/.*$/','$2', $CFG->wwwroot);
+$domainname = preg_replace('/^.*\/\/(www\.)?(.*?)\/.*$/', '$2', $CFG->wwwroot);
 $id = 'tag:'.$domainname.',2007:ouwiki/'.$ouwiki->id.'/wikihistory/'.($newpages ? 'pages' : 'changes');
 
 print '<?xml version="1.0"?>
@@ -106,7 +105,7 @@ foreach ($changes as $change) {
     $a->date = ouwiki_nice_date($change->timecreated);
 
     $itemtitle = $ouwiki->name . ' - ' . ($change->title === ''
-            ? get_string('startpage','ouwiki') : htmlspecialchars($change->title));
+            ? get_string('startpage', 'ouwiki') : htmlspecialchars($change->title));
     $itemlink = $CFG->wwwroot.'/mod/ouwiki/view.php?'.$pageparams;
     if (!empty($change->previousversionid)) {
         $a->url = $CFG->wwwroot.'/mod/ouwiki/diff.php?'.$pageparams.'&amp;v1='.

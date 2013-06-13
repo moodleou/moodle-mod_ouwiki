@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -25,10 +24,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or late
  **/
 
-/** Make sure this isn't being directly accessed */
+/* Make sure this isn't being directly accessed */
 defined('MOODLE_INTERNAL') || die();
 
-/** Include the files that are required by this module */
+/* Include the files that are required by this module */
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
 require_once($CFG->dirroot . '/mod/ouwiki/lib.php');
 require_once($CFG->dirroot . '/mod/ouwiki/difflib.php');
@@ -115,105 +114,105 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
 
     switch($ouwiki->subwikis) {
 
-    case OUWIKI_SUBWIKIS_SINGLE:
-        $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid IS NULL
-                AND userid IS NULL', array($ouwiki->id));
-        if ($subwiki) {
-            ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context);
-            return $subwiki;
-        }
-        if ($create) {
-            $subwiki = ouwiki_create_subwiki($ouwiki, $cm, $course);
-            ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context);
-            ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki);
-            return $subwiki;
-        }
-        ouwiki_error('Wiki does not exist. View wikis before attempting other actions.');
-        break;
-
-    case OUWIKI_SUBWIKIS_GROUPS:
-        $groupid = groups_get_activity_group($cm, true);
-        if (!$groupid) {
-            $groups = groups_get_activity_allowed_groups($cm);
-            if (!$groups) {
-                if (!groups_get_all_groups($cm->course, 0, $cm->groupingid)) {
-                    ouwiki_error('This wiki cannot be displayed because it is a group wiki,
-                        but no groups have been set up for the course (or grouping, if selected).');
-                } else {
-                    ouwiki_error('You do not have access to any of the groups in this wiki.');
-                }
+        case OUWIKI_SUBWIKIS_SINGLE:
+            $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid IS NULL
+            AND userid IS NULL', array($ouwiki->id));
+            if ($subwiki) {
+                ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context);
+                return $subwiki;
             }
-            $groupid = reset($groups)->id;
-        }
-        $othergroup = !groups_is_member($groupid);
-        $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid = ?
-                AND userid IS NULL', array($ouwiki->id, $groupid));
-        if ($subwiki) {
-            ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $othergroup);
-            return $subwiki;
-        }
-        if ($create) {
-            $subwiki =  ouwiki_create_subwiki($ouwiki, $cm, $course, null, $groupid);
-            ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $othergroup);
-            ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki);
-            return $subwiki;
-        }
-        ouwiki_error('Wiki does not exist. View wikis before attempting other actions.');
-        break;
+            if ($create) {
+                $subwiki = ouwiki_create_subwiki($ouwiki, $cm, $course);
+                ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context);
+                ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki);
+                return $subwiki;
+            }
+            ouwiki_error('Wiki does not exist. View wikis before attempting other actions.');
+            break;
 
-    case OUWIKI_SUBWIKIS_INDIVIDUAL:
-        if ($userid == 0) {
-            $userid = $USER->id;
-        }
-        $otheruser = false;
-        if ($userid != $USER->id) {
-            $otheruser = true;
-            // Is user allowed to view everybody?
-            if (!has_capability('mod/ouwiki:viewallindividuals', $context)) {
-                // Nope. Are they allowed to view people in same group?
-                if (!has_capability('mod/ouwiki:viewgroupindividuals', $context)) {
-                    ouwiki_error('You do not have access to view somebody else\'s wiki.');
+        case OUWIKI_SUBWIKIS_GROUPS:
+            $groupid = groups_get_activity_group($cm, true);
+            if (!$groupid) {
+                $groups = groups_get_activity_allowed_groups($cm);
+                if (!$groups) {
+                    if (!groups_get_all_groups($cm->course, 0, $cm->groupingid)) {
+                        ouwiki_error('This wiki cannot be displayed because it is a group wiki,
+                                but no groups have been set up for the course (or grouping, if selected).');
+                    } else {
+                        ouwiki_error('You do not have access to any of the groups in this wiki.');
+                    }
                 }
-                // Check user is in same group. Note this isn't now restricted to the
-                // module grouping
-                $ourgroups = groups_get_all_groups($cm->course, $USER->id);
-                $theirgroups = groups_get_all_groups($cm->course, $userid);
-                $found = false;
-                foreach ($ourgroups as $ourgroup) {
-                    foreach ($theirgroups as $theirgroup) {
-                        if ($ourgroup->id == $theirgroup->id) {
-                            $found = true;
+                $groupid = reset($groups)->id;
+            }
+            $othergroup = !groups_is_member($groupid);
+            $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid = ?
+                    AND userid IS NULL', array($ouwiki->id, $groupid));
+            if ($subwiki) {
+                ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $othergroup);
+                return $subwiki;
+            }
+            if ($create) {
+                $subwiki =  ouwiki_create_subwiki($ouwiki, $cm, $course, null, $groupid);
+                ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $othergroup);
+                ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki);
+                return $subwiki;
+            }
+            ouwiki_error('Wiki does not exist. View wikis before attempting other actions.');
+            break;
+
+        case OUWIKI_SUBWIKIS_INDIVIDUAL:
+            if ($userid == 0) {
+                $userid = $USER->id;
+            }
+            $otheruser = false;
+            if ($userid != $USER->id) {
+                $otheruser = true;
+                // Is user allowed to view everybody?
+                if (!has_capability('mod/ouwiki:viewallindividuals', $context)) {
+                    // Nope. Are they allowed to view people in same group?
+                    if (!has_capability('mod/ouwiki:viewgroupindividuals', $context)) {
+                        ouwiki_error('You do not have access to view somebody else\'s wiki.');
+                    }
+                    // Check user is in same group. Note this isn't now restricted to the
+                    // module grouping
+                    $ourgroups = groups_get_all_groups($cm->course, $USER->id);
+                    $theirgroups = groups_get_all_groups($cm->course, $userid);
+                    $found = false;
+                    foreach ($ourgroups as $ourgroup) {
+                        foreach ($theirgroups as $theirgroup) {
+                            if ($ourgroup->id == $theirgroup->id) {
+                                $found = true;
+                                break;
+                            }
+                        }
+                        if ($found) {
                             break;
                         }
                     }
-                    if ($found) {
-                        break;
+                    if (!$found) {
+                        ouwiki_error('You do not have access to view this user\'s wiki.');
                     }
                 }
-                if (!$found) {
-                    ouwiki_error('You do not have access to view this user\'s wiki.');
-                }
             }
-        }
-        // OK now find wiki
-        $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid IS NULL
-                AND userid = ?', array($ouwiki->id, $userid));
-        if ($subwiki) {
-            ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $otheruser, !$otheruser);
-            return $subwiki;
-        }
-        // Create one
-        if ($create) {
-            $subwiki =  ouwiki_create_subwiki($ouwiki, $cm, $course, $userid);
-            ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $otheruser, !$otheruser);
-            ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki);
-            return $subwiki;
-        }
-        ouwiki_error('Wiki does not exist. View wikis before attempting other actions.');
-        break;
+            // OK now find wiki
+            $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid IS NULL
+                    AND userid = ?', array($ouwiki->id, $userid));
+            if ($subwiki) {
+                ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $otheruser, !$otheruser);
+                return $subwiki;
+            }
+            // Create one
+            if ($create) {
+                $subwiki =  ouwiki_create_subwiki($ouwiki, $cm, $course, $userid);
+                ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $otheruser, !$otheruser);
+                ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki);
+                return $subwiki;
+            }
+            ouwiki_error('Wiki does not exist. View wikis before attempting other actions.');
+            break;
 
-    default:
-        ouwiki_error("Unexpected subwikis value: {$ouwiki->subwikis}");
+        default:
+            ouwiki_error("Unexpected subwikis value: {$ouwiki->subwikis}");
     }
 }
 
@@ -324,7 +323,7 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
             $newverid = ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $title, $xhtml,
                      -1, -1, -1, true);
 
-            //copy any images associated with old version id.
+            // Copy any images associated with old version id..
             if ($oldfiles = $fs->get_directory_files($context->id, 'mod_ouwiki', 'template',
                     $ouwiki->id, "/$oldversionid/")) {
                 foreach ($oldfiles as $oldfile) {
@@ -565,8 +564,6 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
                         $choices[$member->id] = $member;
                     }
                 }
-            } else {
-                // Nope, only yours
             }
             break;
 
@@ -636,7 +633,7 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
 
     $pageversion = $DB->get_record_sql($sql, $params);
     if (!$pageversion) {
-        if($option != OUWIKI_GETPAGE_CREATE) {
+        if ($option != OUWIKI_GETPAGE_CREATE) {
             return false;
         }
 
@@ -1144,11 +1141,11 @@ function ouwiki_obtain_lock($ouwiki, $pageid) {
  * @param int $pageid ID of page that was locked
  */
 function ouwiki_release_lock($pageid) {
-    global $DB;
+    global $DB, $COURSE;
 
     if (!array_key_exists(OUWIKI_SESSION_LOCKS, $_SESSION)) {
         // No locks at all in session
-        error_log('No locks in \$_SESSION '.$pageid);
+        debugging('No locks in \$_SESSION '. $pageid, DEBUG_DEVELOPER);
         return;
     }
 
@@ -2331,14 +2328,14 @@ function ouwiki_setup_annotation_markers($xhtmlcontent) {
                 $markeradded = true;
                 $space = false;
                 continue;
-            } else if ($tagpositions[$pos] == '</p>'){
+            } else if ($tagpositions[$pos] == '</p>') {
                 $newcontent .= ouwiki_get_annotation_marker($pos);
                 $newcontent .= $tagpositions[$pos];
                 $pos += strlen($tagpositions[$pos]);
                 $markeradded = true;
                 $space = false;
                 continue;
-            } elseif (strpos($tagpositions[$pos], '<span id="annotation') !== false) {
+            } else if (strpos($tagpositions[$pos], '<span id="annotation') !== false) {
                 // we're at the opening annotation tag span so we need to skip past </span>
                 // which is the next tag in $tagpositions[]
                 $newcontent .= $tagpositions[$pos];
@@ -2346,7 +2343,7 @@ function ouwiki_setup_annotation_markers($xhtmlcontent) {
                 while (!array_key_exists($pos, $tagpositions)) {
                     $newcontent .= substr($content, $pos, 1);
                     $pos++;
-                    //print_object('while '.$pos);//jb23347 commented out as looks like debugging
+                    // print_object('while '.$pos);// jb23347 commented out as looks like debugging
                 }
 
                 $newcontent .= $tagpositions[$pos];
@@ -2736,24 +2733,25 @@ function ouwiki_get_last_modified($cm, $course, $userid = 0) {
             break;
 
         case OUWIKI_SUBWIKIS_INDIVIDUAL:
-            if (has_capability('mod/ouwiki:viewallindividuals', $context)) {
-                // You can view everyone: no restrictions
-            } else if (has_capability('mod/ouwiki:viewgroupindividuals', $context)) {
-                // You can view everyone in your group - TODO this is complicated
-                $restrictjoin = '
-                    INNER JOIN {groups_members} gm ON gm.userid = sw.userid
-                    INNER JOIN {groups} g ON g.id = gm.groupid
-                    INNER JOIN {groups_members} gm2 ON gm2.groupid = g.id
-                ';
-                $restrictwhere = "AND g.courseid = :courseid AND gm2.userid = :userid";
+            if (!has_capability('mod/ouwiki:viewallindividuals', $context)) {
+                // You can't view everyone so restrict.
+                if (has_capability('mod/ouwiki:viewgroupindividuals', $context)) {
+                    // You can view everyone in your group - TODO this is complicated.
+                    $restrictjoin = '
+                        INNER JOIN {groups_members} gm ON gm.userid = sw.userid
+                        INNER JOIN {groups} g ON g.id = gm.groupid
+                        INNER JOIN {groups_members} gm2 ON gm2.groupid = g.id
+                    ';
+                    $restrictwhere = "AND g.courseid = :courseid AND gm2.userid = :userid";
 
-                if ($cm->groupingid) {
-                    $restrictjoin .= "INNER JOIN {groupings_groups} gg ON gg.groupid = g.id";
-                    $restrictwhere .= "AND gg.groupingid = :groupingid";
+                    if ($cm->groupingid) {
+                        $restrictjoin .= "INNER JOIN {groupings_groups} gg ON gg.groupid = g.id";
+                        $restrictwhere .= "AND gg.groupingid = :groupingid";
+                    }
+                } else {
+                    // You can only view you.
+                    $restrictwhere = 'AND sw.userid = :userid';
                 }
-            } else {
-                // You can only view you
-                $restrictwhere = 'AND sw.userid = :userid';
             }
             break;
     }

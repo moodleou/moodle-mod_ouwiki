@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,12 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
-
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * Lock editing page. Allows user to lock or unlock the editing of a wiki page
  *
@@ -70,7 +68,7 @@ if (!$lockok) {
         }
     }
     $canoverride = has_capability('mod/ouwiki:overridelock', $context);
-    $pagelockedoverride = $canoverride ? '<p>'.get_string('pagelockedoverride','ouwiki').'</p>' : '';
+    $pagelockedoverride = $canoverride ? '<p>'.get_string('pagelockedoverride', 'ouwiki').'</p>' : '';
     $overridelock = get_string('overridelock', 'ouwiki');
     $overridebutton = $canoverride ? "
 <form class='ouwiki_overridelock' action='override.php' method='post'>
@@ -103,22 +101,22 @@ if (!$lockok) {
     exit;
 }
 
-    // The page is now locked to us!
-    // To have got this far everything checks out so lock or unlock the page as requested
-    if ($action == get_string('lockpage', 'ouwiki')) {
-        ouwiki_lock_editing($pageid, true);
-        $event = 'lock';
-    } else if ($action == get_string('unlockpage', 'ouwiki')) {
-        ouwiki_lock_editing($pageid, false);
-        $event = 'unlock';
-    }
+// The page is now locked to us!
+// To have got this far everything checks out so lock or unlock the page as requested
+if ($action == get_string('lockpage', 'ouwiki')) {
+    ouwiki_lock_editing($pageid, true);
+    $event = 'lock';
+} else if ($action == get_string('unlockpage', 'ouwiki')) {
+    ouwiki_lock_editing($pageid, false);
+    $event = 'unlock';
+}
 
 // all done - release the editing lock...
 ouwiki_release_lock($pageversion->pageid);
 
 // add to moodle log...
 $url = 'lock.php';
-$url .= (strpos($url,'?')===false ? '?' : '&').'id='.$cm->id;
+$url .= (strpos($url, '?')===false ? '?' : '&').'id='.$cm->id;
 if ($subwiki->groupid) {
     $url .= '&group='.$subwiki->groupid;
 }

@@ -42,7 +42,7 @@
 }
 
 #page-mod-ouwiki-history table,
-#page-mod-ouwiki-wikihistory table, 
+#page-mod-ouwiki-wikihistory table,
 #page-mod-ouwiki-contributions table {
     width:100%;
 }
@@ -56,7 +56,7 @@
     border-left: 1px solid #a7d2ff;
     border-right: 1px solid #a7d2ff;
     border-top:1px solid #888;
-    border-bottom:1px dotted #888;    
+    border-bottom:1px dotted #888;
 }
 .dir-rtl#page-mod-ouwiki-history .ouw_history th,
 .dir-rtl#page-mod-ouwiki-wikihistory th,
@@ -68,7 +68,7 @@
 #page-mod-ouwiki-wikihistory td,
 #page-mod-ouwiki-contributions td {
     padding: 3px 12px 3px 4px;
-    border-bottom:1px dotted #888;    
+    border-bottom:1px dotted #888;
 }
 #page-mod-ouwiki-wikihistory td.ouw_rightcol,
 #page-mod-ouwiki-contributions td.ouw_rightcol,
@@ -145,7 +145,7 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
     margin:0;
 }
 #page-mod-ouwiki-viewold .ouw_oldversion .ouw_person {
-    font-weight:normal;    
+    font-weight:normal;
 }
 
 #page-mod-ouwiki-viewold .ouw_prev {
@@ -308,18 +308,18 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
     border-bottom:1px dotted #888;
     padding:8px;
 }
-#page-mod-ouwiki-diff .ouw_left .ouw_diff, 
+#page-mod-ouwiki-diff .ouw_left .ouw_diff,
 #page-mod-ouwiki-diff .ouw_left .ouw_versionbox {
     margin-right:1em;
 }
-#page-mod-ouwiki-diff .ouw_right .ouw_diff, 
+#page-mod-ouwiki-diff .ouw_right .ouw_diff,
 #page-mod-ouwiki-diff .ouw_right .ouw_versionbox {
     margin-left:1em;
 }
 #page-mod-ouwiki-diff .ouw_deleted {
     background:white;
     color:red;
-    text-decoration:line-through;    
+    text-decoration:line-through;
 }
 #page-mod-ouwiki-diff .ouw_added {
     background:white;
@@ -392,7 +392,7 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
 
 .ouwiki_content .ouw_heading1,
 .ouwiki_content .ouw_heading2 {
-    margin:0.6667em 0 0.3333em 0; 
+    margin:0.6667em 0 0.3333em 0;
 }
 .ouwiki_content .ouw_heading3,
 .ouwiki_content .ouw_heading4,
@@ -400,7 +400,7 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
     margin:1em 0 0.5em 0;
 }
 .ouwiki_content .ouw_heading6 {
-    margin:1.25em 0 0.625em 0; 
+    margin:1.25em 0 0.625em 0;
 }
 
 .ouwiki_content h1.ouw_fixedheading,
@@ -464,7 +464,6 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
     list-style-type:none;
     margin:0;
     padding:0;
-    
 }
 
 
@@ -552,7 +551,7 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
     font-style:italic;
 }
 
-#page-mod-ouwiki-wikiindex .ouw_savetemplate, 
+#page-mod-ouwiki-wikiindex .ouw_savetemplate,
 #page-mod-ouwiki-wikihistory .ouw_contributionslink {
     margin-top:2em;
 }
@@ -597,7 +596,7 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
      padding-top:4px;
 }
 .ouw_topheading {
-    background:#dcedff;    
+    background:#dcedff;
     padding:4px 8px 8px;
     border-top:1px solid #888;
     margin-top:1.5em;

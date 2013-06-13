@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * Unit tests for (some of) mod/ouwiki/locallib.php.
  *
@@ -8,7 +22,7 @@
  */
 
 if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.'); /// It must be included from a Moodle page.
+    die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
 }
 
 require_once($CFG->dirroot . '/mod/ouwiki/locallib.php');
@@ -37,17 +51,17 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
                                       'ouwiki_locks',
                                       'ouwiki_pages',
                                       'ouwiki_sections',
-                                      'ouwiki_subwikis'
-                                     ,'ouwiki_versions')
+                                      'ouwiki_subwikis',
+                                      'ouwiki_versions')
                             );
 
      public $usercount = 0;
 
-     /**
+    /**
      * Create temporary test tables and entries in the database for these tests.
      * These tests have to work on a brand new site.
      */
-    function setUp() {
+    public function setUp() {
         global $CFG;
 
         parent::setup();
@@ -74,11 +88,11 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
 
     }
 
-    function tearDown() {
+    public function tearDown() {
         parent::tearDown(); // All the test tables created in setUp will be dropped by this
     }
 
-    function load_course_categories() {
+    public function load_course_categories() {
         $cat = new stdClass();
         $cat->name = 'misc';
         $cat->depth = 1;
@@ -89,14 +103,14 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
     /**
      * Load module entries in modules table
      */
-    function load_modules() {
+    public function load_modules() {
         $module = new stdClass();
         $module->name = 'ouwiki';
         $module->id = $this->testdb->insert_record('modules', $module);
         $this->modules[] = $module;
     }
-    
-    function load_capabilities() {
+
+    public function load_capabilities() {
         $cap = new stdClass();
         $cap->name = 'mod/ouwiki:edit';
         $cap->id = $this->testdb->insert_record('capabilities', $cap);
@@ -139,7 +153,7 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
 
     }
 
-    /*  
+    /*
 
      Backend functions covered:
 
@@ -156,16 +170,16 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
      Functions not covered:
          Delete/undelete page version - no backend functions for this process
          File attachment - difficult to test through backend functions due to moodle core handling of files
-          
+
     */
 
-    function test_ouwiki_get_subwiki() {
+    public function test_ouwiki_get_subwiki() {
 
-        // create course, ouwiki, course module, context, groupid, userid, 
+        // create course, ouwiki, course module, context, groupid, userid.
         $user   = $this->get_new_user();
         $course = $this->get_new_course();
 
-    // Test whole course wiki
+        // Test whole course wiki.
         $ouwiki = $this->get_new_ouwiki($course->id, OUWIKI_SUBWIKIS_SINGLE);
         $cm = $this->get_new_course_module($course->id, $ouwiki->id, NOGROUPS);
         $context = get_context_instance(CONTEXT_MODULE, $cm->instance);
@@ -176,14 +190,14 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
         $createdsubwikiid = $subwiki->id;
         $this->assertIsA($subwiki, "stdClass");
 
-        // re: get the same one we created above (without 'create') 
+        // re: get the same one we created above (without 'create')
         $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $user->id);
         $this->assertEqual($subwiki->id, $createdsubwikiid);
 
-    // Test group wikis 
+        // Test group wikis.
         $groupmodes = array(SEPARATEGROUPS, VISIBLEGROUPS);
 
-        foreach($groupmodes as $groupmode) {
+        foreach ($groupmodes as $groupmode) {
 
             $ouwiki = $this->get_new_ouwiki($course->id, OUWIKI_SUBWIKIS_GROUPS);
             $cm = $this->get_new_course_module($course->id, $ouwiki->id, $groupmode);
@@ -195,7 +209,7 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
             $createdsubwikiid = $subwiki->id;
             $this->assertIsA($subwiki, "stdClass");
 
-            // re: get the same one we created above (without 'create') 
+            // re: get the same one we created above (without 'create')
             $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $user->id);
             $this->assertEqual($subwiki->id, $createdsubwikiid);
 
@@ -207,12 +221,12 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
             $createdsubwikiid = $subwiki->id;
             $this->assertIsA($subwiki, "stdClass");
 
-            // re: get the same one we created above (without 'create') 
+            // re: get the same one we created above (without 'create')
             $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $user->id);
             $this->assertEqual($subwiki->id, $createdsubwikiid);
-       }
+        }
 
-    // Test invididual wikis
+        // Test invididual wikis.
         $ouwiki = $this->get_new_ouwiki($course->id, OUWIKI_SUBWIKIS_INDIVIDUAL);
         $cm = $this->get_new_course_module($course->id, $ouwiki->id);
         $context = get_context_instance(CONTEXT_MODULE, $cm->instance);
@@ -223,12 +237,12 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
         $createdsubwikiid = $subwiki->id;
         $this->assertIsA($subwiki, "stdClass");
 
-        // re: get the same one we created above (without 'create') 
+        // re: get the same one we created above (without 'create')
         $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $user->id);
         $this->assertEqual($subwiki->id, $createdsubwikiid);
     }
 
-    function test_ouwiki_pages_and_versions() {
+    public function test_ouwiki_pages_and_versions() {
 
         $user   = $this->get_new_user();
         $course = $this->get_new_course();
@@ -252,7 +266,7 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
         $content1 = 'testcontent';
 
         // we don't get anything returned for this
-        ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $startpagename, $pagename1, $content1, $formdata);  
+        ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $startpagename, $pagename1, $content1, $formdata);
 
         // try get that page
         $pageversion = ouwiki_get_current_page($subwiki, $pagename1);
@@ -273,13 +287,13 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
         $lastversion = array_shift($history);
         $pageversion = ouwiki_get_page_version($subwiki, $pagename1, $lastversion->versionid);
         $this->assertEqual($pageversion->xhtml, $content3);
- 
+
         // add another page
         $pagename2 = 'testpage2';
         $content4  = 'testcontent4';
 
         // we don't get anything returned for this
-        ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $startpagename, $pagename2, $content4, $formdata); 
+        ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $startpagename, $pagename2, $content4, $formdata);
 
         // test recent pages
         $changes = ouwiki_get_subwiki_recentpages($subwiki->id);
@@ -303,8 +317,8 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
 
     }
 
-    function test_ouwiki_init_pages() {
- 
+    public function test_ouwiki_init_pages() {
+
         $user   = $this->get_new_user();
         $course = $this->get_new_course();
         $ouwiki = $this->get_new_ouwiki($course->id, OUWIKI_SUBWIKIS_SINGLE);
@@ -315,9 +329,9 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
 
         // doesn't return anything
         ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki);
-    } 
+    }
 
-    function test_ouwiki_word_count() {
+    public function test_ouwiki_word_count() {
         $tests = array();
 
         $test['string'] = "This is four words";
@@ -345,7 +359,7 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
         $testcount = ouwiki_count_words($test['string']);
         $this->assertEqual($testcount, $test['count']);
 
-        $test['string'] = "Isn’t it three";
+        $test['string'] = "Isnâ€™t it three";
         $test['count'] = 3;
         $testcount = ouwiki_count_words($test['string']);
         $this->assertEqual($testcount, $test['count']);
@@ -371,18 +385,17 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
         $this->assertEqual($testcount, $test['count']);
     }
 
-    /* 
-     These functions enable us to create database entries and/or grab objects to make it possible to test the 
+    /*
+     These functions enable us to create database entries and/or grab objects to make it possible to test the
      many permuations required for OU Wiki.
-
     */
 
-    function get_new_user() {
+    public function get_new_user() {
 
         $this->usercount++;
 
         $user = new stdClass();
-        $user->username = 'testuser' . $this->usercount; 
+        $user->username = 'testuser' . $this->usercount;
         $user->firstname = 'Test';
         $user->lastname = 'User';
         $user->id = $this->testdb->insert_record('user', $user);
@@ -390,7 +403,7 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
     }
 
 
-    function get_new_course() {
+    public function get_new_course() {
         $course = new stdClass();
         $course->category = 1;
         $course->fullname = 'Anonymous test course';
@@ -399,7 +412,7 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
         $course->id = $this->testdb->insert_record('course', $course);
         return $course;
     }
-  
+
     public function get_new_ouwiki($courseid, $subwikis=0, $options=array()) {
 
         $ouwiki = new stdClass();
@@ -415,7 +428,7 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
         $ouwiki->completionpages = 0;
         $ouwiki->completionedits = 0;
         $ouwiki->annotation = 0;
-        $ouwiki->introformat =0 ;
+        $ouwiki->introformat = 0;
 
         $ouwiki->id = $this->testdb->insert_record('ouwiki', $ouwiki);
         return $ouwiki;

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,12 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
-
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * Annotate page. Allows user to add and edit wiki annotations.
  *
@@ -84,7 +82,8 @@ if (!$cancel) {
 if ($save) {
     if (!$lockok) {
         ouwiki_release_lock($pageversion->pageid);
-        print_error('cannotlockpage', 'ouwiki', 'view.php?'.ouwiki_display_wiki_parameters($pagename, $subwiki, $cm, OUWIKI_PARAMS_URL));
+        print_error('cannotlockpage', 'ouwiki', 'view.php?'.ouwiki_display_wiki_parameters($pagename,
+                $subwiki, $cm, OUWIKI_PARAMS_URL));
     }
 
     // Format XHTML so it matches that sent to annotation marker creation code.
@@ -97,11 +96,11 @@ if ($save) {
     // get the form data
     $new_annotations = array();
     $edited_annotations = array();
-    foreach ($_POST as $key => $value){
+    foreach ($_POST as $key => $value) {
         if (strpos($key, 'edit') === 0) {
-            $edited_annotations[substr($key,4)] = optional_param($key, null, PARAM_TEXT);
+            $edited_annotations[substr($key, 4)] = optional_param($key, null, PARAM_TEXT);
         } else if (strpos($key, 'new') === 0) {
-            $new_annotations[substr($key,3)] = optional_param($key, null, PARAM_TEXT);
+            $new_annotations[substr($key, 3)] = optional_param($key, null, PARAM_TEXT);
         }
     }
 
@@ -114,7 +113,7 @@ if ($save) {
     // do we need to delete orphaned annotations
     $deleted_annotations = array();
     if ($deleteorphaned) {
-        foreach($stored as $annotation) {
+        foreach ($stored as $annotation) {
             if ($annotation->orphaned) {
                 $DB->delete_records('ouwiki_annotations', array('id' => $annotation->id));
                 $deleted_annotations[$annotation->id] = '';
@@ -177,7 +176,7 @@ if ($save) {
     // sanity-checked so we don't know if the field actually existed or not.
     // That means we need to do another lock capability check here in addition
     // to the one done when displaying the form.
-    if(has_capability('mod/ouwiki:lock', $context)) {
+    if (has_capability('mod/ouwiki:lock', $context)) {
         ouwiki_lock_editing($pageversion->pageid, $lockunlock);
     }
 
@@ -235,7 +234,7 @@ if (!$lockok) {
         }
     }
     $canoverride = has_capability('mod/ouwiki:overridelock', $context);
-    $pagelockedoverride = $canoverride ? '<p>'.get_string('pagelockedoverride','ouwiki').'</p>' : '';
+    $pagelockedoverride = $canoverride ? '<p>'.get_string('pagelockedoverride', 'ouwiki').'</p>' : '';
     $overridelock = get_string('overridelock', 'ouwiki');
     $overridebutton = $canoverride ? "
 <form class='ouwiki_overridelock' action='override.php' method='post'>
@@ -281,7 +280,7 @@ if ($pagename) {
 
 // Print header
 echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagename, $context,
-    array(array('name' => get_string('annotatingpage','ouwiki'), 'link' => null)),
+    array(array('name' => get_string('annotatingpage', 'ouwiki'), 'link' => null)),
     false, false, '', $title);
 
 // Tabs
@@ -323,7 +322,7 @@ $customdata[1] = $pageversion;
 $customdata[2] = $pagename;
 $customdata[3] = $userid;
 $customdata[4] = has_capability('mod/ouwiki:lock', $context);
-echo html_writer::tag('h2', get_string('annotations','ouwiki'));
+echo html_writer::tag('h2', get_string('annotations', 'ouwiki'));
 
 $annotateform = new mod_ouwiki_annotate_form('annotate.php?id='.$id, $customdata);
 $annotateform->display();

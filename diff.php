@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Diff. Displays the difference between two versions of a wiki page.
@@ -93,7 +92,7 @@ if ($numchanges == 0) {
     if (count($annotations) === 0) {
         $advice = get_string('diff_nochanges', 'ouwiki');
     } else {
-        $advice = get_string('diff_someannotations','ouwiki');
+        $advice = get_string('diff_someannotations', 'ouwiki');
     }
 } else {
     $advice = get_string('advice_diff', 'ouwiki');

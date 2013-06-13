@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * History page, feed version. Shows list of all previous versions of a page.
@@ -65,10 +64,10 @@ $a->name = htmlspecialchars($ouwiki->name);
 $a->subtitle = $pagetitle;
 $feedtitle = get_string('feedtitle', 'ouwiki', $a);
 $feedlink = 'http://'.htmlspecialchars($_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
-$feeddescription = get_string('feeddescriptionhistory','ouwiki');
+$feeddescription = get_string('feeddescriptionhistory', 'ouwiki');
 
 // Domain name, used for IDs (we assume this is owned by site operator in 2007)
-$domainname = preg_replace('/^.*\/\/(www\.)?(.*?)\/.*$/','$2', $CFG->wwwroot);
+$domainname = preg_replace('/^.*\/\/(www\.)?(.*?)\/.*$/', '$2', $CFG->wwwroot);
 $id = 'tag:'.$domainname.',2007:ouwiki/'.$ouwiki->id.'/wikihistory/changes/'.$pageversion->pageid;
 
 $wikiparams = ouwiki_display_wiki_parameters($pagename, $subwiki, $cm);
@@ -84,7 +83,7 @@ if ($rss) {
     <description>'.$feeddescription.'</description>
     <atom:link rel="self" type="application/rss+xml" href="'.$feedlink.'" />
     <link>'.$pagelink.'</link>
-    <pubDate>'.date('r',reset($changes)->timecreated).'</pubDate>';
+    <pubDate>'.date('r', reset($changes)->timecreated).'</pubDate>';
 } else {
     print '
 <feed xmlns="http://www.w3.org/2005/Atom">
@@ -116,9 +115,9 @@ foreach ($changes as $change) {
     if ($nextchange) {
         $a->url = $CFG->wwwroot.'/mod/ouwiki/diff.php?'.$pageparams.'&amp;v1='.
             $nextchange->versionid.'&amp;v2='.$change->versionid;
-        $a->main = get_string('feedchange', 'ouwiki',$a);
+        $a->main = get_string('feedchange', 'ouwiki', $a);
     } else {
-        $a->main = get_string('feednewpage', 'ouwiki',$a);
+        $a->main = get_string('feednewpage', 'ouwiki', $a);
     }
     $itemdescription = get_string('feeditemdescriptionnodate', 'ouwiki', $a);
     if ($rss) {

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * 'Wiki changes' page. Displays a list of recent changes to the wiki. You
@@ -72,7 +71,7 @@ $atomurl = $CFG->wwwroot.'/mod/ouwiki/feed-wikihistory.php?'.$wikiparams.
     ($newpages?'&amp;type=pages' : '').'&amp;magic='.$subwiki->magic;
 $rssurl = $CFG->wwwroot.'/mod/ouwiki/feed-wikihistory.php?'.$wikiparams.
     ($newpages?'&amp;type=pages' : '').'&amp;magic='.$subwiki->magic.'&amp;format=rss';
-$meta = '<link rel="alternate" type="application/atom+xml" title="Atom feed" '. 
+$meta = '<link rel="alternate" type="application/atom+xml" title="Atom feed" '.
     'href="'.$atomurl.'" />';
 
 // bug #3542
@@ -80,8 +79,8 @@ $wikiname = format_string(htmlspecialchars($ouwiki->name));
 $title = $wikiname.' - '.get_string('wikirecentchanges', 'ouwiki');
 
 echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki,
-    $from > 0 
-        ? get_string('wikirecentchanges_from', 'ouwiki',(int)($from/OUWIKI_PAGESIZE) + 1)
+    $from > 0
+        ? get_string('wikirecentchanges_from', 'ouwiki', (int)($from/OUWIKI_PAGESIZE) + 1)
         : get_string('wikirecentchanges', 'ouwiki'),
     $context, null, false, false, $meta, $title);
 
@@ -90,7 +89,7 @@ $tabrow = array();
 $tabrow[] = new tabobject('changes', 'wikihistory.php?'.$wikiparams,
     get_string('tab_index_changes', 'ouwiki'));
 $tabrow[] = new tabobject('pages', 'wikihistory.php?'.$wikiparams.'&amp;type=pages',
-    get_string('tab_index_pages', 'ouwiki'));   
+    get_string('tab_index_pages', 'ouwiki'));
 $tabs = array();
 $tabs[] = $tabrow;
 print_tabs($tabs, $newpages ? 'pages' : 'changes');
@@ -100,7 +99,7 @@ print '<div id="ouwiki_belowtabs">';
 if (!$from) {
     print get_string('advice_wikirecentchanges_'
         .($newpages ? 'pages' : 'changes'
-        .(!empty($CFG->ouwikienablecurrentpagehighlight) ? '' : '_nohighlight')),'ouwiki').'</p>';
+        .(!empty($CFG->ouwikienablecurrentpagehighlight) ? '' : '_nohighlight')), 'ouwiki').'</p>';
 }
 
 $strdate = get_string('date');
@@ -128,17 +127,17 @@ foreach ($changes as $change) {
     if ($count > OUWIKI_PAGESIZE) {
         break;
     }
-    
+
     $pageparams = ouwiki_display_wiki_parameters($change->title, $subwiki, $cm);
-    
-    $date = userdate($change->timecreated,get_string('strftimedate'));
+
+    $date = userdate($change->timecreated, get_string('strftimedate'));
     if ($date == $lastdate) {
         $date = '';
     } else {
         $lastdate = $date;
     }
     $time = ouwiki_recent_span($change->timecreated).userdate($change->timecreated, get_string('strftimetime')).'</span>';
-    
+
     $page = $change->title ? htmlspecialchars($change->title) : get_string('startpage', 'ouwiki');
     if (!empty($change->previousversionid)) {
         $changelink = " <small>(<a href='diff.php?$pageparams&amp;v2={$change->versionid}&amp;v1={$change->previousversionid}'>$strchanges</a>)</small>";
@@ -162,14 +161,14 @@ foreach ($changes as $change) {
     } else {
         $userlink = '';
     }
-    
+
     if ($newpages) {
         $actions = '';
         $page = "<a href='$viewlink'>$page</a>";
     } else {
-        $actions = "<td class='actions'><a href='$viewlink'>$strview</a>$changelink</td>";          
+        $actions = "<td class='actions'><a href='$viewlink'>$strview</a>$changelink</td>";
     }
-    
+
     // see bug #3611
     if (!empty($current) && !empty($CFG->ouwikienablecurrentpagehighlight)) {
         // current page so add accessibility stuff
@@ -227,7 +226,7 @@ $a->atom = $atomurl;
 $a->rss = $rssurl;
 print '<p class="ouw_subscribe"><a href="'.$atomurl.'" title="'.get_string('feedalt', 'ouwiki').
     '"><img src="'.$OUTPUT->pix_url('rss', 'ouwiki').'" alt=""/></a> <span>'.
-    get_string('feedsubscribe','ouwiki',$a).'</span></p>';
+    get_string('feedsubscribe', 'ouwiki', $a).'</span></p>';
 
 // Footer
 ouwiki_print_footer($course, $cm, $subwiki);

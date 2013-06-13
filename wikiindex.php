@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,11 +8,12 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 
 /**
  * 'Wiki index' page. Displays an index of all pages in the wiki, in
@@ -117,7 +117,7 @@ if ($orphans) {
 $missing = ouwiki_get_subwiki_missingpages($subwiki->id);
 if (count($missing) > 0) {
     print '<div class="ouw_missingpages"><h2>'.get_string('missingpages', 'ouwiki').'</h2>';
-    print '<p>'.get_string(count($missing) > 1 ? 'advice_missingpages' : 'advice_missingpage','ouwiki').'</p>';
+    print '<p>'.get_string(count($missing) > 1 ? 'advice_missingpages' : 'advice_missingpage', 'ouwiki').'</p>';
     print '<ul>';
     $first = true;
     foreach ($missing as $title => $from) {
@@ -129,7 +129,7 @@ if (count($missing) > 0) {
         }
         print '<a href="view.php?'.ouwiki_display_wiki_parameters($title, $subwiki, $cm).'">'.
             htmlspecialchars($title).'</a> <span class="ouw_missingfrom">('.
-            get_string(count($from) > 1 ? 'frompages' : 'frompage','ouwiki',
+            get_string(count($from) > 1 ? 'frompages' : 'frompage', 'ouwiki',
                 '<a href="view.php?'.ouwiki_display_wiki_parameters($from[0], $subwiki, $cm).'">'.
                 ($from[0] ? htmlspecialchars($from[0]) : get_string('startpage', 'ouwiki')).'</a>)</span>');
         print '</li>';

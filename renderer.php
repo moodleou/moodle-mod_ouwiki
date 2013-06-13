@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -842,7 +841,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         }
 
         if (!$table->is_downloading()) {
-            $table->print_html();  /// Print the whole table
+            $table->print_html();  // Print the whole table.
 
             // print the grade form footer if necessary
             if ($grading_info && !empty($participation)) {
@@ -981,7 +980,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         }
 
         if (!$table->is_downloading()) {
-            $table->print_html();  /// Print the whole table
+            $table->print_html();  // Print the whole table.
 
             // Grade
             if ($cangrade && $ouwiki->grade != 0) {

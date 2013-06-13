@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -54,7 +53,8 @@ class backup_ouwiki_activity_structure_step extends backup_activity_structure_st
 
         $versions = new backup_nested_element('versions');
 
-        $version = new backup_nested_element('version', array('id'), array('xhtml', 'changestart', 'changesize', 'changeprevsize', 'deletedat', 'timecreated', 'userid', 'wordcount'));
+        $version = new backup_nested_element('version', array('id'), array('xhtml', 'changestart',
+                'changesize', 'changeprevsize', 'deletedat', 'timecreated', 'userid', 'wordcount'));
 
         $annotations = new backup_nested_element('annotations');
 
