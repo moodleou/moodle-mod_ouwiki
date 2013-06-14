@@ -253,13 +253,19 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
     $filepath = '/'.$context->id.'/mod_ouwiki/template/'.$ouwiki->id.$ouwiki->template;
     if ($file = $fs->get_file_by_hash(sha1($filepath)) AND !$file->is_directory()) {
-        $xmlfilename = strtolower(get_string('template', 'mod_ouwiki')) . '.xml';
-        if (!$xmlfile = $fs->get_file($context->id, 'mod_ouwiki', 'template', $ouwiki->id, '/',
-                $xmlfilename)) {
-            // XML (and other files) not extracted yet. Do once only.
-            $zip->extract_to_storage($file, $context->id, 'mod_ouwiki', 'template', $ouwiki->id, '/');
-            $xmlfile = $fs->get_file($context->id, 'mod_ouwiki', 'template', $ouwiki->id, '/',
-                $xmlfilename);
+        if (strpos($ouwiki->template, '.xml') !== false) {
+            // XML template expected.
+            $xmlfile = $file;
+        } else {
+            // Zip format expected.
+            $xmlfilename = strtolower(get_string('template', 'mod_ouwiki')) . '.xml';
+            if (!$xmlfile = $fs->get_file($context->id, 'mod_ouwiki', 'template', $ouwiki->id, '/',
+                    $xmlfilename)) {
+                // XML (and other files) not extracted yet. Do once only.
+                $zip->extract_to_storage($file, $context->id, 'mod_ouwiki', 'template', $ouwiki->id, '/');
+                $xmlfile = $fs->get_file($context->id, 'mod_ouwiki', 'template', $ouwiki->id, '/',
+                    $xmlfilename);
+            }
         }
 
         $content = $xmlfile->get_content();
