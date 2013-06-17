@@ -289,6 +289,7 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
             $xhtml = null;
             $oldcontextid = null;
             $oldpagever = null;
+            $oldversionid = null;
             for ($child = $page->firstChild; $child; $child = $child->nextSibling) {
                 if ($child->nodeType != XML_ELEMENT_NODE) {
                     continue;
