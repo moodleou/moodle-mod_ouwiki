@@ -44,6 +44,7 @@ $wikiparams = ouwiki_display_wiki_parameters('', $subwiki, $cm);
 // Get changes
 if ($newpages) {
     $changes = ouwiki_get_subwiki_recentpages($subwiki->id, 0, OUWIKI_FEEDSIZE);
+    $wikiparams = $wikiparams . '&amp;type=pages';
 } else {
     $changes = ouwiki_get_subwiki_recentchanges($subwiki->id, 0, OUWIKI_FEEDSIZE);
 }
@@ -73,6 +74,8 @@ $feeddescription=get_string('feeddescription'. ($newpages ? 'pages' : 'changes')
 $domainname = preg_replace('/^.*\/\/(www\.)?(.*?)\/.*$/', '$2', $CFG->wwwroot);
 $id = 'tag:'.$domainname.',2007:ouwiki/'.$ouwiki->id.'/wikihistory/'.($newpages ? 'pages' : 'changes');
 
+$pagelink = $CFG->wwwroot . '/mod/ouwiki/wikihistory.php?' . $wikiparams;
+
 print '<?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="'.$CFG->wwwroot.'/mod/ouwiki/feed.xsl"?>';
 if ($rss) {
@@ -81,7 +84,7 @@ if ($rss) {
   <channel>
     <title>'.$feedtitle.'</title>
     <description>'.$feeddescription.'</description>
-    <link>'.$feedlink.'</link>
+    <link>' . $pagelink . '</link>
     <pubDate>'.date('r', reset($changes)->timecreated).'</pubDate>';
 } else {
     print '
@@ -89,7 +92,7 @@ if ($rss) {
   <link rel="self" href="'.$feedlink.'"/>
   <title>'.$feedtitle.'</title>
   <subtitle>'.$feeddescription.'</subtitle>
-  <link href="http://example.org/"/>
+  <link href="' . $pagelink . '"/>
   <updated>'.date('c', reset($changes)->timecreated).'</updated>
   <author>
     <name>Wiki system</name>
