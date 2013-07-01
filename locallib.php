@@ -829,7 +829,7 @@ function ouwiki_internal_re_internallinks($matches) {
     // See if it matches a known page
     foreach ($ouwiki_internallinks as $indexpage) {
         if (($details->page === '' && $indexpage->title === '') ||
-            (strtoupper($indexpage->title) === strtoupper($details->page)) ) {
+            (isset($indexpage->title) && strtoupper($indexpage->title) === strtoupper($details->page)) ) {
             // Page matches, return link
             return '<a class="ouw_wikilink" href="#' . $indexpage->pageid .
                 '">' . $details->title . '</a>';
@@ -3211,6 +3211,28 @@ function ouwiki_display_portfolio_page_in_index($pageversion) {
     return $output;
 }
 
+function ouwiki_build_up_sub_index($pageid, $index, &$subtree) {
+    $thispage = $index[$pageid];
+    if (count($thispage->linksto) > 0) {
+        foreach ($thispage->linksto as $childid) {
+            ouwiki_build_up_sub_index($childid, $index, $subtree);
+        }
+    }
+    $subtree[$pageid] = $thispage;
+}
+
+function ouwiki_get_sub_tree_from_index($pageid, $index) {
+    $subtree = array();
+    $thispage = $index[$pageid];
+    $subtree[$pageid] = $thispage;
+    if (!empty($thispage->linksto)) {
+        foreach ($thispage->linksto as $pageidid) {
+            ouwiki_build_up_sub_index($pageid, $index, $subtree);
+        }
+    }
+    return $subtree;
+}
+
 function ouwiki_tree_index($func, $pageid, &$index = null, $subwiki = null, $cm = null, $context = null) {
     $thispage = $index[$pageid];
     $output = '<li>' . $func($thispage, $subwiki, $cm, $index, $context);
@@ -3607,12 +3629,8 @@ class ouwiki_all_portfolio_caller extends ouwiki_portfolio_caller_base {
         $this->load_base_data($this->subwikiid);
 
         // Load all page-versions.
-        if ($this->tree) {
-            $this->pageversions = ouwiki_get_subwiki_allpages_index($this->subwiki);
-            ouwiki_build_tree($this->pageversions);
-        } else {
-            $this->pageversions = ouwiki_get_subwiki_allpages($this->subwiki);
-        }
+        $this->pageversions = ouwiki_get_subwiki_allpages_index($this->subwiki);
+        ouwiki_build_tree($this->pageversions);
 
         // Get all files used in subwiki.
         $this->add_files($this->pageversions);
@@ -3659,9 +3677,14 @@ class ouwiki_all_portfolio_caller extends ouwiki_portfolio_caller_base {
         $pagehtml .= html_writer::tag('h1', s($this->ouwiki->name));
 
         if ($this->tree) {
+            $orphans = false;
             $pagehtml .=  '</ul>';
             foreach ($this->pageversions as $pageversion) {
-                $pageversion->xhtml = $this->prepare_page($pageversion);
+                if (count($pageversion->linksfrom) == 0 && $pageversion->title !== '') {
+                    $orphans = true;
+                } else {
+                    $pageversion->xhtml = $this->prepare_page($pageversion);
+                }
             }
             $pagehtml .= '<ul class="ouw_indextree">';
             $func = 'ouwiki_display_portfolio_page_in_index';
@@ -3672,9 +3695,36 @@ class ouwiki_all_portfolio_caller extends ouwiki_portfolio_caller_base {
                     $this->subwiki,
                     $this->cm);
             $pagehtml .=  '</ul>';
+            if ($orphans) {
+                $pagehtml .=  '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
+                $pagehtml .=  '<ul class="ouw_indextree">';
+                foreach ($this->pageversions as $pageversion) {
+                    if (count($pageversion->linksfrom) == 0 && $pageversion->title !== '') {
+                        $pageversion->xhtml = $this->prepare_page($pageversion);
+                        $orphanindex = ouwiki_get_sub_tree_from_index($pageversion->pageid, $this->pageversions);
+                        ouwiki_build_tree($orphanindex);
+                        $pagehtml .= ouwiki_tree_index($func, $pageversion->pageid, $orphanindex, $this->subwiki, $this->cm);
+                    }
+                }
+                $pagehtml .=  '</ul>';
+            }
         } else {
+            $orphans = false;
             foreach ($this->pageversions as $pageversion) {
-                $pagehtml .= $this->prepare_page($pageversion);
+                if (count($pageversion->linksfrom) == 0 && $pageversion->title !== '') {
+                    $orphans = true;
+                } else {
+                    $pagehtml .= $this->prepare_page($pageversion);
+                }
+            }
+
+            if ($orphans) {
+                $pagehtml .= '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
+                foreach ($this->pageversions as $pageversion) {
+                    if (count($pageversion->linksfrom) == 0 && $pageversion->title !== '') {
+                        $pagehtml .= $this->prepare_page($pageversion);
+                    }
+                }
             }
         }
 

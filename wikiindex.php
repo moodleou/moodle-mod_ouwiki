@@ -88,6 +88,7 @@ if (count($index) == 0) {
     foreach ($index as $indexitem) {
         if (count($indexitem->linksfrom) == 0 && $indexitem->title !== '') {
             $orphans = true;
+            break;
         }
     }
 } else {
@@ -108,7 +109,13 @@ if ($orphans) {
     print '<ul class="ouw_index">';
     foreach ($index as $indexitem) {
         if (count($indexitem->linksfrom) == 0 && $indexitem->title !== '') {
-            print '<li>' . ouwiki_display_wikiindex_page_in_index($indexitem, $subwiki, $cm) . '</li>';
+            if ($treemode) {
+                $orphanindex = ouwiki_get_sub_tree_from_index($indexitem->pageid, $index);
+                ouwiki_build_tree($orphanindex);
+                print ouwiki_tree_index($func, $indexitem->pageid, $orphanindex, $subwiki, $cm);
+            } else {
+                print '<li>' . ouwiki_display_wikiindex_page_in_index($indexitem, $subwiki, $cm) . '</li>';
+            }
         }
     }
     print '</ul>';

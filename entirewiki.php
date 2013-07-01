@@ -62,15 +62,18 @@ if ($format !== OUWIKI_FORMAT_HTML && $format !== OUWIKI_FORMAT_RTF && $format !
 $filename = $course->shortname.'.'.$ouwiki->name;
 $filename = preg_replace('/[^A-Za-z0-9.-]/' , '_', $filename);
 
+$markup = '';
+$fs = null;
+
 switch ($format) {
     case OUWIKI_FORMAT_TEMPLATE:
-        $xml = '<wiki>';
+        $markup = '<wiki>';
         $files = array();
         $fs = get_file_storage();
         break;
     case OUWIKI_FORMAT_RTF:
         require_once($CFG->dirroot.'/local/rtf.php');
-        $html = '<root><p>'.get_string('savedat', 'ouwiki', userdate(time())).'</p><hr />';
+        $markup = '<root><p>'.get_string('savedat', 'ouwiki', userdate(time())).'</p><hr />';
         break;
     case OUWIKI_FORMAT_HTML:
         // Do header
@@ -79,12 +82,22 @@ switch ($format) {
         break;
 }
 
-// Get list of all pages
+// Get list of all pages.
 $first = true;
 $index = ouwiki_get_subwiki_index($subwiki->id);
 $brokenimagestr = get_string('brokenimage', 'ouwiki');
 
+$orphans = false;
 $treemode = optional_param('type', '', PARAM_ALPHA) == 'tree';
+
+// Check for orphan posts.
+foreach ($index as $indexitem) {
+    if (count($indexitem->linksfrom) == 0 && $indexitem->title !== '') {
+        $orphans = true;
+        break;
+    }
+}
+
 // If tree view specified.
 if (($treemode) && ($format == OUWIKI_FORMAT_HTML) ) {
     ouwiki_build_tree($index);
@@ -93,72 +106,67 @@ if (($treemode) && ($format == OUWIKI_FORMAT_HTML) ) {
     $functionname = 'ouwiki_display_entirewiki_page_in_index';
     print ouwiki_tree_index($functionname, reset($index)->pageid, $index, $subwiki, $cm, $context);
     print '</ul>';
+
+    if ($orphans) {
+        print '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
+        print '<ul class="ouw_indextree">';
+        foreach ($index as $indexitem) {
+            if (count($indexitem->linksfrom) == 0 && $indexitem->title !== '') {
+                $orphanindex = ouwiki_get_sub_tree_from_index($indexitem->pageid, $index);
+                ouwiki_build_tree($orphanindex);
+                print ouwiki_tree_index($functionname, $indexitem->pageid, $orphanindex, $subwiki, $cm, $context);
+            }
+        }
+        print '</ul>';
+    }
 } else {
     foreach ($index as $pageinfo) {
-        // Get page details.
-        $pageversion = ouwiki_get_current_page($subwiki, $pageinfo->title);
-        // If the page hasn't really been created yet, skip it.
-        if (is_null($pageversion->xhtml)) {
-            continue;
-        }
-        $visibletitle = $pageversion->title === '' ? get_string('startpage', 'ouwiki') : $pageversion->title;
+        if (count($pageinfo->linksfrom)!= 0 || $pageinfo->title === '') {
+            // Get page details.
+            $pageversion = ouwiki_get_current_page($subwiki, $pageinfo->title);
+            // If the page hasn't really been created yet, skip it.
+            if (is_null($pageversion->xhtml)) {
+                continue;
+            }
 
-        if ($format != OUWIKI_FORMAT_TEMPLATE) {
-            $pageversion->xhtml = file_rewrite_pluginfile_urls($pageversion->xhtml, 'pluginfile.php',
-                    $context->id, 'mod_ouwiki', 'content', $pageversion->versionid);
+            $markup .= get_online_display_content($format, $pageversion, $context, $subwiki, $cm, $index, $fs);
+
+            if ($first) {
+                $first = false;
+            }
+        }
+    }
+
+    if ($orphans) {
+        if ($format == OUWIKI_FORMAT_HTML) {
+            print '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
+        } else {
+            $markup .= '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
         }
 
-        switch ($format) {
-            case OUWIKI_FORMAT_TEMPLATE:
-                // Print template wiki page.
-                $xml .= '<page>';
-                if ($pageversion->title !== '') {
-                    $xml .= '<title>' . htmlspecialchars($pageversion->title) . '</title>';
+        foreach ($index as $indexitem) {
+            if (count($indexitem->linksfrom) == 0 && $indexitem->title !== '') {
+                // Get page details.
+                $pageversion = ouwiki_get_current_page($subwiki, $indexitem->title);
+                // If the page hasn't really been created yet, skip it.
+                if (is_null($pageversion->xhtml)) {
+                    continue;
                 }
-                $xml .= '<versionid>' . $pageversion->versionid . '</versionid>';
-                // Copy images found in content.
-                preg_match_all('#<img.*?src="@@PLUGINFILE@@/(.*?)".*?/>#', $pageversion->xhtml, $matches);
-                if (! empty($matches)) {
-                    // Extract the file names from the matches.
-                    foreach ($matches[1] as $key => $match) {
-                        // Get file name and copy to zip.
-                        $match = urldecode($match);
-                        // Copy image - on fail swap tag with string.
-                        if ($file = $fs->get_file($context->id, 'mod_ouwiki', 'content',
-                                $pageversion->versionid, '/', $match)) {
-                            $files["/$pageversion->versionid/$match/"] = $file;
-                        } else {
-                            $pageversion->xhtml = str_replace($matches[0][$key], $brokenimagestr,
-                                    $pageversion->xhtml);
-                        }
-                    }
-                }
-                $xml .= '<xhtml>' . htmlspecialchars($pageversion->xhtml) . '</xhtml>';
-                $xml .= '</page>';
-                break;
-            case OUWIKI_FORMAT_RTF:
-                $html .= '<h1>' . htmlspecialchars($visibletitle) . '</h1>';
-                $html .= trim($pageversion->xhtml);
-                $html .= '<br /><br /><hr />';
-                break;
-            case OUWIKI_FORMAT_HTML:
-                print '<div class="ouw_entry"><a name="' . $pageversion->pageid . '"></a><h1 class="ouw_entry_heading">' .
-                    '<a href="view.php?' . ouwiki_display_wiki_parameters($pageversion->title, $subwiki, $cm) .
-                    '">' . htmlspecialchars($visibletitle) . '</a></h1>';
-                print ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, $index, $pageversion->xhtmlformat);
-                print '</div>';
-                break;
-        }
 
-        if ($first) {
-            $first = false;
+                $markup .= get_online_display_content($format, $pageversion, $context, $subwiki, $cm, $index, $fs);
+
+                if ($first) {
+                    $first = false;
+                }
+
+            }
         }
     }
 }
 
 switch ($format) {
     case OUWIKI_FORMAT_TEMPLATE:
-        $xml .= '</wiki>';
+        $markup .= '</wiki>';
         // Create temp xml file.
         $filerec = new stdClass();
         $filerec->contextid = $context->id;
@@ -167,7 +175,7 @@ switch ($format) {
         $filerec->filepath = '/';
         $filerec->itemid = $id;
         $filerec->filename = strtolower(get_string('template', 'mod_ouwiki')) . '.xml';
-        $files[$filerec->filename] = $fs->create_file_from_string($filerec, $xml);
+        $files[$filerec->filename] = $fs->create_file_from_string($filerec, $markup);
         $zip = get_file_packer();
         $file = $zip->archive_to_storage($files, $context->id, 'mod_ouwiki', 'temp', $id, '/', $filename . '.zip');
         send_stored_file($file, 0, 0, true, array('dontdie' => true));
@@ -177,12 +185,67 @@ switch ($format) {
         break;
 
     case OUWIKI_FORMAT_RTF:
-        $html .= '</root>';
-        rtf_from_html($filename.'.rtf', $html);
+        $markup .= '</root>';
+        rtf_from_html($filename.'.rtf', $markup);
         break;
 
     case OUWIKI_FORMAT_HTML:
         print '</div>';
         ouwiki_print_footer($course, $cm, $subwiki);
         break;
+}
+
+function get_online_display_content($format, $pageversion, $context, $subwiki, $cm, $index, $fs) {
+    $markup = '';
+    $visibletitle = $pageversion->title === '' ? get_string('startpage', 'ouwiki') : $pageversion->title;
+
+    if ($format != OUWIKI_FORMAT_TEMPLATE) {
+        $pageversion->xhtml = file_rewrite_pluginfile_urls($pageversion->xhtml, 'pluginfile.php',
+                $context->id, 'mod_ouwiki', 'content', $pageversion->versionid);
+    }
+
+    switch ($format) {
+        case OUWIKI_FORMAT_TEMPLATE:
+            // Print template wiki page.
+            $markup .= '<page>';
+            if ($pageversion->title !== '') {
+                $markup .= '<title>' . htmlspecialchars($pageversion->title) . '</title>';
+            }
+            $markup .= '<versionid>' . $pageversion->versionid . '</versionid>';
+            // Copy images found in content.
+            preg_match_all('#<img.*?src="@@PLUGINFILE@@/(.*?)".*?/>#', $pageversion->xhtml, $matches);
+            if (! empty($matches)) {
+                // Extract the file names from the matches.
+                foreach ($matches[1] as $key => $match) {
+                    // Get file name and copy to zip.
+                    $match = urldecode($match);
+                    // Copy image - on fail swap tag with string.
+                    if ($file = $fs->get_file($context->id, 'mod_ouwiki', 'content',
+                            $pageversion->versionid, '/', $match)) {
+                        $files["/$pageversion->versionid/$match/"] = $file;
+                    } else {
+                        $pageversion->xhtml = str_replace($matches[0][$key], $brokenimagestr,
+                                $pageversion->xhtml);
+                    }
+                }
+            }
+            $markup .= '<xhtml>' . htmlspecialchars($pageversion->xhtml) . '</xhtml>';
+            $markup .= '</page>';
+            break;
+        case OUWIKI_FORMAT_RTF:
+            $markup .= '<h1>' . htmlspecialchars($visibletitle) . '</h1>';
+            $markup .= trim($pageversion->xhtml);
+            $markup .= '<br /><br /><hr />';
+            break;
+        case OUWIKI_FORMAT_HTML:
+            print '<div class="ouw_entry"><a name="' . $pageversion->pageid . '"></a><h1 class="ouw_entry_heading">' .
+                    '<a href="view.php?' . ouwiki_display_wiki_parameters($pageversion->title, $subwiki, $cm) .
+                    '">' . htmlspecialchars($visibletitle) . '</a></h1>';
+            print ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, $index, $pageversion->xhtmlformat);
+            print '</div>';
+            break;
+    }
+
+    return $markup;
+
 }
