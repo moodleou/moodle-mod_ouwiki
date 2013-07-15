@@ -136,4 +136,5 @@ $v2->attachments = $attachdiff2;
 echo $ouwikioutput->ouwiki_print_diff($v1, $v2);
 
 // Footer
+echo '<div>';
 ouwiki_print_footer($course, $cm, $subwiki, $pagename);
