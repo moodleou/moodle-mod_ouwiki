@@ -164,6 +164,7 @@ class ouwiki_participation_table extends flexible_table {
         // Start of main data table
 
         echo html_writer::start_tag('div', array('class'=>'no-overflow'));
+        echo html_writer::start_tag('div', array('class'=>'no-overflow'));
         echo html_writer::start_tag('table', $this->attributes);
     }
 
