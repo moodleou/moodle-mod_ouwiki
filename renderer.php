@@ -840,15 +840,11 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             }
         }
 
-        if (!$table->is_downloading()) {
-            $table->print_html();  // Print the whole table.
-
-            // print the grade form footer if necessary
-            if ($grading_info && !empty($participation)) {
-                echo $table->grade_form_footer();
-            }
-        }
         $table->finish_output();
+        // print the grade form footer if necessary
+        if (!$table->is_downloading() && $grading_info && !empty($participation)) {
+            echo $table->grade_form_footer();
+        }
     }
 
     /**
@@ -979,15 +975,10 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             $table->add_data($row);
         }
 
-        if (!$table->is_downloading()) {
-            $table->print_html();  // Print the whole table.
-
-            // Grade
-            if ($cangrade && $ouwiki->grade != 0) {
-                $this->ouwiki_render_user_grade($course, $cm, $ouwiki, $user, $pagename, $groupid);
-            }
-        }
         $table->finish_output();
+        if (!$table->is_downloading() && $cangrade && $ouwiki->grade != 0) {
+            $this->ouwiki_render_user_grade($course, $cm, $ouwiki, $user, $pagename, $groupid);
+        }
     }
 
     /**
