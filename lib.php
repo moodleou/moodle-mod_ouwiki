@@ -61,9 +61,7 @@ function ouwiki_add_instance($data, $mform) {
 
         return $ouwikiid;
     }
-    // Note: existing template files will be stored based on the old data structure
-    // however, because they are only used in code once (on ouwiki_init_pages)
-    // it wasn't necessary to rejig these
+    // Note: template files will be stored based on the old data structure.
 }
 
 function ouwiki_update_instance($data, $mform) {
@@ -71,8 +69,7 @@ function ouwiki_update_instance($data, $mform) {
 
     $data->id = $data->instance;
 
-    // Update main record
-    unset($data->template);
+    // Update main record.
     $DB->update_record('ouwiki', $data);
 
     // Set up null values
@@ -89,6 +86,33 @@ function ouwiki_update_instance($data, $mform) {
     }
 
     ouwiki_grade_item_update($data);
+
+    if (!$cm = get_coursemodule_from_id('ouwiki', $data->coursemodule)) {
+        print_error('invalidcoursemodule');
+    }
+
+    // Checking course instance.
+    $course = $DB->get_record('course', array('id' => $data->course), '*', MUST_EXIST);
+
+    if ($filename = $mform->get_new_filename('template_file')) {
+        // Delete any previous template files.
+        $cmid = $data->coursemodule;
+        $context = context_module::instance($cmid);
+        $fs = get_file_storage();
+        $fs->delete_area_files($context->id, 'mod_ouwiki', 'template', $data->id);
+        // Add template file.
+        $file = $mform->save_stored_file('template_file', $context->id, 'mod_ouwiki', 'template', $data->id, '/', $filename);
+        $DB->set_field('ouwiki', 'template', '/'.$file->get_filename(), array('id' => $data->id));
+        // Check for empty wikis (i.e. wikis without a start page already created).
+        $subwikis = ouwiki_get_subwikis($data->id);
+        $ouwiki = $DB->get_record_select('ouwiki', 'id = ?', array($data->id));
+        foreach ($subwikis as $subwiki) {
+            if (!ouwiki_subwiki_content_exists($subwiki->id)) {
+                // Amend any empty wikis from template.
+                ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki);
+            }
+        }
+    }
 
     return true;
 }

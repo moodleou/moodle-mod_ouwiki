@@ -68,20 +68,26 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         $mform->addElement('select', 'timeout', get_string("timeout", "ouwiki"), $timeoutoptions);
         $mform->addHelpButton('timeout', 'timeout', 'ouwiki');
 
-        // Read-only controls
+        // Read-only controls.
         $mform->addElement('date_selector', 'editbegin', get_string('editbegin', 'ouwiki'), array('optional' => true));
         $mform->addHelpButton('editbegin', 'editbegin', 'ouwiki');
         $mform->addElement('date_selector', 'editend', get_string('editend', 'ouwiki'), array('optional' => true));
         $mform->addHelpButton('editend', 'editend', 'ouwiki');
 
-        // Template (only on creation)
-        if (empty($this->_cm)) {
-            $filepickeroptions = array();
-            $filepickeroptions['accepted_types'] = array('.xml', '.zip');
-            $filepickeroptions['maxbytes'] = $COURSE->maxbytes;
-            $mform->addElement('filepicker', 'template_file', get_string('template', 'ouwiki'), null, $filepickeroptions);
-            $mform->addHelpButton('template_file', 'template', 'ouwiki');
+        // Display any template usage warning messages.
+        if ((!empty($this->current->id)) && (ouwiki_has_subwikis($this->current->id))) {
+            $mform->addElement('static', 'name1', get_string('note', 'ouwiki'), get_string('subwikiexist', 'ouwiki'));
         }
+        if (isset($this->current->template)) {
+            $mform->addElement('static', 'name2', get_string('note', 'ouwiki'), get_string('templatefileexists', 'ouwiki',
+                    $this->current->template));
+        }
+        // Template - previously on creation, but allow to add now add anytime.
+        $filepickeroptions = array();
+        $filepickeroptions['accepted_types'] = array('.xml', '.zip');
+        $filepickeroptions['maxbytes'] = $COURSE->maxbytes;
+        $mform->addElement('filepicker', 'template_file', get_string('template', 'ouwiki'), null, $filepickeroptions);
+        $mform->addHelpButton('template_file', 'template', 'ouwiki');
 
         // Wordcount
         $wordcountoptions = array('0' => get_string('no'), '1' => get_string('yes'));

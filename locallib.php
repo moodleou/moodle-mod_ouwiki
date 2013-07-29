@@ -3285,6 +3285,31 @@ function ouwiki_build_tree(&$index) {
     } while (count($nextlevel) > 0);
 }
 
+function ouwiki_has_subwikis($ouwikiid) {
+    $rs = ouwiki_get_subwikis($ouwikiid);
+    if (!empty($rs)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function ouwiki_get_subwikis($wikiid) {
+    global $DB;
+    $rs = $DB->get_records('ouwiki_subwikis', array('wikiid' => $wikiid));
+    return $rs;
+}
+
+function ouwiki_subwiki_content_exists($subwikiid) {
+    global $DB;
+    $rs = $DB->get_records_select('ouwiki_pages', 'subwikiid = ? AND currentversionid IS NOT null', array($subwikiid));
+    if (!empty($rs)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 /**
  * ouwiki_portfolio_caller_base abstract class to extend portfolio_module_caller_base
  */

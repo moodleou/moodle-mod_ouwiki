@@ -28,6 +28,11 @@ $string['subwikis_single'] = 'Single wiki for course';
 $string['subwikis_groups'] = 'One wiki per group';
 $string['subwikis_individual'] = 'Separate wiki for every user';
 
+$string['note'] = 'Note:';
+$string['subwikiexist'] = 'Sub-wiki\'s have already been created. Adding a template file only affects
+newly created and empty sub-wiki\'s, existing content will remain as at present.';
+$string['templatefileexists'] = 'A template file \'{$a}\' is already in use.';
+
 $string['timeout']='Time allowed for edit';
 $string['timeout_none']='No timeout';
 
@@ -456,9 +461,8 @@ software; it is an extremely simple XML format. Look at a saved template to see 
 </p>
 
 <p>
-You cannot change the template after the wiki has been created. If you want to do this,
-delete the wiki entirely, then create a new one using the template.
-</p>';
+You can add the template after the wiki has been created. Adding a template only affects
+newly created sub-wiki\'s, existing ones will remain as at present. </p>';
 $string['timeout_help'] = '
 <p>
 If you select a timeout, people editing the wiki are only allowed to edit it for a given time.
