@@ -129,7 +129,7 @@ if (($treemode) && ($format == OUWIKI_FORMAT_HTML) ) {
                 continue;
             }
 
-            $markup .= get_online_display_content($format, $pageversion, $context, $subwiki, $cm, $index, $fs);
+            $markup .= get_online_display_content($format, $pageversion, $context, $subwiki, $cm, $index, $fs, $files);
 
             if ($first) {
                 $first = false;
@@ -153,7 +153,7 @@ if (($treemode) && ($format == OUWIKI_FORMAT_HTML) ) {
                     continue;
                 }
 
-                $markup .= get_online_display_content($format, $pageversion, $context, $subwiki, $cm, $index, $fs);
+                $markup .= get_online_display_content($format, $pageversion, $context, $subwiki, $cm, $index, $fs, $files);
 
                 if ($first) {
                     $first = false;
@@ -195,7 +195,7 @@ switch ($format) {
         break;
 }
 
-function get_online_display_content($format, $pageversion, $context, $subwiki, $cm, $index, $fs) {
+function get_online_display_content($format, $pageversion, $context, $subwiki, $cm, $index, $fs, &$files) {
     $markup = '';
     $visibletitle = $pageversion->title === '' ? get_string('startpage', 'ouwiki') : $pageversion->title;
 
