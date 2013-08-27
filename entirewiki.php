@@ -140,7 +140,7 @@ if (($treemode) && ($format == OUWIKI_FORMAT_HTML) ) {
     if ($orphans) {
         if ($format == OUWIKI_FORMAT_HTML) {
             print '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
-        } else {
+        } else if ($format != OUWIKI_FORMAT_TEMPLATE) {
             $markup .= '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
         }
 
