@@ -34,6 +34,7 @@ class mod_ouwiki_annotate_form extends moodleform {
             $mform->addElement('hidden', 'page', $pagename);
         }
         $mform->addElement('hidden', 'user', $currentuserid);
+        $mform->setType('user', PARAM_INT);
 
         if (count($annotations != 0)) {
             usort($annotations, array('mod_ouwiki_annotate_form', 'ouwiki_internal_position_sort'));
