@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -54,25 +53,25 @@ class restore_ouwiki_activity_task extends restore_activity_task {
      */
     static public function define_decode_contents() {
         $contents = array();
- 
+
         $contents[] = new restore_decode_content('ouwiki', array('intro'), 'ouwiki');
- 
+
         return $contents;
     }
- 
+
     /**
      * Define the decoding rules for links belonging
      * to the activity to be executed by the link decoder
      */
     static public function define_decode_rules() {
         $rules = array();
- 
+
         $rules[] = new restore_decode_rule('OUWIKIVIEWBYID', '/mod/ouwiki/view.php?id=$1', 'course_module');
         $rules[] = new restore_decode_rule('OUWIKIINDEX', '/mod/ouwiki/index.php?id=$1', 'course');
- 
+
         return $rules;
     }
- 
+
     /**
      * Define the restore log rules that will be applied
      * by the {@link restore_logs_processor} when restoring
@@ -81,15 +80,15 @@ class restore_ouwiki_activity_task extends restore_activity_task {
      */
     static public function define_restore_log_rules() {
         $rules = array();
- 
+
         $rules[] = new restore_log_rule('ouwiki', 'add', 'view.php?id={course_module}', '{ouwiki}');
         $rules[] = new restore_log_rule('ouwiki', 'update', 'view.php?id={course_module}', '{ouwiki}');
         $rules[] = new restore_log_rule('ouwiki', 'view', 'view.php?id={course_module}', '{ouwiki}');
         $rules[] = new restore_log_rule('ouwiki', 'report', 'report.php?id={course_module}', '{ouwiki}');
- 
+
         return $rules;
     }
- 
+
     /**
      * Define the restore log rules that will be applied
      * by the {@link restore_logs_processor} when restoring
@@ -102,12 +101,12 @@ class restore_ouwiki_activity_task extends restore_activity_task {
      */
     static public function define_restore_log_rules_for_course() {
         $rules = array();
- 
+
         // Fix old wrong uses (missing extension)
         $rules[] = new restore_log_rule('ouwiki', 'view all', 'index?id={course}', null,
                                         null, null, 'index.php?id={course}');
         $rules[] = new restore_log_rule('ouwiki', 'view all', 'index.php?id={course}', null);
- 
+
         return $rules;
     }
 }

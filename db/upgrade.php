@@ -1,18 +1,32 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 function xmldb_ouwiki_upgrade($oldversion=0) {
 
     global $CFG, $DB;
 
-    $dbman = $DB->get_manager(); /// loads ddl manager and xmldb classes
+    $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
 
     if ($oldversion < 2008100600) {
 
-        /// Define field deletedat to be added to ouwiki_versions
+        // Define field deletedat to be added to ouwiki_versions.
         $table = new xmldb_table('ouwiki_versions');
         $field = new xmldb_field('deletedat');
         $field->set_attributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null, 'changeprevsize');
-        /// Launch add field deletedat (provided field does not already exist)
+        // Launch add field deletedat (provided field does not already exist).
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
@@ -20,17 +34,17 @@ function xmldb_ouwiki_upgrade($oldversion=0) {
     }
 
     if ($oldversion < 2009120801) {
-        /// Launch create table for ouwiki_annotations - if it does not already exist (extra precaution)
+        // Launch create table for ouwiki_annotations - if it does not already exist (extra precaution).
         $table = new xmldb_table('ouwiki_annotations');
-        if(!$dbman->table_exists($table)) {
+        if (!$dbman->table_exists($table)) {
             $dbman->install_one_table_from_xmldb_file($CFG->dirroot.'/mod/ouwiki/db/install.xml', 'ouwiki_annotations');
         }
 
-        /// Define field locked to be added to ouwiki_pages
+        // Define field locked to be added to ouwiki_pages.
         $table = new xmldb_table('ouwiki_pages');
         $field = new xmldb_field('locked');
         $field->set_attributes(XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, 0, 'currentversionid');
-        /// Launch add field locked - if it does not already exist (extra precaution)
+        // Launch add field locked - if it does not already exist (extra precaution).
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
@@ -39,11 +53,11 @@ function xmldb_ouwiki_upgrade($oldversion=0) {
 
     if ($oldversion < 2010022300) {
 
-        /// Define field locked to be added to ouwiki_pages
+        // Define field locked to be added to ouwiki_pages.
         $table = new xmldb_table('ouwiki');
         $field = new xmldb_field('commenting');
         $field->set_attributes(XMLDB_TYPE_CHAR, '20', null, null, null, 'default', 'completionedits');
-        /// Launch add field locked - if it does not already exist (extra precaution)
+        // Launch add field locked - if it does not already exist (extra precaution).
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,12 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
-
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * This file contains all necessary code to define and process an edit form
  */
@@ -29,7 +27,7 @@ class mod_ouwiki_edit_page_form extends moodleform {
 
         $mform =& $this->_form;
 
-        //editor
+        // Editor.
         $mform->addElement('editor', 'content', get_string('content'), null, array('maxfiles' => EDITOR_UNLIMITED_FILES));
         $mform->addHelpButton('content', 'formathtml', 'wiki');
 

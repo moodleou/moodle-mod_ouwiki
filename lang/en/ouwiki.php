@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 $string['modulename'] = 'OU wiki';
 $string['modulenameplural'] = 'OU wikis';
 $string['pluginadministration'] = 'OU wiki administration';
@@ -13,6 +27,11 @@ $string['subwikis'] = 'Sub-wikis';
 $string['subwikis_single'] = 'Single wiki for course';
 $string['subwikis_groups'] = 'One wiki per group';
 $string['subwikis_individual'] = 'Separate wiki for every user';
+
+$string['note'] = 'Note:';
+$string['subwikiexist'] = 'Sub-wiki\'s have already been created. Adding a template file only affects
+newly created and empty sub-wiki\'s, existing content will remain as at present.';
+$string['templatefileexists'] = 'A template file \'{$a}\' is already in use.';
 
 $string['timeout']='Time allowed for edit';
 $string['timeout_none']='No timeout';
@@ -442,9 +461,8 @@ software; it is an extremely simple XML format. Look at a saved template to see 
 </p>
 
 <p>
-You cannot change the template after the wiki has been created. If you want to do this,
-delete the wiki entirely, then create a new one using the template.
-</p>';
+You can add the template after the wiki has been created. Adding a template only affects
+newly created sub-wiki\'s, existing ones will remain as at present. </p>';
 $string['timeout_help'] = '
 <p>
 If you select a timeout, people editing the wiki are only allowed to edit it for a given time.

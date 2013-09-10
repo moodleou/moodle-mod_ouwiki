@@ -184,7 +184,7 @@ class ouwiki_participation_test extends UnitTestCaseUsingDatabase {
         $context->contextlevel = CONTEXT_SYSTEM;
         $context->instanceid   = 0;
         $context->depth        = 1;
-        $context->path         = null; //not known before insert
+        $context->path         = null;// Not known before insert.
         $context->id = $this->testdb->insert_record('context', $context);
         $context->path         = '/' . $context->id;
         $this->testdb->update_record('context', $context);

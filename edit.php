@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,12 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
-
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * Edit page. Allows user to edit and/or preview wiki pages.
  *
@@ -137,7 +135,7 @@ if ($newsection) {
 
 // if cancel redirect before going too far
 if ($cancel) {
-    //get pageid to unlock
+    // Get pageid to unlock.
     $pageversion = ouwiki_get_current_page($subwiki, $pagename);
     if (!empty($pageversion->pageid)) {
         ouwiki_release_lock($pageversion->pageid);
@@ -266,7 +264,7 @@ if (!$lockok) {
     $cancel = get_string('cancel');
     $tryagain = get_string('tryagain', 'ouwiki');
     $pagelockedtitle = get_string('pagelockedtitle', 'ouwiki');
-    $overridelock = get_string('overridelock','ouwiki');
+    $overridelock = get_string('overridelock', 'ouwiki');
 
     $details = new StdClass;
     $details->name = fullname($lockholder);
@@ -285,7 +283,7 @@ if (!$lockok) {
         }
     }
 
-    $pagelockedoverride = $canoverride ? '<p>'.get_string('pagelockedoverride','ouwiki').'</p>' : '';
+    $pagelockedoverride = $canoverride ? '<p>'.get_string('pagelockedoverride', 'ouwiki').'</p>' : '';
 
     print "<div id='ouwiki_lockinfo'>
         <h2>$pagelockedtitle</h2>
@@ -356,7 +354,7 @@ if ($pagename) {
         $section = true;
     } else {
         if (!$section) {
-            $name = get_string('startpage','ouwiki');
+            $name = get_string('startpage', 'ouwiki');
         } else {
             $name = htmlspecialchars($sectiontitle);
             $title = get_string('editingsection', 'ouwiki', $name);

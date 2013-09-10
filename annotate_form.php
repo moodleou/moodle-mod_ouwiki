@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,18 +8,18 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot . '/lib/formslib.php');
 
 class mod_ouwiki_annotate_form extends moodleform {
 
-    function definition() {
+    public function definition() {
         global $CFG, $COURSE;
 
         $mform =& $this->_form;
@@ -37,7 +36,7 @@ class mod_ouwiki_annotate_form extends moodleform {
         $mform->addElement('hidden', 'user', $currentuserid);
 
         if (count($annotations != 0)) {
-            usort($annotations, array('mod_ouwiki_annotate_form','ouwiki_internal_position_sort'));
+            usort($annotations, array('mod_ouwiki_annotate_form', 'ouwiki_internal_position_sort'));
             $editnumber = 1;
             foreach ($annotations as $annotation) {
                 if (!$annotation->orphaned) {
@@ -55,21 +54,21 @@ class mod_ouwiki_annotate_form extends moodleform {
 
         // only display this checkbox if there are orphaned annotations
         if ($orphaned) {
-            $mform->addElement('checkbox', 'deleteorphaned', get_string('deleteorphanedannotations','ouwiki'));
+            $mform->addElement('checkbox', 'deleteorphaned', get_string('deleteorphanedannotations', 'ouwiki'));
         }
 
         if ($canlock) {
-            $mform->addElement('checkbox', 'lockediting', get_string('lockediting','ouwiki'));
+            $mform->addElement('checkbox', 'lockediting', get_string('lockediting', 'ouwiki'));
             if (ouwiki_is_page_editing_locked($pageid)) {
-                $mform->setDefault('lockediting',true);
+                $mform->setDefault('lockediting', true);
             } else {
-                $mform->setDefault('lockediting',false);
+                $mform->setDefault('lockediting', false);
             }
         }
         $this->add_action_buttons();
-     }
+    }
 
     private function ouwiki_internal_position_sort($a, $b) {
-        return intval($a->position) - intval($b->position); 
+        return intval($a->position) - intval($b->position);
     }
 }

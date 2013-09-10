@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,21 +8,21 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /** Make sure this isn't being directly accessed */
 defined('MOODLE_INTERNAL') || die();
 
-require_once ($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->dirroot.'/course/moodleform_mod.php');
 require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
 
 class mod_ouwiki_mod_form extends moodleform_mod {
 
-    function definition() {
+    public function definition() {
         global $CFG, $COURSE;
 
         $mform =& $this->_form;
@@ -42,9 +41,9 @@ class mod_ouwiki_mod_form extends moodleform_mod {
 
         // Subwikis
         $subwikisoptions = array();
-        $subwikisoptions[OUWIKI_SUBWIKIS_SINGLE] = get_string('subwikis_single','ouwiki');
-        $subwikisoptions[OUWIKI_SUBWIKIS_GROUPS] = get_string('subwikis_groups','ouwiki');
-        $subwikisoptions[OUWIKI_SUBWIKIS_INDIVIDUAL] = get_string('subwikis_individual','ouwiki');
+        $subwikisoptions[OUWIKI_SUBWIKIS_SINGLE] = get_string('subwikis_single', 'ouwiki');
+        $subwikisoptions[OUWIKI_SUBWIKIS_GROUPS] = get_string('subwikis_groups', 'ouwiki');
+        $subwikisoptions[OUWIKI_SUBWIKIS_INDIVIDUAL] = get_string('subwikis_individual', 'ouwiki');
         $mform->addElement('select', 'subwikis', get_string("subwikis", "ouwiki"), $subwikisoptions);
         $mform->addHelpButton('subwikis', 'subwikis', 'ouwiki');
 
@@ -55,7 +54,7 @@ class mod_ouwiki_mod_form extends moodleform_mod {
 
         // Editing timeout
         $timeoutoptions = array();
-        $timeoutoptions[0] = get_string('timeout_none','ouwiki');
+        $timeoutoptions[0] = get_string('timeout_none', 'ouwiki');
         $timeoutoptions[15*60] = get_string('numminutes', '', 15);
         $timeoutoptions[30*60] = get_string('numminutes', '', 30);
         $timeoutoptions[60*60] = get_string('numminutes', '', 60);
@@ -69,20 +68,26 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         $mform->addElement('select', 'timeout', get_string("timeout", "ouwiki"), $timeoutoptions);
         $mform->addHelpButton('timeout', 'timeout', 'ouwiki');
 
-        // Read-only controls
-        $mform->addElement('date_selector', 'editbegin', get_string('editbegin','ouwiki'),array('optional' => true));
+        // Read-only controls.
+        $mform->addElement('date_selector', 'editbegin', get_string('editbegin', 'ouwiki'), array('optional' => true));
         $mform->addHelpButton('editbegin', 'editbegin', 'ouwiki');
-        $mform->addElement('date_selector', 'editend', get_string('editend','ouwiki'),array('optional' => true));
+        $mform->addElement('date_selector', 'editend', get_string('editend', 'ouwiki'), array('optional' => true));
         $mform->addHelpButton('editend', 'editend', 'ouwiki');
 
-        // Template (only on creation)
-        if (empty($this->_cm)) {
-            $filepickeroptions = array();
-            $filepickeroptions['accepted_types'] = array('.xml', '.zip');
-            $filepickeroptions['maxbytes'] = $COURSE->maxbytes;
-            $mform->addElement('filepicker', 'template_file', get_string('template', 'ouwiki'), null, $filepickeroptions);
-            $mform->addHelpButton('template_file', 'template', 'ouwiki');
+        // Display any template usage warning messages.
+        if ((!empty($this->current->id)) && (ouwiki_has_subwikis($this->current->id))) {
+            $mform->addElement('static', 'name1', get_string('note', 'ouwiki'), get_string('subwikiexist', 'ouwiki'));
         }
+        if (isset($this->current->template)) {
+            $mform->addElement('static', 'name2', get_string('note', 'ouwiki'), get_string('templatefileexists', 'ouwiki',
+                    $this->current->template));
+        }
+        // Template - previously on creation, but allow to add now add anytime.
+        $filepickeroptions = array();
+        $filepickeroptions['accepted_types'] = array('.xml', '.zip');
+        $filepickeroptions['maxbytes'] = $COURSE->maxbytes;
+        $mform->addElement('filepicker', 'template_file', get_string('template', 'ouwiki'), null, $filepickeroptions);
+        $mform->addHelpButton('template_file', 'template', 'ouwiki');
 
         // Wordcount
         $wordcountoptions = array('0' => get_string('no'), '1' => get_string('yes'));
@@ -96,7 +101,7 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         $this->standard_coursemodule_elements();
 
         // Disable the 'completion with grade' if grading is turned off
-        if($mform->elementExists('completionusegrade')) {
+        if ($mform->elementExists('completionusegrade')) {
             $mform->disabledIf('completionusegrade', 'grade', 'eq', 0);
         }
 
@@ -105,33 +110,33 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         $this->set_data($data);
     }
 
-    function add_completion_rules() {
+    public function add_completion_rules() {
         $mform =& $this->_form;
 
         $group = array();
-        $group[] =& $mform->createElement('checkbox', 'completionpagesenabled', ' ', get_string('completionpages','ouwiki'));
+        $group[] =& $mform->createElement('checkbox', 'completionpagesenabled', ' ', get_string('completionpages', 'ouwiki'));
         $group[] =& $mform->createElement('text', 'completionpages', ' ', array('size' => 3));
-        $mform->setType('completionpages',PARAM_INT);
-        $mform->addGroup($group, 'completionpagesgroup', get_string('completionpagesgroup','ouwiki'), array(' '), false);
-        $mform->disabledIf('completionpages','completionpagesenabled','notchecked');
+        $mform->setType('completionpages', PARAM_INT);
+        $mform->addGroup($group, 'completionpagesgroup', get_string('completionpagesgroup', 'ouwiki'), array(' '), false);
+        $mform->disabledIf('completionpages', 'completionpagesenabled', 'notchecked');
 
         $group = array();
-        $group[] =& $mform->createElement('checkbox', 'completioneditsenabled', ' ', get_string('completionedits','ouwiki'));
+        $group[] =& $mform->createElement('checkbox', 'completioneditsenabled', ' ', get_string('completionedits', 'ouwiki'));
         $group[] =& $mform->createElement('text', 'completionedits', ' ', array('size' => 3));
-        $mform->setType('completionedits',PARAM_INT);
-        $mform->addGroup($group, 'completioneditsgroup', get_string('completioneditsgroup','ouwiki'), array(' '), false);
-        $mform->disabledIf('completionedits','completioneditsenabled','notchecked');
+        $mform->setType('completionedits', PARAM_INT);
+        $mform->addGroup($group, 'completioneditsgroup', get_string('completioneditsgroup', 'ouwiki'), array(' '), false);
+        $mform->disabledIf('completionedits', 'completioneditsenabled', 'notchecked');
 
-        return array('completionpagesgroup','completioneditsgroup');
+        return array('completionpagesgroup', 'completioneditsgroup');
     }
 
-    function completion_rule_enabled($data) {
+    public function completion_rule_enabled($data) {
         return
             ((!empty($data['completionpagesenabled']) && $data['completionpages'] != 0)) ||
             ((!empty($data['completioneditsenabled']) && $data['completionedits'] != 0));
     }
 
-    function get_data() {
+    public function get_data() {
         $data = parent::get_data();
         if (!$data) {
             return false;
@@ -147,7 +152,7 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         return $data;
     }
 
-    function data_preprocessing(&$default_values) {
+    public function data_preprocessing(&$default_values) {
         // Set up the completion checkboxes which aren't part of standard data.
         // We also make the default value (if you turn on the checkbox) for those
         // numbers to be 1, this will not apply unless checkbox is ticked.
@@ -161,7 +166,7 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         }
     }
 
-    function validation($data, $files) {
+    public function validation($data, $files) {
         $errors = parent::validation($data, $files);
         if ( (($data['subwikis'] == 0) || ($data['subwikis'] == 2) ) && ($data['groupmode'] > 0) ) {
             $errors['groupmode'] = get_string('errorcoursesubwiki', 'ouwiki');

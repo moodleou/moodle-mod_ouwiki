@@ -134,37 +134,13 @@ class ouwiki_participation_table extends flexible_table {
     }
 
     /**
-     * This function is not part of the public api.
-     *
-     * Overrriding here so we can print the form for grading
-     * without interferance from the download form
+     * Override to output grade form header
+     * @see flexible_table::wrap_html_start()
      */
-    public function start_html() {
-        global $OUTPUT;
-        // Do we need to print initial bars?
-        $this->print_initials_bar();
-
-        // Paging bar
-        if ($this->use_pages) {
-            $pagingbar = new paging_bar($this->totalrows, $this->currpage, $this->pagesize,
-                $this->baseurl);
-            $pagingbar->pagevar = $this->request[TABLE_VAR_PAGE];
-            echo $OUTPUT->render($pagingbar);
-        }
-
-        if (in_array(TABLE_P_TOP, $this->showdownloadbuttonsat)) {
-            echo $this->download_buttons();
-        }
-
+    public function wrap_html_start() {
         if ($this->grade && !$this->is_downloading()) {
             echo $this->grade_form_header();
         }
-
-        $this->wrap_html_start();
-        // Start of main data table
-
-        echo html_writer::start_tag('div', array('class'=>'no-overflow'));
-        echo html_writer::start_tag('table', $this->attributes);
     }
 
     public function grade_form_header() {

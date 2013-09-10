@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Standard API to Moodle core.
@@ -62,9 +61,7 @@ function ouwiki_add_instance($data, $mform) {
 
         return $ouwikiid;
     }
-    // Note: existing template files will be stored based on the old data structure
-    // however, because they are only used in code once (on ouwiki_init_pages)
-    // it wasn't necessary to rejig these
+    // Note: template files will be stored based on the old data structure.
 }
 
 function ouwiki_update_instance($data, $mform) {
@@ -72,8 +69,7 @@ function ouwiki_update_instance($data, $mform) {
 
     $data->id = $data->instance;
 
-    // Update main record
-    unset($data->template);
+    // Update main record.
     $DB->update_record('ouwiki', $data);
 
     // Set up null values
@@ -90,6 +86,33 @@ function ouwiki_update_instance($data, $mform) {
     }
 
     ouwiki_grade_item_update($data);
+
+    if (!$cm = get_coursemodule_from_id('ouwiki', $data->coursemodule)) {
+        print_error('invalidcoursemodule');
+    }
+
+    // Checking course instance.
+    $course = $DB->get_record('course', array('id' => $data->course), '*', MUST_EXIST);
+
+    if ($filename = $mform->get_new_filename('template_file')) {
+        // Delete any previous template files.
+        $cmid = $data->coursemodule;
+        $context = context_module::instance($cmid);
+        $fs = get_file_storage();
+        $fs->delete_area_files($context->id, 'mod_ouwiki', 'template', $data->id);
+        // Add template file.
+        $file = $mform->save_stored_file('template_file', $context->id, 'mod_ouwiki', 'template', $data->id, '/', $filename);
+        $DB->set_field('ouwiki', 'template', '/'.$file->get_filename(), array('id' => $data->id));
+        // Check for empty wikis (i.e. wikis without a start page already created).
+        $subwikis = ouwiki_get_subwikis($data->id);
+        $ouwiki = $DB->get_record_select('ouwiki', 'id = ?', array($data->id));
+        foreach ($subwikis as $subwiki) {
+            if (!ouwiki_subwiki_content_exists($subwiki->id)) {
+                // Amend any empty wikis from template.
+                ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki);
+            }
+        }
+    }
 
     return true;
 }
@@ -361,7 +384,7 @@ function ouwiki_get_completion_state($course, $cm, $userid, $type) {
 
     if ($ouwiki->completionedits) {
         $value = $ouwiki->completionedits <= $DB->get_field_sql($countsql, array($userid, $ouwiki->id));
-          if ($type == COMPLETION_AND) {
+        if ($type == COMPLETION_AND) {
             $result = $result && $value;
         } else {
             $result = $result || $value;
@@ -414,7 +437,7 @@ function ouwiki_print_overview($courses, &$htmlarray) {
         $params[] = $course->lastaccess;
         $sql .= '(l.course = ? AND l.time > ?) OR ';
     }
-    $sql = substr($sql,0,-3); // take off the last OR
+    $sql = substr($sql, 0, -3); // take off the last OR
 
     $sql .= ") AND l.module = 'ouwiki' AND action = 'edit' "
         ." AND userid != ? GROUP BY cmid, l.course, instance";
@@ -426,21 +449,21 @@ function ouwiki_print_overview($courses, &$htmlarray) {
         ouwiki_dberror($e);
     }
 
-    $strwikis = get_string('modulename','ouwiki');
-    $strnumrespsince1 = get_string('overviewnumentrysince1','ouwiki');
-    $strnumrespsince = get_string('overviewnumentrysince','ouwiki');
+    $strwikis = get_string('modulename', 'ouwiki');
+    $strnumrespsince1 = get_string('overviewnumentrysince1', 'ouwiki');
+    $strnumrespsince = get_string('overviewnumentrysince', 'ouwiki');
 
-    //Go through the list of all wikis build previously, and check whether
-    //they have had any activity.
+    // Go through the list of all wikis build previously, and check whether
+    // they have had any activity.
     foreach ($wikis as $wiki) {
 
         if (array_key_exists($wiki->id, $new) && !empty($new[$wiki->id])) {
             $count = $new[$wiki->id]->count;
 
-            if( $count > 0 ){
-                if( $count == 1 ){
+            if ($count > 0) {
+                if ($count == 1) {
                     $strresp = $strnumrespsince1;
-                }else{
+                } else {
                     $strresp = $strnumrespsince;
                 }
 
@@ -452,7 +475,7 @@ function ouwiki_print_overview($courses, &$htmlarray) {
                 $str .= $count.' '.$strresp;
                 $str .= '</div></div>';
 
-                if (!array_key_exists($wiki->course,$htmlarray)) {
+                if (!array_key_exists($wiki->course, $htmlarray)) {
                     $htmlarray[$wiki->course] = array();
                 }
                 if (!array_key_exists('wiki', $htmlarray[$wiki->course])) {
@@ -476,7 +499,7 @@ function ouwiki_print_overview($courses, &$htmlarray) {
 function ouwiki_user_outline($course, $user, $mod, $wiki) {
     global $DB;
 
-    $result = NULL;
+    $result = null;
     $logsview = $DB->get_records_select('log', "userid = ? AND module = 'ouwiki'
         AND action = 'view' AND cmid = ?", array($user->id, $mod->id), "time ASC");
     $logsedit = $DB->get_records_select('log', "userid = ? AND module = 'ouwiki'
@@ -692,7 +715,7 @@ function ouwiki_grade_item_delete($ouwiki) {
  */
 function ouwiki_cm_info_dynamic(cm_info $cm) {
     if (!has_capability('mod/ouwiki:view',
-            get_context_instance(CONTEXT_MODULE,$cm->id))) {
+            get_context_instance(CONTEXT_MODULE, $cm->id))) {
         $cm->uservisible = false;
         $cm->set_available(false);
     }

@@ -1,0 +1,12 @@
+== OU Wiki Upload Template Feature ==
+
+=== Description ===
+
+This feature will add support for adding a template to a wiki at any time.
+
+If you override an existing template with a start page this means that only sub-wiki's created
+from that point onwards will use the new template.
+
+=== Capability Requirements ===
+
+Admin/Course Manager capabilities are required

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * View page. Displays wiki pages.
@@ -47,7 +46,7 @@ $foundsomething = $query->display_results('search.php?'.ouwiki_display_wiki_para
 
 echo $foundsomething;
 
-//Add link to search the rest of this website if service available
+// Add link to search the rest of this website if service available.
 if (!empty($CFG->block_resources_search_baseurl)) {
     $params = array('course' => $course->id, 'query' => $querytext);
     $restofwebsiteurl = new moodle_url('/blocks/resources_search/search.php', $params);

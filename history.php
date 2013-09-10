@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * History page. Shows list of all previous versions of a page.
@@ -85,14 +84,14 @@ $atomurl = $CFG->wwwroot.'/mod/ouwiki/feed-history.php?'.$wikiparams.
     '&amp;magic='.$subwiki->magic;
 $rssurl = $CFG->wwwroot.'/mod/ouwiki/feed-history.php?'.$wikiparams.
     '&amp;magic='.$subwiki->magic.'&amp;format=rss';
-$meta = '<link rel="alternate" type="application/atom+xml" title="Atom feed" '. 
+$meta = '<link rel="alternate" type="application/atom+xml" title="Atom feed" '.
     'href="'.$atomurl.'" />';
 
 $wikiname = format_string(htmlspecialchars($ouwiki->name));
 $title = get_string('historyfor', 'ouwiki');
 if ($pagename) {
     $title = $wikiname.' - '.$title.' : '.$pagename;
-    $name = $pagename; 
+    $name = $pagename;
 } else {
     $title = $wikiname.' - '.$title.' : '. get_string('startpage', 'ouwiki');
 }
@@ -109,15 +108,15 @@ print_string('advice_history', 'ouwiki', "view.php?$wikiparams");
 // don't get confused
 if ($candelete) {
     $found = false;
-    foreach($changes as $change) {
+    foreach ($changes as $change) {
         if (!empty($change->deletedat)) {
             $found = true;
             break;
         }
     }
     if ($found) {
-        print '<p class="ouw_deletedpageinfo">'.get_string('pagedeletedinfo','ouwiki').'</p>';
-    }    
+        print '<p class="ouw_deletedpageinfo">'.get_string('pagedeletedinfo', 'ouwiki').'</p>';
+    }
 }
 
 print "
@@ -128,7 +127,7 @@ $wikiinputs
 <tr><th scope='col'>".get_string('date')."</th><th scope='col'>".get_string('time')."</th><th><span class='accesshide'>".get_string('actionheading', 'ouwiki')."</span>
 </th>";
 if ($ouwiki->enablewordcount) {
-    print "<th scope='col'>".get_string('words','ouwiki')."</th>";
+    print "<th scope='col'>".get_string('words', 'ouwiki')."</th>";
 }
 print "<th scope='col'>".get_string('changedby', 'ouwiki')."</th><th scope='col'><span class='accesshide'>".get_string('compare', 'ouwiki')."</span></th></tr>
 ";
@@ -144,7 +143,7 @@ foreach ($changes as $change) {
         $lastdate = $date;
     }
     $time = ouwiki_recent_span($change->timecreated).userdate($change->timecreated, get_string('strftimetime')).'</span>';
-     
+
     $createdtime = userdate($change->timecreated, get_string('strftimetime'));
     $nextchange = false;
     if ($changeindex + 1 < count($changes)) {
@@ -152,7 +151,8 @@ foreach ($changes as $change) {
     }
 
     if ($nextchange) {
-        $changelink = " <small>(<a href='diff.php?$wikiparams&amp;v2={$change->versionid}&amp;v1={$nextchange->versionid}'>".get_string('changes', 'ouwiki')."<span class=\"accesshide\"> $lastdate $createdtime</span></a>)</small>";
+        $changelink = " <small>(<a href='diff.php?$wikiparams&amp;v2={$change->versionid}&amp;v1={$nextchange->versionid}'>".
+                get_string('changes', 'ouwiki')."<span class=\"accesshide\"> $lastdate $createdtime</span></a>)</small>";
     } else {
         $changelink = '';
     }
@@ -187,11 +187,11 @@ foreach ($changes as $change) {
     } else {
         $userlink = '';
     }
-    
+
     $a = new StdClass;
     $a->lastdate = $lastdate;
     $a->createdtime = $createdtime;
-    
+
     $selectaccessibility = get_string('historycompareaccessibility', 'ouwiki', $a);
 
     print "
@@ -204,11 +204,10 @@ foreach ($changes as $change) {
         } else {
             $wordcountchanges = ouwiki_wordcount_difference($change->wordcount, 0, false);
         }
-    print "
-        <td>$wordcountchanges</td>";
+        print "<td>$wordcountchanges</td>";
     }
     print "
-        <td>$userlink</td>
+      <td>$userlink</td>
       <td class='check ouw_rightcol'><label for='v{$change->versionid}' class=\"accesshide\"> $selectaccessibility </label>
       <input type='checkbox' name='v{$change->versionid}' id='v{$change->versionid}' onclick='ouw_check()' /></td>
       </tr>";
@@ -216,7 +215,7 @@ foreach ($changes as $change) {
 }
 
 print "
-<tr><td colspan='5' class='comparebutton'><input id='ouw_comparebutton' type='submit' value='".get_string('compareselected','ouwiki')."' /></td></tr>
+<tr><td colspan='5' class='comparebutton'><input id='ouw_comparebutton' type='submit' value='".get_string('compareselected', 'ouwiki')."' /></td></tr>
 </table></form>";
 
 // The page works without JS. If you do have it, though, this script ensures
@@ -238,13 +237,13 @@ function ouw_check() {
 }
 
 </script>
-';   
+';
 
 $a->atom = $atomurl;
 $a->rss = $rssurl;
 print '<p class="ouw_subscribe"><a href="'.$atomurl.'" title="'.get_string('feedalt', 'ouwiki').
     '"><img src="'.$OUTPUT->pix_url('rss', 'ouwiki').'" alt=""/></a> <span>'.
-    get_string('feedsubscribe', 'ouwiki',$a).'</span></p>';
+    get_string('feedsubscribe', 'ouwiki', $a).'</span></p>';
 
 // Footer
 ouwiki_print_footer($course, $cm, $subwiki, $pagename);
