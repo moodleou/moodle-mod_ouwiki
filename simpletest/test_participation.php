@@ -68,7 +68,7 @@ class ouwiki_participation_test extends UnitTestCaseUsingDatabase {
      *  Backend functions not covered:
      *      ouwiki_grade_item_update($ouwiki, $grades = null)
      *      ouwiki_grade_item_delete($ouwiki)
-     *      ouwiki_update_grades($newgrades, $cm, $ouwiki, $course)
+     *      ouwiki_update_user_grades($newgrades, $cm, $ouwiki, $course)
      *      ouwiki_get_user($userid)
      *      ouwiki_render_participation_list($cm, $course, $pagename, $groupid,
      *                  $ouwiki, $subwiki, $download)

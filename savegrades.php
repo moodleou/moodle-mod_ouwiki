@@ -63,7 +63,7 @@ if (!empty($_POST['menu'])) {
 }
 // update grades
 if (!empty($gradeinfo)) {
-    ouwiki_update_grades($gradeinfo, $cm, $ouwiki, $course);
+    ouwiki_update_user_grades($gradeinfo, $cm, $ouwiki, $course);
 }
 
 // redirect

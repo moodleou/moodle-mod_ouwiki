@@ -3114,7 +3114,7 @@ function ouwiki_sort_participation($data) {
  * @param object $ouwiki
  * @param object $course
  */
-function ouwiki_update_grades($newgrades, $cm, $ouwiki, $course) {
+function ouwiki_update_user_grades($newgrades, $cm, $ouwiki, $course) {
     global $CFG, $SESSION;
 
     require_once($CFG->libdir.'/gradelib.php');
