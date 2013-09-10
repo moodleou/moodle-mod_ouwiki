@@ -190,7 +190,6 @@ switch ($format) {
         break;
 
     case OUWIKI_FORMAT_HTML:
-        print '</div>';
         ouwiki_print_footer($course, $cm, $subwiki);
         break;
 }
