@@ -2060,7 +2060,12 @@ function ouwiki_format_xhtml_a_bit($content) {
     }
 
     // 1. Replace all (possibly multiple) whitespace with single spaces
-    $content = preg_replace('/\s+/', ' ', $content);
+    try {
+        $content = preg_replace('/\s+/u', ' ', $content);
+    } catch(moodle_exception $e) {
+        // u modifier will throw error if invalid utf8 sent - fallback.
+        $content = preg_replace('/\s+/', ' ', $content);
+    }
 
     // 2. Add two line breaks after tags marked as requiring newline
     $newlinetags = ouwiki_internal_newline_tags();
