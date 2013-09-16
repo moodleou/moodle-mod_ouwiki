@@ -41,6 +41,8 @@ class mod_ouwiki_edit_page_form extends moodleform {
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'startversionid', null);
         $mform->setType('startversionid', PARAM_INT);
+        $mform->addElement('hidden', 'user', null);
+        $mform->setType('user', PARAM_INT);
         if (!$this->_customdata->startpage) {
             $mform->addElement('hidden', 'page', '');
             $mform->setType('page', PARAM_TEXT);

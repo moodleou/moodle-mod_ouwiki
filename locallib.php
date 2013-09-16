@@ -2166,6 +2166,7 @@ function ouwiki_display_create_page_form($subwiki, $cm, $pageversion) {
     if ($pageversion->title !== '') {
         $result .= '<input type="hidden" name="page" value="' . $pageversion->title . '" />';
     }
+    $result .= '<input type="hidden" name="user" value="' . $subwiki->userid . '" />';
     $result .= get_string('addnewsection', 'ouwiki') . ' ' .
             '<input type="text" size="30" name="newsection" id="ouw_newsectionname" value="" />' .
             '<input type="submit" id="ouw_add" name="ouw_subb" value="' .
