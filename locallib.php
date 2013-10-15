@@ -364,12 +364,14 @@ function ouwiki_set_extra_subwiki_fields(&$subwiki, $ouwiki, $context, $othergro
     $subwiki->canedit = has_capability('mod/ouwiki:edit', $context);
     $subwiki->canannotate = has_capability('mod/ouwiki:annotate', $context);
     $subwiki->annotation = $ouwiki->annotation;
-    // If the wiki is not one of their groups, they need editallsubwikis
+    // If wiki is not one of theirs, they need edit/annotate others or (historical) accesallgroups.
     if ($othergroup) {
         $subwiki->canedit = $subwiki->canedit &&
-                has_capability('moodle/site:accessallgroups', $context);
+                (has_capability('moodle/site:accessallgroups', $context) ||
+                        has_capability('mod/ouwiki:editothers', $context));
         $subwiki->canannotate = $subwiki->canannotate &&
-                has_capability('moodle/site:accessallgroups', $context);
+                (has_capability('moodle/site:accessallgroups', $context) ||
+                        has_capability('mod/ouwiki:annotateothers', $context));
     }
     // Editing might be turned off for the wiki at the moment
     $subwiki->canedit = $subwiki->canedit &&
