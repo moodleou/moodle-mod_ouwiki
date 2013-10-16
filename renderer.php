@@ -729,6 +729,9 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         if (!empty($participation)) {
             if (!$table->is_downloading()) {
+                if ($perpage > count($participation)) {
+                    $perpage = count($participation);
+                }
                 $table->pagesize($perpage, count($participation));
                 $offset = $page * $perpage;
                 $endposition = $offset + $perpage;
@@ -883,11 +886,13 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             $pagename, $groupname, $user, $fullname);
         $table->setup($download);
         $table->is_downloading($download, $filename, get_string('participation', 'ouwiki'));
-
         // participation doesn't need standard ouwiki tabs so we need to
         // add this one div in manually
         if (!$table->is_downloading()) {
             echo html_writer::start_tag('div', array('id' => 'ouwiki_belowtabs'));
+            if (count($changes) < $table->pagesize) {
+                $table->pagesize(count($changes), count($changes));
+            }
         }
 
         $previouswordcount = false;
