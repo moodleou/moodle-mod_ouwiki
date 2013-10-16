@@ -32,6 +32,7 @@ class mod_ouwiki_annotate_form extends moodleform {
 
         if ($pagename !== '') {
             $mform->addElement('hidden', 'page', $pagename);
+            $mform->setType('page', PARAM_TEXT);
         }
         $mform->addElement('hidden', 'user', $currentuserid);
         $mform->setType('user', PARAM_INT);

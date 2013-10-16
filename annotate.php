@@ -341,7 +341,7 @@ echo '        <div class="hd">'.get_string('addannotation', 'ouwiki').'</div>';
 echo '        <div class="bd">';
 echo '            <form method="POST" action="post.php">';
 echo '                <label for="annotationtext">'.get_string('addannotation', 'ouwiki').':</label>';
-echo '                <textarea name="annotationtext" id="annotationtext" "rows="4" cols="30"></textarea>';
+echo '                <textarea name="annotationtext" id="annotationtext" rows="4" cols="30"></textarea>';
 echo '            </form>';
 echo '        </div>';
 echo '    </div>';
