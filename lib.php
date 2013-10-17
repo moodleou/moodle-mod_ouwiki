@@ -735,3 +735,19 @@ function ouwiki_cron() {
                 $e->getTraceAsString()."\n\n");
     }
 }
+
+/**
+ * List of view style log actions
+ * @return array
+ */
+function ouwiki_get_view_actions() {
+    return array('view','view all', 'viewold', 'viewhistory', 'viewindex');
+}
+
+/**
+ * List of update style log actions
+ * @return array
+ */
+function ouwiki_get_post_actions() {
+    return array('update', 'add', 'add comment', 'add post', 'edit post', 'annotate', 'history');
+}
