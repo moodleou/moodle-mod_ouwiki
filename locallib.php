@@ -964,6 +964,7 @@ function ouwiki_print_tabs($selected, $pagename, $subwiki, $cm, $context, $pagee
     print_tabs($tabs, $selected, $pageexists ? '' : array('edit', 'annotate'));
 
     print '<div id="ouwiki_belowtabs">';
+    print get_accesshide(ucfirst($selected) . '.', 'h1');
 }
 
 /**
@@ -2163,22 +2164,22 @@ function ouwiki_display_create_page_form($subwiki, $cm, $pageversion) {
 
     $result .= '<div id="ouwiki_addnew"><ul>';
 
-    // create new section
+    // Create new section.
     $result .= '<li>' . $genericformdetails;
     if ($pageversion->title !== '') {
         $result .= '<input type="hidden" name="page" value="' . $pageversion->title . '" />';
     }
     $result .= '<input type="hidden" name="user" value="' . $subwiki->userid . '" />';
-    $result .= get_string('addnewsection', 'ouwiki') . ' ' .
+    $result .= '<label for="ouw_newsectionname">' . get_string('addnewsection', 'ouwiki') . '</label> ' .
             '<input type="text" size="30" name="newsection" id="ouw_newsectionname" value="" />' .
             '<input type="submit" id="ouw_add" name="ouw_subb" value="' .
             get_string('add', 'ouwiki').'" />' .
             '</div></form></li>';
 
-    // create new page
+    // Create new page.
     $result .= '<li>' . $genericformdetails .
             '<input type="hidden" name="frompage" value="' . $pageversion->title . '" />' .
-            get_string('createnewpage', 'ouwiki') . ' ' .
+            '<label for="ouw_newpagename">' . get_string('createnewpage', 'ouwiki') . '</label> '.
             '<input type="text" name="page" id="ouw_newpagename" size="30" value="" />' .
             '<input type="submit" id="ouw_create" name="ouw_subb" value="' .
             get_string('create', 'ouwiki') . '" />' .

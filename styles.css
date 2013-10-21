@@ -602,7 +602,7 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
     margin-top:1.5em;
 }
 
-.ouw_topheading h1 {
+.ouw_topheading h2 {
     border:none;
 }
 
@@ -718,13 +718,30 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
 
 #ouwiki_addannotation_buttons {
 }
-
+/** Override styles for annotation.php **/
 #page-mod-ouwiki-annotate #mform1 {
     margin-top:2em;
 }
 
-.ouwiki_lock_div {margin-top:2em;}
+#page-mod-ouwiki-annotate #mform1 .fitem .fitemtitle {
+    margin-left: -30px;
+    width: 160px;
+}
 
+#page-mod-ouwiki-annotate #mform1 .fitem .ftextarea {
+    margin-left: 140px;
+    width: 400px;
+}
+
+#page-mod-ouwiki-annotate #mform1 .fitem .fcheckbox {
+    margin-left: 140px;
+}
+
+#page-mod-ouwiki-annotate #mform1 .fitem .fgroup {
+    margin-left: 140px;
+}
+
+.ouwiki_lock_div {margin-top:2em;}
 
 /* Ugh, problems when resized, I can't get it to work */
 .ie7 #wikiselect {

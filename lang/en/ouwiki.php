@@ -527,3 +527,5 @@ $string['brokenimage'] = '<span class="imgremoved"> Missing image, not included 
 
 $string['add']='Add';
 $string['cancel']='Cancel';
+$string['startannotation'] = 'Start of annotation';
+$string['changedifferences'] = 'Change differences';

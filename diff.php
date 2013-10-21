@@ -98,6 +98,7 @@ if ($numchanges == 0) {
     $advice = get_string('advice_diff', 'ouwiki');
 }
 
+print get_accesshide(get_string('changedifferences', 'ouwiki'), 'h1');
 print '<p class="ouw_advice">'.
      $advice.' '.
      get_string('returntohistory', 'ouwiki',
@@ -127,7 +128,7 @@ $v1->content = $diff1;
 $v1->attachments = $attachdiff1;
 
 $v2 = new StdClass;
-$v2->version = get_string('olderversion', 'ouwiki');
+$v2->version = get_string('newerversion', 'ouwiki');
 $v2->date = userdate($pageversion2->timecreated);
 $v2->savedby = get_string('savedby', 'ouwiki', $v2name);
 $v2->content = $diff2;
