@@ -3416,6 +3416,7 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
 
         // Format the page body.
         $options = portfolio_format_text_options();
+        $options->filter = true;
         $formattedtext = format_text($pageversion->xhtml, $pageversion->xhtmlformat,
                 $options, $course->id);
         $formattedtext = portfolio_rewrite_pluginfile_urls($formattedtext, $context->id,
