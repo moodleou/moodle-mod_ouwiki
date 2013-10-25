@@ -580,7 +580,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         // Print group/user selector
         $showselector = true;
-        if (($page == 'userparticipation.php' && $canview != OUWIKI_USER_PARTICIPATION)
+        if (($page == 'userparticipation.php' && $canview != OUWIKI_MY_PARTICIPATION)
             || $page == 'participation.php'
                 && (int)$ouwiki->subwikis == OUWIKI_SUBWIKIS_INDIVIDUAL) {
             $showselector = false;
