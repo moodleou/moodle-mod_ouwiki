@@ -15,10 +15,10 @@ except [[links]].
 
 Branch:
 
-This is the MOODLE_24_STABLE branch. This branch is configured to match the latest
-stable branch at the Open University that uses Moodle 2.4. Once we stop using
-Moodle 2.4, there will be no more fixes in this branch (but of course anyone can
-fork the reposistory and make a fixed version).
+This stable branch is configured to match the latest stable branch at the
+Open University that uses Moodle 2.5. Once we stop using Moodle 2.5, there
+will be no more fixes in this branch (but of course anyone can fork the
+reposistory and make a fixed version).
 
 Support:
 
@@ -54,7 +54,7 @@ community for testing on other systems.
 
 Requires:
 
-Moodle 2.4+
+Moodle 2.5+
 Postgres / MySQL
 
 Install:
