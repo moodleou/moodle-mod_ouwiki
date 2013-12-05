@@ -364,12 +364,14 @@ function ouwiki_set_extra_subwiki_fields(&$subwiki, $ouwiki, $context, $othergro
     $subwiki->canedit = has_capability('mod/ouwiki:edit', $context);
     $subwiki->canannotate = has_capability('mod/ouwiki:annotate', $context);
     $subwiki->annotation = $ouwiki->annotation;
-    // If the wiki is not one of their groups, they need editallsubwikis
+    // If wiki is not one of theirs, they need edit/annotate others or (historical) accesallgroups.
     if ($othergroup) {
         $subwiki->canedit = $subwiki->canedit &&
-                has_capability('moodle/site:accessallgroups', $context);
+                (has_capability('moodle/site:accessallgroups', $context) ||
+                        has_capability('mod/ouwiki:editothers', $context));
         $subwiki->canannotate = $subwiki->canannotate &&
-                has_capability('moodle/site:accessallgroups', $context);
+                (has_capability('moodle/site:accessallgroups', $context) ||
+                        has_capability('mod/ouwiki:annotateothers', $context));
     }
     // Editing might be turned off for the wiki at the moment
     $subwiki->canedit = $subwiki->canedit &&
@@ -962,6 +964,7 @@ function ouwiki_print_tabs($selected, $pagename, $subwiki, $cm, $context, $pagee
     print_tabs($tabs, $selected, $pageexists ? '' : array('edit', 'annotate'));
 
     print '<div id="ouwiki_belowtabs">';
+    print get_accesshide(ucfirst($selected) . '.', 'h1');
 }
 
 /**
@@ -2060,7 +2063,12 @@ function ouwiki_format_xhtml_a_bit($content) {
     }
 
     // 1. Replace all (possibly multiple) whitespace with single spaces
-    $content = preg_replace('/\s+/', ' ', $content);
+    try {
+        $content = preg_replace('/\s+/u', ' ', $content);
+    } catch(moodle_exception $e) {
+        // u modifier will throw error if invalid utf8 sent - fallback.
+        $content = preg_replace('/\s+/', ' ', $content);
+    }
 
     // 2. Add two line breaks after tags marked as requiring newline
     $newlinetags = ouwiki_internal_newline_tags();
@@ -2156,21 +2164,22 @@ function ouwiki_display_create_page_form($subwiki, $cm, $pageversion) {
 
     $result .= '<div id="ouwiki_addnew"><ul>';
 
-    // create new section
+    // Create new section.
     $result .= '<li>' . $genericformdetails;
     if ($pageversion->title !== '') {
         $result .= '<input type="hidden" name="page" value="' . $pageversion->title . '" />';
     }
-    $result .= get_string('addnewsection', 'ouwiki') . ' ' .
+    $result .= '<input type="hidden" name="user" value="' . $subwiki->userid . '" />';
+    $result .= '<label for="ouw_newsectionname">' . get_string('addnewsection', 'ouwiki') . '</label> ' .
             '<input type="text" size="30" name="newsection" id="ouw_newsectionname" value="" />' .
             '<input type="submit" id="ouw_add" name="ouw_subb" value="' .
             get_string('add', 'ouwiki').'" />' .
             '</div></form></li>';
 
-    // create new page
+    // Create new page.
     $result .= '<li>' . $genericformdetails .
             '<input type="hidden" name="frompage" value="' . $pageversion->title . '" />' .
-            get_string('createnewpage', 'ouwiki') . ' ' .
+            '<label for="ouw_newpagename">' . get_string('createnewpage', 'ouwiki') . '</label> '.
             '<input type="text" name="page" id="ouw_newpagename" size="30" value="" />' .
             '<input type="submit" id="ouw_create" name="ouw_subb" value="' .
             get_string('create', 'ouwiki') . '" />' .
@@ -3114,7 +3123,7 @@ function ouwiki_sort_participation($data) {
  * @param object $ouwiki
  * @param object $course
  */
-function ouwiki_update_grades($newgrades, $cm, $ouwiki, $course) {
+function ouwiki_update_user_grades($newgrades, $cm, $ouwiki, $course) {
     global $CFG, $SESSION;
 
     require_once($CFG->libdir.'/gradelib.php');
@@ -3407,6 +3416,7 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
 
         // Format the page body.
         $options = portfolio_format_text_options();
+        $options->filter = true;
         $formattedtext = format_text($pageversion->xhtml, $pageversion->xhtmlformat,
                 $options, $course->id);
         $formattedtext = portfolio_rewrite_pluginfile_urls($formattedtext, $context->id,

@@ -418,6 +418,7 @@ $data->page = $pagename;
 $data->frompage = $frompage;
 $data->newsection = $newsection;
 $data->section = $section;
+$data->user = $subwiki->userid;
 
 // Prepare form file manager attachments
 if ($useattachments) {

@@ -95,6 +95,13 @@ $tabs[] = $tabrow;
 print_tabs($tabs, $newpages ? 'pages' : 'changes');
 print '<div id="ouwiki_belowtabs">';
 
+if ($newpages) {
+    $pagetabname = get_string('tab_index_pages', 'ouwiki');
+} else {
+    $pagetabname = get_string('tab_index_changes', 'ouwiki');
+}
+print get_accesshide($pagetabname, 'h1');
+
 // On first page, show information
 if (!$from) {
     print get_string('advice_wikirecentchanges_'

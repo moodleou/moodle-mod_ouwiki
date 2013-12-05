@@ -28,7 +28,9 @@ require_once(dirname(__FILE__) . '/../../config.php');
 require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
 $id         = required_param('id', PARAM_INT); // Course Module ID
-$userid     = required_param('user', PARAM_INT);
+// Pick up userid from either querytext or user - if not user cur user.
+$querytext = optional_param('querytext', $USER->id, PARAM_INT);
+$userid = optional_param('user', $querytext, PARAM_INT);
 $groupid    = optional_param('group', 0, PARAM_INT);
 $pagename   = optional_param('page', '', PARAM_TEXT);
 $download   = optional_param('download', '', PARAM_TEXT);
@@ -73,6 +75,11 @@ $cangrade = has_capability('mod/ouwiki:grade', $context);
 $groupname = '';
 if ($groupid) {
     $groupname = $DB->get_field('groups', 'name', array('id' => $groupid));
+    if ($cangrade && (!has_capability('moodle/site:accessallgroups', $context) &&
+            !groups_is_member($groupid))) {
+        // Only grade own group (unless access all groups).
+        $cangrade = false;
+    }
 }
 
 $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
@@ -90,7 +97,7 @@ if (empty($download)) {
     }
     $nav[] = array('name' => $fullname, 'link' => null);
     echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course,
-        $subwiki, null, $context, $nav);
+        $subwiki, null, $context, $nav, null, null, '', '', $userid);
 }
 
 echo $ouwikioutput->ouwiki_render_user_participation($user, $changes, $cm, $course, $ouwiki,

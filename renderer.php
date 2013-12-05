@@ -84,7 +84,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 ($hideannotations ? ' ouwiki-hide-annotations' : '')));
         $output .= html_writer::start_tag('div', array('class' => 'ouw_topheading'));
         $output .= html_writer::start_tag('div', array('class' => 'ouw_heading'));
-        $output .= html_writer::tag('h1', format_string($title),
+        $output .= html_writer::tag('h2', format_string($title),
                 array('class' => 'ouw_topheading'));
 
         if ($gewgaws) {
@@ -518,6 +518,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $output = html_writer::start_tag('span',
                 array('class' => $classname, 'id' => 'annotationbox'.$annotation->id));
         $output .= $OUTPUT->user_picture($author, array('courseid' => $COURSE->id));
+        $output .= get_accesshide(get_string('startannotation', 'ouwiki'));
         $output .= html_writer::start_tag('span', array('class' => 'ouwiki-annotation-content'));
         $output .= html_writer::tag('span', fullname($author),
                 array('class' => 'ouwiki-annotation-content-title'));
@@ -569,7 +570,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      */
     public function ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagename, $context,
             $afterpage = null, $hideindex = null, $notabs = null, $head = '', $title='', $querytext = '') {
-            global $USER;
+        global $USER, $OUTPUT;
         $output = '';
 
         ouwiki_print_header($ouwiki, $cm, $subwiki, $pagename, $afterpage, $head, $title);
@@ -579,7 +580,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         // Print group/user selector
         $showselector = true;
-        if (($page == 'userparticipation.php' && $canview != OUWIKI_USER_PARTICIPATION)
+        if (($page == 'userparticipation.php' && $canview != OUWIKI_MY_PARTICIPATION)
             || $page == 'participation.php'
                 && (int)$ouwiki->subwikis == OUWIKI_SUBWIKIS_INDIVIDUAL) {
             $showselector = false;
@@ -659,6 +660,9 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             $output .= html_writer::start_tag('div', array('id' => 'ouwiki_noindexlink'));
             $output .= html_writer::end_tag('div');
         }
+        if ($page == 'participation.php' || $page == 'userparticipation.php') {
+            $output .= $OUTPUT->heading($participationstr);
+        }
 
         $output .= html_writer::start_tag('div', array('class' => 'clearer'));
         $output .= html_writer::end_tag('div');
@@ -729,6 +733,9 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         if (!empty($participation)) {
             if (!$table->is_downloading()) {
+                if ($perpage > count($participation)) {
+                    $perpage = count($participation);
+                }
                 $table->pagesize($perpage, count($participation));
                 $offset = $page * $perpage;
                 $endposition = $offset + $perpage;
@@ -883,11 +890,13 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             $pagename, $groupname, $user, $fullname);
         $table->setup($download);
         $table->is_downloading($download, $filename, get_string('participation', 'ouwiki'));
-
         // participation doesn't need standard ouwiki tabs so we need to
         // add this one div in manually
         if (!$table->is_downloading()) {
             echo html_writer::start_tag('div', array('id' => 'ouwiki_belowtabs'));
+            if (count($changes) < $table->pagesize) {
+                $table->pagesize(count($changes), count($changes));
+            }
         }
 
         $previouswordcount = false;

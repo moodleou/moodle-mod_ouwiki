@@ -182,6 +182,8 @@ $string['ouwiki:viewcontributions']='View list of contributions organised by use
 $string['ouwiki:deletepage'] = 'Delete wiki pages';
 $string['ouwiki:viewparticipation'] = 'View participation of all enrolled users who have access to wiki';
 $string['ouwiki:grade'] = 'Grade users who have have access to wiki';
+$string['ouwiki:editothers'] = 'Edit the content of any sub-wiki that can be viewed';
+$string['ouwiki:annotateothers'] = 'Annotate any sub-wiki that can be viewed';
 
 $string['wikirecentchanges']='Wiki changes';
 $string['wikirecentchanges_from']='Wiki changes (page {$a})';
@@ -525,3 +527,5 @@ $string['brokenimage'] = '<span class="imgremoved"> Missing image, not included 
 
 $string['add']='Add';
 $string['cancel']='Cancel';
+$string['startannotation'] = 'Start of annotation';
+$string['changedifferences'] = 'Change differences';

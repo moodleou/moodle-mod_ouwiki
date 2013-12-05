@@ -129,7 +129,7 @@ if ($save) {
             $dataobject = new stdClass();
             $dataobject->id = $key;
             $dataobject->pageid = $pageversion->pageid;
-            $dataobject->userid = $userid;
+            $dataobject->userid = $USER->id;
             $dataobject->timemodified = time();
             $dataobject->content = $value;
             $DB->update_record('ouwiki_annotations', $dataobject);
@@ -146,7 +146,7 @@ if ($save) {
         if ($value != '') {
             $dataobject = new stdClass();
             $dataobject->pageid = $pageversion->pageid;
-            $dataobject->userid = $userid;
+            $dataobject->userid = $USER->id;
             $dataobject->timemodified = time();
             $dataobject->content = $value;
             $newannoid = $DB->insert_record('ouwiki_annotations', $dataobject);
@@ -341,7 +341,7 @@ echo '        <div class="hd">'.get_string('addannotation', 'ouwiki').'</div>';
 echo '        <div class="bd">';
 echo '            <form method="POST" action="post.php">';
 echo '                <label for="annotationtext">'.get_string('addannotation', 'ouwiki').':</label>';
-echo '                <textarea name="annotationtext" id="annotationtext" "rows="4" cols="30"></textarea>';
+echo '                <textarea name="annotationtext" id="annotationtext" rows="4" cols="30"></textarea>';
 echo '            </form>';
 echo '        </div>';
 echo '    </div>';

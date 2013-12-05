@@ -257,6 +257,9 @@ M.mod_ouwiki_view = {
             var evt = window.event || e;
             if (evt.keyCode == 13 || evt.keyCode == 32) {
                 _this.ouwikiShowHideAnnotation("annotationbox" + span.get('id').substring(10));
+                span.all('a').item(0).set('tabIndex', -1);
+                e.preventDefault();
+                return false;
             }
         });
         span.on('click', function() {
@@ -317,7 +320,10 @@ M.mod_ouwiki_annotate = {
 
         // Wire up the success and failure handlers
         annotationdialog.callback = { success: handleSuccess, failure: handleFailure };
-
+        annotationdialog.cancel = function() {
+            this.hide();
+            Y.one('#' + currentMarker).focus();
+        };
         annotationdialog.render();
         var div = document.getElementById('annotationdialog');
         if (div) {
@@ -332,7 +338,7 @@ M.mod_ouwiki_annotate = {
 
         // Make escape close the dialogue.
         annotationdialog.cfg.setProperty('keylisteners', [new this.YAHOO.util.KeyListener(
-                document, {keys:[27]}, function(types, args, obj) { annotationdialog.hide();
+                document, {keys:[27]}, function(types, args, obj) { annotationdialog.cancel();
         })]);
 
         // Nasty hack, remove once the YUI bug causing MDL-17594 is fixed.
