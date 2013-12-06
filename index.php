@@ -85,6 +85,10 @@ foreach ($ouwikis as $ouwiki) {
     }
     $link = html_writer::link(new moodle_url('/mod/ouwiki/view.php', array('id' => $ouwiki->coursemodule)), $ouwiki->name, $linkcss);
 
+    // properly format the intro
+    $contextmodule = get_context_instance(CONTEXT_MODULE, $ouwiki->coursemodule);
+    $ouwiki->intro = file_rewrite_pluginfile_urls($ouwiki->intro, 'pluginfile.php', $contextmodule->id, 'mod_ouwiki', 'intro', null);
+
     if ($usesections) {
         $table->data[] = array(get_section_name($course, $sections[$ouwiki->section]), $link, $ouwiki->intro);
     } else {
