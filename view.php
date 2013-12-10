@@ -47,11 +47,11 @@ echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagenam
 $courselink = new moodle_url('/course/view.php?id=', array('id' =>  $cm->course));
 if (($cm->groupmode == 0) && isset($subwiki->groupid)) {
     print_error("Sub-wikis is set to 'One wiki per group'.
-        Please change Group mode to 'Separate groups' or 'Visible groups'.", $courselink);
+        Please change Group mode to 'Separate groups' or 'Visible groups'.", 'error', $courselink);
 }
 if (($cm->groupmode > 0) && !isset($subwiki->groupid)) {
     print_error("Sub-wikis is NOT set to 'One wiki per group'.
-        Please change Group mode to 'No groups'.", $courselink);
+        Please change Group mode to 'No groups'.", 'error', $courselink);
 }
 
 // Get the current page version
