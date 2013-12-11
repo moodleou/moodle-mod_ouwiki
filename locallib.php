@@ -397,11 +397,11 @@ function ouwiki_timelocked($subwiki, $ouwiki, $context) {
     if (!has_capability('mod/ouwiki:edit', $context)) {
         return false;
     }
-    if (!is_null($ouwiki->editbegin) && time() < $ouwiki->editbegin) {
+    if (!empty($ouwiki->editbegin) && time() < $ouwiki->editbegin) {
         return get_string('timelocked_before', 'ouwiki',
                 userdate($ouwiki->editbegin, get_string('strftimedate')));
     }
-    if (!is_null($ouwiki->editend) && time() >= $ouwiki->editend) {
+    if (!empty($ouwiki->editend) && time() >= $ouwiki->editend) {
         return get_string('timelocked_after', 'ouwiki');
     }
     return false;
