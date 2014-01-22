@@ -3567,7 +3567,8 @@ class ouwiki_page_portfolio_caller extends ouwiki_portfolio_caller_base {
         if (!empty($this->pageversion->title)) {
             $params['page'] = $this->pageversion->title;
         }
-        return new moodle_url('/mod/ouwiki/view.php', $params);
+        $url = new moodle_url('/mod/ouwiki/view.php', $params);
+        return $url->out(false);
     }
 
     public function get_navigation() {
@@ -3672,7 +3673,8 @@ class ouwiki_all_portfolio_caller extends ouwiki_portfolio_caller_base {
     }
 
     public function get_return_url() {
-        return new moodle_url('/mod/ouwiki/wikiindex.php', array('id' => $this->cm->id));
+        $url = new moodle_url('/mod/ouwiki/wikiindex.php', array('id' => $this->cm->id));
+        return $url->out(false);
     }
 
     private function prepare_tree_inline_styles() {
