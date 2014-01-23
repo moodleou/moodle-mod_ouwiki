@@ -238,7 +238,6 @@ $string['onepageview']='You can view all pages of this wiki at once for convenie
 $string['format_html']='View online';
 $string['format_rtf']='Download in word processor format';
 $string['format_template']='Download as wiki template file';
-$string['format_template_file_warning']=' Note: this wiki contains attachments that will not be included in the template file. ';
 $string['savedat']='Saved at {$a}';
 
 $string['feedtitle']='{$a->course} wiki: {$a->name} - {$a->subtitle}';

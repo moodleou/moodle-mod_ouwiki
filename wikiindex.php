@@ -177,16 +177,14 @@ WHERE
 
     if (has_capability('moodle/course:manageactivities', $context)) {
         $str = get_string('format_template', 'ouwiki');
-        $imagefiles = '';
         $filesexist = false;
         if ($anyfiles) {
             // Images or attachment files found.
-            $imagefiles = get_string('format_template_file_warning', 'ouwiki');
             $filesexist = true;
         }
 
         print '<li id="ouwiki_down_template"><a href="entirewiki.php?' . $wikiparams . '&amp;format=template&amp;filesexist='
-            .$filesexist.'">' . $str . '</a>' .$imagefiles. '</li>';
+            .$filesexist.'">' . $str . '</a></li>';
     }
     print '</ul></div>';
 }

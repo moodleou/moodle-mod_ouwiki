@@ -290,6 +290,7 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
             $oldcontextid = null;
             $oldpagever = null;
             $oldversionid = null;
+            $attachments = array();
             for ($child = $page->firstChild; $child; $child = $child->nextSibling) {
                 if ($child->nodeType != XML_ELEMENT_NODE) {
                     continue;
@@ -317,6 +318,9 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
                     case 'versionid':
                         $oldversionid = (int) $text;
                         break;
+                    case 'attachments':
+                        $attachments = explode('|', $text);
+                        break;
                     default:
                         ouwiki_error('Failed to load wiki template - unexpected element &lt;'.
                                 $child->tagName.'>.');
@@ -325,21 +329,30 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
             if ($xhtml === null) {
                 ouwiki_error('Failed to load wiki template - required &lt;xhtml>.');
             }
-            // note: because templates are created in code outside of ouwiki this does not
-            // handle page attachments
+
             $newverid = ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $title, $xhtml,
                      -1, -1, -1, true);
 
-            // Copy any images associated with old version id..
+            // Copy any images or attachments associated with old version id.
             if ($oldfiles = $fs->get_directory_files($context->id, 'mod_ouwiki', 'template',
                     $ouwiki->id, "/$oldversionid/")) {
                 foreach ($oldfiles as $oldfile) {
-                    // copy this file to the version record.
-                    $fs->create_file_from_storedfile(array(
-                            'contextid' => $context->id,
-                            'filearea' => 'content',
-                            'itemid' => $newverid,
-                            'filepath' => '/'), $oldfile);
+                    if (in_array($oldfile->get_filename(), $attachments)) {
+                        // Copy this file to the version attachment record.
+                        $fs->create_file_from_storedfile(array(
+                                'contextid' => $context->id,
+                                'filearea' => 'attachment',
+                                'itemid' => $newverid,
+                                'filepath' => '/'), $oldfile);
+                    }
+                    if (mimeinfo('string', $oldfile->get_filename()) == 'image') {
+                        // Copy this image file to the version record.
+                        $fs->create_file_from_storedfile(array(
+                                'contextid' => $context->id,
+                                'filearea' => 'content',
+                                'itemid' => $newverid,
+                                'filepath' => '/'), $oldfile);
+                    }
                 }
             }
         }
