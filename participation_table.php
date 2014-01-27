@@ -96,6 +96,11 @@ class ouwiki_participation_table extends flexible_table {
             $headers[] = get_string('wordsdeleted', 'ouwiki');
         }
 
+        if ($this->ouwiki->allowimport) {
+            $columns[] = 'importedfrom';
+            $headers[] = get_string('pagesimported', 'ouwiki');
+        }
+
         if ($this->grade) {
             $columns[] = 'grade';
             $headers[] = get_string('grades');
@@ -247,6 +252,11 @@ class ouwiki_user_participation_table extends flexible_table {
                 $headers[] = get_string('wordsdeleted', 'ouwiki');
             }
         }
+        if ($this->ouwiki->allowimport) {
+            $columns[] = 'importedfrom';
+            $headers[] = get_string('importedfrom', 'ouwiki');
+        }
+
         if (empty($download)) {
             $columns[] = 'view';
             $view = html_writer::tag('span', get_string('view'), array('class' => 'accesshide'));
@@ -265,6 +275,10 @@ class ouwiki_user_participation_table extends flexible_table {
 
         if ($this->ouwiki->enablewordcount) {
             $this->column_class('words', 'words');
+        }
+
+        if ($this->ouwiki->allowimport) {
+            $this->column_class('allowimport', 'allowimport');
         }
 
         $this->set_attribute('cellspacing', '0');

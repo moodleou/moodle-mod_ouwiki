@@ -439,6 +439,30 @@ WHERE
         upgrade_mod_savepoint(true, 2013060600, 'ouwiki');
     }
 
+    if ($oldversion < 2014012700) {
+
+        // Define field allowimport to be added to ouwiki.
+        $table = new xmldb_table('ouwiki');
+        $field = new xmldb_field('allowimport', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'grade');
+
+        // Conditionally launch add field allowimport.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field importversionid to be added to ouwiki_versions.
+        $table = new xmldb_table('ouwiki_versions');
+        $field = new xmldb_field('importversionid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'previousversionid');
+
+        // Conditionally launch add field importversionid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Ouwiki savepoint reached.
+        upgrade_mod_savepoint(true, 2014012700, 'ouwiki');
+    }
+
     // Must always return true from these functions
     return true;
 }

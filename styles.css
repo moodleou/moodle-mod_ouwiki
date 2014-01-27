@@ -209,7 +209,9 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
 #page-mod-ouwiki-wikiindex ul.ouw_index,
 #page-mod-ouwiki-wikiindex ul.ouw_index li,
 #page-mod-ouwiki-wikiindex ul.ouw_indextree,
-#page-mod-ouwiki-wikiindex ul.ouw_indextree li {
+#page-mod-ouwiki-wikiindex ul.ouw_indextree li,
+#page-mod-ouwiki-import ul.ouw_indextree,
+#page-mod-ouwiki-import ul.ouw_indextree li {
     list-style-type:none;
     margin:0;
     padding:0;
@@ -218,6 +220,7 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
 #page-mod-ouwiki-wikiindex ul.ouw_indextree {
     margin-bottom:2em;
 }
+#page-mod-ouwiki-import .ouw_title,
 #page-mod-ouwiki-wikiindex .ouw_title {
     display:block;
     font-weight:bold;
@@ -225,16 +228,18 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
     padding:4px 8px 8px;
     border-top:1px solid #888;
     margin-top:-1px;
+    color: black;
 }
-#page-mod-ouwiki-wikiindex a.ouw_title:link,
-#page-mod-ouwiki-wikiindex a.ouw_title:visited{
+#page-mod-ouwiki-wikiindex a.ouw_title_link,
+#page-mod-ouwiki-import a.ouw_title_link {
     color:black;
 }
+#page-mod-ouwiki-import .ouw_indexinfo,
 #page-mod-ouwiki-wikiindex .ouw_indexinfo {
     border:1px dotted #888;
     border-top:none;
     padding:4px 8px 6px;
-    font-size:0.85em;
+    font-size:0.8em;
     color:#888;
 }
 #page-mod-ouwiki-wikiindex .ouw_index .ouw_index_startpage .ouw_indexinfo {
@@ -258,6 +263,7 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
     margin-bottom:0.75em;
 }
 
+#page-mod-ouwiki-import ul.ouw_indextree ul,
 #page-mod-ouwiki-wikiindex ul.ouw_indextree ul {
     margin-left:3em;
     padding-left:0;
@@ -845,4 +851,53 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
 }
 #page-mod-ouwiki-edit .moodle-dialogue-base .moodle-dialogue {
     z-index: 5000 !important;
+}
+
+/* Import process */
+#page-mod-ouwiki-import .ouwiki_import h3 {
+    font-weight: bold;
+}
+.ouwiki_import.ouwiki_import_step2 form {
+    background: 0;
+    padding: 0;
+}
+.ouwiki_import .ouwiki_import_act {
+    margin-bottom: .5em;
+}
+.ouwiki_import .ouwiki_import_act .ouwiki_import_link a {
+    margin-left: 50px;
+    text-decoration: none;
+}
+.ouwiki_import .ouwiki_import_act .ouwiki_import_link img {
+    margin-right: 5px;
+}
+.ouwiki_import .ouwiki_import_act .ouwiki_import_nocontent {
+    margin-left: 100px;
+    font-style: italic;
+}
+.ouw_indextree input.ouwiki_page_checkbox {
+    float: left;
+    margin-top: 8px;
+    margin-left: 3px;
+    margin-right: 5px;
+    position: relative;
+    display: inline;
+}
+.ie7 .ouw_indextree input.ouwiki_page_checkbox {
+    margin-top:25px;
+}
+.ouwiki_import.ouwiki_import_step3 div.fstatic ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.ouwiki_import_warn {
+    padding: 1em;
+    color: red;
+}
+.ouwiki_import_info {
+    padding: 1em;
+}
+.ouwiki_import.ouwiki_import_step4 ul {
+    list-style: none;
 }

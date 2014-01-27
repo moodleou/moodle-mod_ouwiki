@@ -66,6 +66,15 @@ if ($newpages) {
     $changes = ouwiki_get_subwiki_recentchanges($subwiki->id, $from, OUWIKI_PAGESIZE+1);
 }
 
+// Check to see whether any change has been overwritten by being imported.
+$overwritten = false;
+foreach ($changes as $change) {
+    if (!empty($change->importversionid)) {
+        $overwritten = true;
+        break;
+    }
+}
+
 // Do header
 $atomurl = $CFG->wwwroot.'/mod/ouwiki/feed-wikihistory.php?'.$wikiparams.
     ($newpages?'&amp;type=pages' : '').'&amp;magic='.$subwiki->magic;
@@ -114,12 +123,21 @@ $strtime = get_string('time');
 $strpage = get_string('page', 'ouwiki');
 $strperson = get_string('changedby', 'ouwiki');
 $strview = get_string('view');
+
+$strimport = '';
+if ($overwritten) {
+    $strimport = get_string('importedfrom', 'ouwiki');
+}
+
 print "
 <table>
 <tr><th scope='col'>$strdate</th><th scope='col'>$strtime</th><th scope='col'>$strpage</th>".
 ($newpages?'':'<th><span class="accesshide">'.$strview.'</span></th>');
 if ($ouwiki->enablewordcount) {
     print "<th scope='col'>".get_string('words', 'ouwiki')."</th>";
+}
+if ($overwritten) {
+    print '<th scope="col">' . $strimport . '</th>';
 }
 print "
   <th scope='col'>$strperson</th></tr>
@@ -197,6 +215,20 @@ foreach ($changes as $change) {
             $wordcountchanges = ouwiki_wordcount_difference($change->wordcount, 0, false);
         }
         print "<td>$wordcountchanges</td>";
+    }
+    if ($overwritten) {
+        if (!empty($change->importversionid)) {
+            $selectedouwiki = ouwiki_get_wiki_details($change->importversionid);
+            print '<td>'.$selectedouwiki->name;
+            if ($selectedouwiki->group) {
+                print '[[' .$selectedouwiki->group. ']]';
+            } else if ($selectedouwiki->user) {
+                print '[[' .$selectedouwiki->user. ']]';
+            }
+            print '</td>';
+        } else {
+            print '<td></td>';
+        }
     }
     print "
   <td class='ouw_rightcol'>$userlink</td>

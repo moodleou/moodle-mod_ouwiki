@@ -573,6 +573,10 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         global $USER, $OUTPUT;
         $output = '';
 
+        if ($pagename == null) {
+            $pagename = '';
+        }
+
         ouwiki_print_header($ouwiki, $cm, $subwiki, $pagename, $afterpage, $head, $title);
 
         $canview = ouwiki_can_view_participation($course, $ouwiki, $subwiki, $cm);
@@ -620,6 +624,18 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $output .= html_writer::tag('a', get_string('wikirecentchanges', 'ouwiki'),
                         array('href' => 'wikihistory.php?'.
                         ouwiki_display_wiki_parameters('', $subwiki, $cm, OUWIKI_PARAMS_URL)));
+                $output .= html_writer::end_tag('li');
+            }
+            // Check for mod setting and ability to edit that enables this link.
+            if (($subwiki->canedit) && ($ouwiki->allowimport)) {
+                $output .= html_writer::start_tag('li', array('id' => 'ouwiki_import_pages'));
+                if ($page == 'import.php') {
+                    $output .= html_writer::tag('span', get_string('import', 'ouwiki'));
+                } else {
+                    $importlink = new moodle_url('/mod/ouwiki/import.php',
+                            ouwiki_display_wiki_parameters($pagename, $subwiki, $cm, OUWIKI_PARAMS_ARRAY));
+                    $output .= html_writer::link($importlink, get_string('import', 'ouwiki'));
+                }
                 $output .= html_writer::end_tag('li');
             }
             if ($canview == OUWIKI_USER_PARTICIPATION) {
@@ -778,6 +794,15 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                         }
                     }
 
+                    // Allow import.
+                    $imports = 0;
+                    if ($ouwiki->allowimport) {
+                        if (isset($user->pageimports)) {
+                            $imports = count($user->pageimports);
+                            $details = true;
+                        }
+                    }
+
                     // grades
                     if ($grading_info) {
                         if (!$table->is_downloading()) {
@@ -836,6 +861,10 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                     } else {
                         $row = array($fullname, $pagecreates, $pageedits,
                             $wordsadded, $wordsdeleted);
+                    }
+                    if ($ouwiki->allowimport) {
+                        $row[] = $imports;
+                        // $row[] = 666;
                     }
                     if (isset($gradeitem)) {
                         $row[] = $gradeitem;
@@ -947,6 +976,16 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                         $row[] = 0;
                     }
                 }
+            }
+
+            // Allow imports.
+            if ($ouwiki->allowimport) {
+                $imported = '';
+                if ($change->importversionid) {
+                    $wikidetails = ouwiki_get_wiki_details($change->importversionid);
+                    $imported = $wikidetails->name;
+                }
+                $row[] = $imported;
             }
 
             if (!$table->is_downloading()) {

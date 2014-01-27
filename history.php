@@ -119,6 +119,15 @@ if ($candelete) {
     }
 }
 
+// Check to see whether any change has been overwritten by being imported.
+$overwritten = false;
+foreach ($changes as $change) {
+    if (!empty($change->importversionid)) {
+        $overwritten = true;
+        break;
+    }
+}
+
 print "
 <form name='ouw_history' class='ouw_history' method='get' action='history.php'>
 <input type='hidden' name='compare' value='1'/>
@@ -129,8 +138,11 @@ $wikiinputs
 if ($ouwiki->enablewordcount) {
     print "<th scope='col'>".get_string('words', 'ouwiki')."</th>";
 }
-print "<th scope='col'>".get_string('changedby', 'ouwiki')."</th><th scope='col'><span class='accesshide'>".get_string('compare', 'ouwiki')."</span></th></tr>
-";
+if ($overwritten) {
+    print '<th scope="col">'.get_string('importedfrom', 'ouwiki').'</th>';
+}
+print "<th scope='col'>".get_string('changedby', 'ouwiki')."</th><th scope='col'><span class='accesshide'>".get_string('compare', 'ouwiki')."</span></th>";
+print '</tr>';
 
 $lastdate = '';
 $changeindex = 0;
@@ -206,11 +218,25 @@ foreach ($changes as $change) {
         }
         print "<td>$wordcountchanges</td>";
     }
+    if ($overwritten) {
+        if (!empty($change->importversionid)) {
+            $selectedouwiki = ouwiki_get_wiki_details($change->importversionid);
+            print '<td>'.$selectedouwiki->name;
+            if ($selectedouwiki->group) {
+                print '[[' .$selectedouwiki->group. ']]';
+            } else if ($selectedouwiki->user) {
+                print '[[' .$selectedouwiki->user. ']]';
+            }
+            print '</td>';
+        } else {
+            print '<td></td>';
+        }
+    }
     print "
       <td>$userlink</td>
       <td class='check ouw_rightcol'><label for='v{$change->versionid}' class=\"accesshide\"> $selectaccessibility </label>
-      <input type='checkbox' name='v{$change->versionid}' id='v{$change->versionid}' onclick='ouw_check()' /></td>
-      </tr>";
+      <input type='checkbox' name='v{$change->versionid}' id='v{$change->versionid}' onclick='ouw_check()' /></td>";
+    print '</tr>';
     $changeindex++;
 }
 

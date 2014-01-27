@@ -1,0 +1,274 @@
+﻿This script describes steps to test the use of the import pages facility to add pages from one wiki to another.
+
+NOTE: In this test case, the word 'wiki' always refers to the OU wiki.
+
+The test steps in this script follow on from each other and aren't independent, except as noted.
+
+Test requirements
+=================
+
+Test course – referred to as WIP1 in this test case
+At least two test groups setup in WIP1
+User with permission to add and edit activities and with access all groups – Admin
+Test user with student permissions – S1. S1 must be enrolled on course and be a member of at least one group in WIP1 (TG)
+
+
+WIPCW Creating wikis and data
+=============================
+
+Create a test course – WIP1 (Wiki Import Pages Test), enrol user S1 as student and create at least 1 group (TG) with user S1 as member.
+
+WIPCW01 / Admin
+ Add a new wiki activity to any section of course WIP1, setting name to 'WIP.coursewiki' and Annotation system to 'Yes'
+ Select 'Save and return to website'
+ Add a new wiki activity to any section of course WIP1, setting name to 'WIP.groupwiki' and Annotation system to 'Yes' and Sub-wikis to 'One per group' and Group mode to 'Visible groups'
+ Select 'Save and return to website'
+ Add a new wiki activity to any section of course WIP1, setting name to 'WIP.individualwiki' and Annotation system to 'Yes' and Sub-wikis to 'Separate wiki for every user'
+ Select 'Save and return to website'
+ Add a new wiki activity to any section of course WIP1, setting name to 'WIP.hiddenwiki' and Visible to 'Hide
+ Select 'Save and return to website'
+- Verify WIP.hiddenwiki has 'Hidden from students message' against link to it
+ Add a new wiki activity to any section of course WIP1, setting name to 'WIP.importwiki1', Annotation system to 'Yes' and tick Link to import pages
+ Select 'Save and return to website'
+ Add a new wiki activity to any section of course WIP1, setting name to 'WIP.importwiki2' and tick Link to import pages
+ Select 'Save and return to website'
+ Course editing can be turned off at this point.
+
+WIPCW02 /Admin
+ Enter WIP.coursewiki
+ Select 'Create page' when prompted to create the wiki start page
+ Enter text 'WIP.coursewiki start page' new paragraph'[[WIPcoursewiki1]]' into content field
+ Select 'Save changes'
+ Select link 'WIPcoursewiki1'
+ Select 'Create page' when prompted to create the new page
+ Enter text 'WIPcoursewiki1 page' new paragraph'[[WIPcoursewiki2]]' into content field. Add a file into the attachments area
+ Select Annotate tab, select annotate marker after 'page' and enter 'Annotation' into the text area, then select 'Add'. Select 'Save changes'
+ Select link 'WIPcoursewiki2'
+ Select 'Create page' when prompted to create the new page
+ Enter text 'WIPcoursewiki2 page' new paragraph and add an image into content field.
+
+WIPCW03 / Admin
+ Enter WIP.individualwiki
+ Select 'Create page' when prompted to create the wiki start page
+ Enter text 'WIP.individualwiki Admin start page' into content field
+ Select 'Save changes'.
+
+WINP Import new pages
+=====================
+
+WINP01 / Admin
+
+ Select course WIP1
+ Enter WIP.importwiki1
+ Select 'Import pages' link (beside Wiki changes link)
+- Verify WIP.coursewiki, WIP.groupwiki, WIP.individualwiki, WIP.importwiki2 and WIP.hiddenwiki wikis are listed
+- Verify only WIP.coursewiki and WIP.individualwiki have import buttons shown and the other wiki's have 'This wiki activity contains no available content to import' shown
+ Select 'Import from WIP.coursewiki' button
+- Verify 'Start page', 'WIPcoursewiki1' (indented) and 'WIPcoursewiki2' (indented) pages are listed
+ Select 'Import pages'
+- Verify 'Confirm import' page loads and warning 'No pages selected for import' shown
+ Select 'Cancel'
+- Verify WIP.coursewiki pages listed again
+
+WINP02 / Admin
+
+ Following on from step 01...
+ Select checkbox against 'Start page'
+- Verify all checkboxes become checked
+ Uncheck 'WIPcoursewiki1' page
+- Verify 'WIPcoursewiki1' and 'WIPcoursewiki2' pages become unchecked
+ Select 'Import pages'
+- Verify 'Confirm import' page loads with Import information displayed as follows:
+-- 'Import from: WIP.coursewiki'
+-- 'Import pages:' 'Start page', 'WIPcoursewiki1', 'WIPcoursewiki2'
+-- 'Page links' - 'Use imported Start page:' (radio buttons) 'Merge into existing Start page content' (default), 'Create new page from imported Start page'
+- Verify 'Import pages' and 'Cancel' buttons shown
+ Select 'Create new page from imported Start page' radio button
+ Select 'Import pages'
+- Verify 'Importing pages' 'bar' at 100%. Pages imported listed as 'Imported start page', 'WIPcoursewiki1' and 'WIPcoursewiki2'. Pages updates listed as 'Start page'
+ Select 'Continue' button
+- Verify taken to WIP.importwiki start page - contents is a link to 'Imported start page'
+Select 'imported start page link'
+- Verify contents as per WIP.coursewiki now shown (start page text with link to 'WIPcoursewiki1')
+ Select 'WIPcoursewiki1' page link
+- Verify WIPcoursewiki1 page shown including link to 'WIPcoursewiki2' and attachment (testing attachment downloads correctly). Note: annotation should not have been imported
+ Select 'WIPcoursewiki2' link
+- Verify WIPcoursewiki2 page shown correctly as populated in step WIPWC02.
+
+WINP03 / Admin
+
+ Select course WIP1
+ Enter WIP.importwiki2
+ Select 'Import pages' link
+ Select 'Import from WIP.coursewiki' button
+ Select checkbox against WIPcoursewiki1 page
+- Verify 'WIPcoursewiki1' and 'WIPcoursewiki2' pages become checked
+ Select 'Import pages'
+- Verify 'Confirm import' page loads with Import information displayed as follows:
+-- 'Import from: WIP.coursewiki'
+-- 'Import pages:''WIPcoursewiki1' and 'WIPcoursewiki2'
+-- 'Page links' - 'Add links to new pages to' (drop down) 'New page' and 'Start page' (selected)
+ Select 'New page' from the drop-down, select 'Import pages'
+- Verify 'Importing pages' progress bar at 100%, Pages imported listed as 'WIPcoursewiki1', 'WIPcoursewiki2', 'Imported pages'. Pages updated 'Start page'
+ Select 'Continue' button
+- Verify 'Imported pages' page shown, contents link to WIPcoursewiki1 and 'Page that links to this one' 'start page' shown.
+
+WIWS Wiki selection
+===================
+
+WIWS01 / S1 (change)
+
+ Select course WIP1
+ Enter WIP.importwiki1
+ Select 'Import pages' link
+- Verify WIP.coursewiki, WIP.groupwiki, WIP.individualwiki, WIP.importwiki2 wikis are listed only
+- Verify only WIP.coursewiki has an import button shown and the other wiki's have 'This wiki activity contains no available content to import' shown
+ Return to course WIP1
+ Select WIP.individualwiki
+ Select 'Create page'
+ Enter text 'WIP.individualwiki page - S1' into the content field
+ Select 'Save changes'
+ Return to course WIP1
+ Select WIP.groupwiki, ensure group TG (group used for testing) selected
+ Select 'Create page'
+ Enter text 'WIP.groupwiki page - TG - S1' into the content field
+ Select 'Save changes'
+ Return to course WIP1
+ Enter WIP.importwiki1
+ Select 'Import pages' link
+- Verify WIP.coursewiki, WIP.groupwiki, WIP.individualwiki, WIP.importwiki2 wikis are listed only
+- Verify all wikis have import button shown.
+
+WIWS02 / Admin (change)
+
+ Select course WIP1
+ Enter WIP.groupwiki - ensure a group other that main testing group (TG) selected
+ Select 'Create page'
+ Enter text 'WIP.groupwiki page - [OTHER GROUP] - Admin' into the content field
+ Select 'Save changes'
+ Return to course WIP1
+ Enter WIP.importwiki1
+ Select 'Import pages' link
+- Verify WIP.groupwiki has a 'Select wiki' drop-down with TG and other group used in this step listed
+- Verify WIP.individualwiki has a 'Select wiki' drop-down with Admin (selected) and S1 user listed
+ Select TG group from drop-down against WIP.groupwiki and then select 'Import from WIP.groupwiki' button
+- Verify 'Import from WIP.groupwiki' shown
+- Verify 'Start page' is shown with a word count of 4 and last change made by user S1
+ Select 'Cancel' button
+ Select S1 user from drop-down against WIP.individualwiki and then select 'Import from WIP.individualwiki' button
+- Verify 'Import from WIP.individualwiki' shown
+- Verify 'Start page' is shown with a word count of 3 and last change made by user S1
+ Return to course WIP1.
+
+
+WIMP Import existing pages
+==========================
+
+WIMP01 / S1 (change)
+
+ Select course WIP1
+ Enter WIP.importwiki1
+ Select 'Import pages' link
+ Select 'Import from WIP.coursewiki' button
+ Select checkbox against WIPcoursewiki2 page, select 'Import pages' button
+- Verify 'Page conflicts' section shown with 'WIPcoursewiki2' page listed with a tick
+- Verify 'WIPcoursewiki2' page link goes to WIP.importwiki1 wiki (new window)
+- Verify 'Merge setting' options shown are 'Merge page content' (selected) and 'Replace existing page content'
+ Select 'New page' in 'Add links to new pages to' drop-down
+ Select 'Import pages'
+- Verify 'Pages imported' is 'Imported pages' and 'Pages updated' lists 'WIPcoursewiki2' and 'Start page'
+ Select 'Continue' button
+- Verify 'Imported pages' page shown with content 'WIPcoursewiki2' (page link)
+ Select 'WIPcoursewiki2' link
+- Verify 'WIPcoursewiki2' page shown with same content twice; 'WIPcoursewiki2 page' and two images.
+
+WIMP02 / S1
+
+ Enter WIP.importwiki1
+ Select 'Import pages' link
+ Select 'Import from WIP.coursewiki' button
+ Select checkbox against WIPcoursewiki2 page, select 'Import pages' button
+- Verify 'Page conflicts' section shown with 'WIPcoursewiki2' page listed with a tick
+- Verify 'Merge setting' options shown are 'Merge page content' (selected) and 'Replace existing page content'
+ Select 'New page' in 'Add links to new pages to' drop-down
+ Select 'Replace existing page content' under 'Merge setting'
+ Select 'Import pages'
+- Verify 'Pages imported' is empty and 'Pages updated' lists 'Imported pages', 'WIPcoursewiki2' and 'Start page'
+ Select 'Continue' button
+- Verify 'Imported pages' page shown with content 'WIPcoursewiki2' (page link) twice
+ Select a 'WIPcoursewiki2' link
+- Verify 'WIPcoursewiki2' page shown with content 'WIPcoursewiki2 page' and image
+ Return to course WIP1.
+
+WIMP03 / Admin
+
+ Enter WIP.importwiki
+ Select 'Wiki index' link
+ Select 'WIPcoursewiki2' page link
+ Select 'Lock page' button
+ Select 'Import pages' link
+ Select 'Import from WIP.coursewiki' button
+ Select checkbox against WIPcoursewiki2 page, select 'Import pages' button
+- Verify 'Page conflicts' section shown with 'WIPcoursewiki2' listed with X against
+- Verify warning text shown and only 'Cancel' button available
+ Select 'Cancel' button
+- Verify returned to import page selection screen with WIPcoursewiki2 page checked.
+
+WIMP04a / Admin
+
+ Enter WIP.importwiki
+ Select 'Wiki index' link
+ Select 'WIPcoursewiki1' page link
+ Select Edit tab
+
+WIMP04b / S1 (change)
+
+ Open a separate browser to test under user S1
+ Enter course WIP1
+ Enter WIP.importwiki1
+ Select 'Import pages' link
+ Select 'Import from WIP.coursewiki' button
+ Select checkbox against WIPcoursewiki1 page, select 'Import pages' button
+- Verify 'Page conflicts' section shown with 'WIPcoursewiki1' and 'WIPcoursewiki2' listed with X against
+- Verify warning text shown and only 'Cancel' button available
+ Enter WIP.importwiki1 again
+ Select 'Wiki index' link
+ Select 'WIPcoursewiki1' page link
+ Select 'Edit' tab
+- Verify editing warning shown along with 'Try again' and 'Cancel' buttons (Note this is time dependant, normal editing page may show instead).
+
+
+WIMP04c / Admin (change)
+
+ Following on from part a, select 'Cancel button'.
+
+
+WIMP04b / S1 (change)
+
+ Following on from part b (separate browser), select 'Try again'
+- Verify normal editing page shown.
+
+WIMP04c / Admin
+
+ Select 'Import pages' link
+ Select 'Import from WIP.coursewiki' button
+ Select checkbox against WIPcoursewiki1 page, select 'Import pages' button
+- Verify 'Page conflicts' section shown with 'WIPcoursewiki1' [Tick] and 'WIPcoursewiki2' [X] shown (Admin must have mod/ouwiki:overridelock capability to see tick)
+- Verify warning text shown and only 'Cancel' button available.
+
+
+WIPHIS Import history recorded
+==============================
+
+WIPHIS01 / Admin
+
+ Enter course WIP1
+ Enter WIP.importwiki1
+ Select 'Imported start page' link, select 'History' tab on the 'Imported start page'
+- Verify 'Imported from' column shows 'WIP.coursewiki' against initial version
+ Select 'Wiki changes' link
+- Verify 'Imported from' column shows 'WIP.coursewiki' against page versions for 'Imported start page', 'WIPcoursewiki1' and 'WIPcoursewiki2' pages
+ Select 'Participation by user' link
+- Verify user S1 has 'Pages imported' value of 1
+ Select 'Detail' link against user S1
+- Verify 'Imported from' column shows 'WIP.coursewiki' against page versions for 'WIPcoursewiki2'.
