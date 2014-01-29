@@ -2701,11 +2701,11 @@ function ouwiki_print_editlock($lock, $ouwiki) {
     $nojsstart = '<p class="ouw_nojswarning">';
 
     // Put in the AJAX for keeping the lock, if on a supported browser
-    $ie = check_browser_version('MSIE', 6.0);
-    $ff = check_browser_version('Gecko', 20051106);
-    $op = check_browser_version('Opera', 9.0);
-    $sa = check_browser_version('Safari', 412);
-    $ch = check_browser_version('Chrome', 14);
+    $ie = core_useragent::check_browser_version('MSIE', 6.0);
+    $ff = core_useragent::check_browser_version('Gecko', 20051106);
+    $op = core_useragent::check_browser_version('Opera', 9.0);
+    $sa = core_useragent::check_browser_version('Safari', 412);
+    $ch = core_useragent::check_browser_version('Chrome', 14);
     $js = $ie || $ff || $op || $sa || $ch;
     if ($js) {
         $nojsdisabled = get_string('nojsdisabled', 'ouwiki');
