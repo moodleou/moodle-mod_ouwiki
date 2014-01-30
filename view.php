@@ -32,7 +32,7 @@ $url = new moodle_url('/mod/ouwiki/view.php', array('id' => $id, 'page' => $page
 $PAGE->set_url($url);
 $PAGE->set_cm($cm);
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 $PAGE->set_pagelayout('incourse');
 require_course_login($course, true, $cm);
 

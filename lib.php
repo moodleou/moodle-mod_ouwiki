@@ -31,7 +31,7 @@ function ouwiki_add_instance($data, $mform) {
     global $DB;
 
     $cmid = $data->coursemodule;
-    $context = get_context_instance(CONTEXT_MODULE, $cmid);
+    $context = context_module::instance($cmid);
 
     if ($formdata = $data) {
         // Set up null values
@@ -715,7 +715,7 @@ function ouwiki_grade_item_delete($ouwiki) {
  */
 function ouwiki_cm_info_dynamic(cm_info $cm) {
     if (!has_capability('mod/ouwiki:view',
-            get_context_instance(CONTEXT_MODULE, $cm->id))) {
+            context_module::instance($cm->id))) {
         $cm->uservisible = false;
         $cm->set_available(false);
     }

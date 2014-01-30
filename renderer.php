@@ -40,7 +40,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
     public function ouwiki_print_page($subwiki, $cm, $pageversion, $gewgaws = null,
             $page = 'history', $showwordcount = 0, $hideannotations = false) {
         $output = '';
-        $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $modcontext = context_module::instance($cm->id);
 
         global $CFG, $ouwikiinternalre;
 

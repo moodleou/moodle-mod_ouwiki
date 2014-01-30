@@ -182,7 +182,7 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
         // Test whole course wiki.
         $ouwiki = $this->get_new_ouwiki($course->id, OUWIKI_SUBWIKIS_SINGLE);
         $cm = $this->get_new_course_module($course->id, $ouwiki->id, NOGROUPS);
-        $context = get_context_instance(CONTEXT_MODULE, $cm->instance);
+        $context = context_module::instance($cm->instance);
         $groupid = 0;
 
         // subwiki with 'create'
@@ -201,7 +201,7 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
 
             $ouwiki = $this->get_new_ouwiki($course->id, OUWIKI_SUBWIKIS_GROUPS);
             $cm = $this->get_new_course_module($course->id, $ouwiki->id, $groupmode);
-            $context = get_context_instance(CONTEXT_MODULE, $cm->instance);
+            $context = context_module::instance($cm->instance);
             $group = $this->get_new_group($course->id);
 
             // subwiki with 'create'
@@ -229,7 +229,7 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
         // Test invididual wikis.
         $ouwiki = $this->get_new_ouwiki($course->id, OUWIKI_SUBWIKIS_INDIVIDUAL);
         $cm = $this->get_new_course_module($course->id, $ouwiki->id);
-        $context = get_context_instance(CONTEXT_MODULE, $cm->instance);
+        $context = context_module::instance($cm->instance);
         $groupid = 0;
 
         // subwiki with 'create'
@@ -250,7 +250,7 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
         // setup a wiki to use
         $ouwiki = $this->get_new_ouwiki($course->id, OUWIKI_SUBWIKIS_SINGLE);
         $cm = $this->get_new_course_module($course->id, $ouwiki->id, NOGROUPS);
-        $context = get_context_instance(CONTEXT_MODULE, $cm->instance);
+        $context = context_module::instance($cm->instance);
         $groupid = 0;
         $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $user->id, true);
 
@@ -323,7 +323,7 @@ class ouwiki_locallib_test extends UnitTestCaseUsingDatabase {
         $course = $this->get_new_course();
         $ouwiki = $this->get_new_ouwiki($course->id, OUWIKI_SUBWIKIS_SINGLE);
         $cm = $this->get_new_course_module($course->id, $ouwiki->id, NOGROUPS);
-        $context = get_context_instance(CONTEXT_MODULE, $cm->instance);
+        $context = context_module::instance($cm->instance);
         $groupid = 0;
         $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $user->id, true);
 

@@ -289,7 +289,7 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
 
     $fs = get_file_storage();
     $zip = get_file_packer();
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
     $filepath = '/'.$context->id.'/mod_ouwiki/template/'.$ouwiki->id.$ouwiki->template;
     if ($file = $fs->get_file_by_hash(sha1($filepath)) AND !$file->is_directory()) {
         if (strpos($ouwiki->template, '.xml') !== false) {
@@ -1833,7 +1833,7 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
 
     // information needed for attachments
     $fs = get_file_storage();
-    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $modcontext = context_module::instance($cm->id);
     $prevversion = ($revertversionid) ? $revertversionid : $pageversion->versionid;
 
     // save new files connected with the version from the formdata if set
@@ -2809,7 +2809,7 @@ function ouwiki_get_last_modified($cm, $course, $userid = 0) {
     // Default applies no restriction
     $restrictjoin = '';
     $restrictwhere = '';
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
 
     switch($ouwiki->subwikis) {
         case OUWIKI_SUBWIKIS_SINGLE:
@@ -3002,7 +3002,7 @@ function ouwiki_can_view_participation($course, $ouwiki, $subwiki, $cm, $userid 
     if (!$userid) {
         $userid = $USER->id;
     }
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
 
     $groupmode = groups_get_activity_groupmode($cm, $course);
     $groupid = $subwiki->groupid;
@@ -3464,7 +3464,7 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
             throw new portfolio_caller_exception('error_export', 'ouwiki');
         }
         $this->cm = $instances[$this->ouwiki->id];
-        $this->modcontext = get_context_instance(CONTEXT_MODULE, $this->cm->id);
+        $this->modcontext = context_module::instance($this->cm->id);
     }
 
     /**
@@ -3620,7 +3620,7 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
     }
 
     public function check_permissions() {
-        $context = get_context_instance(CONTEXT_MODULE, $this->cm->id);
+        $context = context_module::instance($this->cm->id);
         return (has_capability('mod/ouwiki:view', $context));
     }
 

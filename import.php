@@ -490,7 +490,7 @@ if ($curstep == 1) {
             // Add any attachments and image files to the page.
             // Information needed for files and attachments.
             $fs = get_file_storage();
-            $modcontext = get_context_instance(CONTEXT_MODULE, $selectedact->id);
+            $modcontext = context_module::instance($selectedact->id);
             $prevversion = $pageinfo->versionid;
             // Add any files.
             if ($oldfiles = $fs->get_area_files($modcontext->id, 'mod_ouwiki', 'content', $prevversion)) {

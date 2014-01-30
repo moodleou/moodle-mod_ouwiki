@@ -87,7 +87,7 @@ if (!is_null($newsection)) {
     $addsection = true;
 }
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 $PAGE->set_pagelayout('incourse');
 require_course_login($course, true, $cm);
 

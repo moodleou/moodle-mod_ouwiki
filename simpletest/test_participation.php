@@ -80,7 +80,7 @@ class ouwiki_participation_test extends UnitTestCaseUsingDatabase {
     public function test_canview_course_wiki() {
         $ouwiki = $this->get_new_ouwiki($this->courses['single']->id, OUWIKI_SUBWIKIS_SINGLE);
         $cm = $this->get_new_course_module($this->courses['single']->id, $ouwiki->id, NOGROUPS);
-        $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $context = context_module::instance($cm->id);
         $subwiki = ouwiki_get_subwiki($this->courses['single'], $ouwiki, $cm,
             $context, 0, $this->admin->id, true);
 
@@ -108,7 +108,7 @@ class ouwiki_participation_test extends UnitTestCaseUsingDatabase {
         $ouwiki = $this->get_new_ouwiki($this->courses['group']->id, OUWIKI_SUBWIKIS_GROUPS);
         $cm = $this->get_new_course_module($this->courses['group']->id,
             $ouwiki->id, SEPARATEGROUPS);
-        $context = get_context_instance(CONTEXT_MODULE, $cm->instance);
+        $context = context_module::instance($cm->instance);
         $group = $this->get_new_group($this->courses['group']->id);
         $subwiki = ouwiki_get_subwiki($this->courses['group'], $ouwiki, $cm,
             $context, $group->id, $this->admin->id, true);
@@ -130,7 +130,7 @@ class ouwiki_participation_test extends UnitTestCaseUsingDatabase {
     public function test_participation() {
         $ouwiki = $this->get_new_ouwiki($this->courses['single']->id, OUWIKI_SUBWIKIS_SINGLE);
         $cm = $this->get_new_course_module($this->courses['single']->id, $ouwiki->id, NOGROUPS);
-        $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $context = context_module::instance($cm->id);
         $subwiki = ouwiki_get_subwiki($this->courses['single'], $ouwiki, $cm,
             $context, 0, $this->admin->id, true);
         $pageversion = ouwiki_get_current_page($subwiki, 'TEST PAGE', OUWIKI_GETPAGE_CREATE);
@@ -198,12 +198,10 @@ class ouwiki_participation_test extends UnitTestCaseUsingDatabase {
 
         // load test courses and contexts
         $this->courses['single'] = $this->get_new_course(0);
-        $this->contexts['single'] = get_context_instance(CONTEXT_COURSE,
-            $this->courses['single']->id);
+        $this->contexts['single'] = context_course::instance($this->courses['single']->id);
 
         $this->courses['group'] = $this->get_new_course(1);
-        $this->contexts['group'] = get_context_instance(CONTEXT_COURSE,
-            $this->courses['group']->id);
+        $this->contexts['group'] = context_course::instance($this->courses['group']->id);
 
         $this->admin      = $this->get_new_user('admin');
         $this->teacher    = $this->get_new_user('editingteacher');

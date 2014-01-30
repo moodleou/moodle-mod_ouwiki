@@ -64,7 +64,7 @@ $ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance));
 if (!$ouwiki) {
     print_error("Wiki ID is incorrect in database");
 }
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 
 global $ouwiki_nologin;
 if (empty($ouwiki_nologin)) {
