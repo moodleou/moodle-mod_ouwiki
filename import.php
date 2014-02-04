@@ -118,14 +118,15 @@ if ($curstep == 1) {
             }
         } else if ($wikiinst->subwikis == OUWIKI_SUBWIKIS_INDIVIDUAL) {
             // Individual wiki. Get all users user can view (checking subwiki for content).
-            $sql = 'SELECT sw.id, u.id as uid, u.firstname, u.lastname
+            $userfields = user_picture::fields('u', null, 'uid');
+            $sql = "SELECT sw.id, $userfields
                     FROM {ouwiki_subwikis} sw
                     INNER JOIN {user} u ON sw.userid = u.id
                     INNER JOIN (SELECT subwikiid
                         FROM {ouwiki_pages}
                         WHERE currentversionid IS NOT NULL
                         GROUP BY subwikiid) as wp on wp.subwikiid = sw.id
-                    WHERE sw.wikiid = ?';
+                    WHERE sw.wikiid = ?";
             $params = array($wikiinst->id);
             if (!has_capability('mod/ouwiki:viewallindividuals', $wikicontext)) {
                 if (!has_capability('mod/ouwiki:viewgroupindividuals', $wikicontext)) {

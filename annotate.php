@@ -87,8 +87,8 @@ if ($save) {
     }
 
     // Format XHTML so it matches that sent to annotation marker creation code.
-    $pageversion->xhtml = ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, null,
-            $pageversion->xhtmlformat);
+    /*$pageversion->xhtml = ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, null,
+            $pageversion->xhtmlformat);*/
 
     $userid = !$userid ? $USER->id : $userid;
     $neednewversion = false;

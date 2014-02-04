@@ -590,14 +590,15 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
 
         case OUWIKI_SUBWIKIS_INDIVIDUAL:
             $user = $DB->get_record('user', array('id' => $subwiki->userid),
-                    'id, firstname, lastname, username');
+                    'id, username, ' . user_picture::fields());
             $wikifor = ouwiki_display_user($user, $cm->course);
+            $usernamefields = user_picture::fields('u');
             if (has_capability('mod/ouwiki:viewallindividuals', $context)) {
                 // Get list of everybody...
                 $choicefield = 'user';
                 try {
-                    $choices = $DB->get_records_sql('SELECT u.id, u.firstname, u.lastname
-                            FROM {ouwiki_subwikis} sw
+                    $choices = $DB->get_records_sql('SELECT u.id, ' . $usernamefields .
+                            ' FROM {ouwiki_subwikis} sw
                             INNER JOIN {user} u ON sw.userid = u.id
                             WHERE sw.wikiid = ?
                             ORDER BY u.lastname, u.firstname', array($ouwiki->id));
@@ -619,7 +620,7 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
                     $theirgroups = array();
                 }
                 foreach ($theirgroups as $group) {
-                    $members = groups_get_members($group->id, 'u.id, u.firstname, u.lastname');
+                    $members = groups_get_members($group->id, 'u.id, ' . $usernamefields);
                     foreach ($members as $member) {
                         $member->name = fullname($member);
                         $choices[$member->id] = $member;
@@ -684,9 +685,11 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
 
     $jointype = $option == OUWIKI_GETPAGE_REQUIREVERSION ? 'JOIN' : 'LEFT JOIN';
 
+    $userfields = user_picture::fields('u', null, 'userid');
+
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
                 p.locked, v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
-                v.wordcount, v.previousversionid, u.firstname, u.lastname
+                v.wordcount, v.previousversionid, $userfields
             FROM {ouwiki_pages} p
             $jointype {ouwiki_versions} v ON p.currentversionid = v.id
             LEFT JOIN {user} u ON v.userid = u.id
@@ -740,13 +743,13 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
     // Ensure valid value for comparing time created
     $timecreated = empty($pageversion->timecreated) ? 0 : $pageversion->timecreated;
 
-    $sql = 'SELECT v.id, v.timecreated, v.userid, u.firstname, u.lastname
+    $sql = "SELECT v.id, v.timecreated, v.userid, $userfields
                 FROM {ouwiki_versions} v
             LEFT JOIN {user} u ON v.userid = u.id
             WHERE v.pageid = ?
                 AND v.timecreated <= ?
                 AND v.deletedat IS NULL
-            ORDER BY v.id DESC';
+            ORDER BY v.id DESC";
 
     $pageversion->recentversions = $DB->get_records_sql($sql,
             array($pageversion->pageid, $timecreated), 0, 3);
@@ -765,9 +768,11 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
 function ouwiki_get_subwiki_allpages($subwiki) {
     global $DB;
 
+    $userfields = user_picture::fields('u', null, 'userid');
+
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
                 p.locked, v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
-                v.wordcount, v.previousversionid, u.firstname, u.lastname
+                v.wordcount, v.previousversionid, $userfields
             FROM {ouwiki_pages} p
             JOIN {ouwiki_versions} v ON p.currentversionid = v.id
             LEFT JOIN {user} u ON u.id = v.userid
@@ -789,9 +794,11 @@ function ouwiki_get_subwiki_allpages($subwiki) {
 function ouwiki_get_page_version($subwiki, $pagename, $versionid) {
     global $DB;
 
+    $userfields = user_picture::fields('u', null, 'userid');
+
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
                 v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
-                v.deletedat, u.firstname, u.lastname, u.username,
+                v.deletedat, $userfields,
                 v.wordcount
             FROM {ouwiki_pages} p, {ouwiki_versions} v
             LEFT JOIN {user} u ON v.userid = u.id
@@ -817,27 +824,29 @@ function ouwiki_get_page_version($subwiki, $pagename, $versionid) {
 function ouwiki_get_prevnext_version_details($pageversion) {
     global $DB;
 
+    $userfields = user_picture::fields('u');
+
     $prevnext = new StdClass;
 
-    $prevsql = 'SELECT v.id AS versionid, v.timecreated, u.id, u.username, u.firstname, u.lastname
+    $prevsql = "SELECT v.id AS versionid, v.timecreated, $userfields
                 FROM {ouwiki_versions} v
             LEFT JOIN {user} u ON u.id = v.userid
             WHERE v.pageid = ?
                 AND v.timecreated < ?
                 AND v.deletedat IS NULL
-            ORDER BY v.id DESC';
+            ORDER BY v.id DESC";
 
     $prev = $DB->get_records_sql($prevsql,
             array($pageversion->pageid, $pageversion->timecreated), 0, 1);
     $prevnext->prev = $prev ? current($prev) : false;
 
-    $nextsql = 'SELECT v.id AS versionid, v.timecreated, u.id, u.username, u.firstname, u.lastname
+    $nextsql = "SELECT v.id AS versionid, v.timecreated, u.id, $userfields
                 FROM {ouwiki_versions} v
                 LEFT JOIN {user} u ON u.id = v.userid
                 WHERE v.pageid = ?
                 AND v.timecreated > ?
                 AND v.deletedat IS NULL
-                ORDER BY v.id';
+                ORDER BY v.id";
 
     $next = $DB->get_records_sql($nextsql,
             array($pageversion->pageid, $pageversion->timecreated), 0, 1);
@@ -1279,8 +1288,10 @@ function ouwiki_get_page_history($pageid, $selectdeleted, $limitfrom = '', $limi
         $deleted = ' AND v.deletedat IS NULL';
     }
 
+    $userfields = user_picture::fields('u');
+
     $sql = "SELECT v.id AS versionid, v.timecreated, v.deletedat, u.id, u.username,
-                u.firstname, u.lastname, v.wordcount, v.previousversionid, v.importversionid,
+                $userfields, v.wordcount, v.previousversionid, v.importversionid,
                 (SELECT v2.wordcount
                     FROM {ouwiki_versions} v2
                     WHERE v2.id = v.previousversionid)
@@ -1313,9 +1324,11 @@ function ouwiki_get_page_history($pageid, $selectdeleted, $limitfrom = '', $limi
 function ouwiki_get_subwiki_index($subwikiid, $limitfrom = '', $limitnum = '') {
     global $DB;
 
+    $userfields = user_picture::fields('u');
+
     // Get all the pages...
-    $sql = "SELECT p.id AS pageid, p.title, v.id AS versionid, v.timecreated, u.id,
-            u.username, u.firstname, u.lastname, v.wordcount
+    $sql = "SELECT p.id AS pageid, p.title, v.id AS versionid, v.timecreated, $userfields,
+            v.wordcount
                 FROM {ouwiki_pages} p
             INNER JOIN {ouwiki_versions} v ON p.currentversionid = v.id
             LEFT JOIN {user} u ON v.userid = u.id
@@ -1367,10 +1380,12 @@ function ouwiki_get_subwiki_index($subwikiid, $limitfrom = '', $limitnum = '') {
 function ouwiki_get_subwiki_allpages_index($subwiki) {
     global $DB;
 
+    $userfields = user_picture::fields('u', null, 'userid');
+
     // Get all the pages...
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
     p.locked, v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
-    v.wordcount, v.previousversionid, u.firstname, u.lastname
+    v.wordcount, v.previousversionid, $userfields
     FROM {ouwiki_pages} p
     JOIN {ouwiki_versions} v ON p.currentversionid = v.id
     LEFT JOIN {user} u ON u.id = v.userid
@@ -1420,9 +1435,11 @@ function ouwiki_get_subwiki_allpages_index($subwiki) {
 function ouwiki_get_subwiki_recentchanges($subwikiid, $limitfrom = '', $limitnum = 51) {
     global $DB;
 
-    $sql = 'SELECT v.id AS versionid, v.timecreated, v.userid,
+    $userfields = user_picture::fields('u', null, 'userid');
+
+    $sql = "SELECT v.id AS versionid, v.timecreated, v.userid,
         p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
-        u.firstname, u.lastname, u.username, v.wordcount, v.previousversionid, v.importversionid,
+        $userfields, v.wordcount, v.previousversionid, v.importversionid,
             (SELECT v2.wordcount
                 FROM {ouwiki_versions} v2
                 WHERE v2.id = v.previousversionid)
@@ -1431,7 +1448,7 @@ function ouwiki_get_subwiki_recentchanges($subwikiid, $limitfrom = '', $limitnum
             INNER JOIN {ouwiki_versions} v ON v.pageid = p.id
             LEFT JOIN {user} u ON v.userid = u.id
         WHERE p.subwikiid = ? AND v.deletedat IS NULL
-        ORDER BY v.id DESC';
+        ORDER BY v.id DESC";
 
     $result = $DB->get_records_sql($sql, array($subwikiid), $limitfrom, $limitnum);
 
@@ -1496,14 +1513,16 @@ function ouwiki_get_subwiki_recentpages($subwikiid, $limitfrom = '', $limitnum =
     if ($subwikis) {
         list($usql, $params) = $DB->get_in_or_equal(array_keys($subwikis));
 
-        $sql = 'SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
-                v.id AS versionid, v.timecreated, v.userid, u.firstname, u.lastname,
+        $userfields = user_picture::fields('u', null, 'userid');
+
+        $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
+                v.id AS versionid, v.timecreated, v.userid, $userfields,
                 u.username, v.wordcount, v.importversionid
                 FROM {ouwiki_versions} v
                 INNER JOIN {ouwiki_pages} p ON v.pageid = p.id
                 LEFT JOIN {user} u ON v.userid = u.id
-                WHERE v.id '.$usql.
-                ' ORDER BY v.id DESC';
+                WHERE v.id $usql
+                ORDER BY v.id DESC";
 
         $result = $DB->get_records_sql($sql, $params, $limitfrom, $limitnum);
     }
@@ -2347,12 +2366,14 @@ function ouwiki_get_annotations($pageversion) {
 
     $annotations = array();
 
-    $rs = $DB->get_records_sql('SELECT a.id, a.pageid, a.userid, a.timemodified,
-                                    a.content, u.firstname, u.lastname, u.picture, u.imagealt
+    $userfields = user_picture::fields('u', null, 'userid');
+
+    $rs = $DB->get_records_sql("SELECT a.id, a.pageid, a.userid, a.timemodified,
+                                    a.content, $userfields
                                 FROM {ouwiki_annotations} a
                                 INNER JOIN {user} u ON a.userid = u.id
                                     WHERE a.pageid = ?
-                                    ORDER BY a.id', array($pageversion->pageid));
+                                    ORDER BY a.id", array($pageversion->pageid));
 
     // look through the results and check for orphanes annotations.
     // Also set the position and tag for later use.
@@ -3281,11 +3302,12 @@ function ouwiki_display_entirewiki_page_in_index($pageinfo, $subwiki, $cm, $inde
 
     $pageversion->xhtml = file_rewrite_pluginfile_urls($pageversion->xhtml, 'pluginfile.php',
             $context->id, 'mod_ouwiki', 'content', $pageversion->versionid);
+    $pageversion->xhtml = ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, $index, $pageversion->xhtmlformat);
 
     $output = '<div class="ouw_entry"><a name="' . $pageversion->pageid . '"></a><h1 class="ouw_entry_heading"><a href="view.php?' .
             ouwiki_display_wiki_parameters($pageversion->title, $subwiki, $cm) .
             '">' . htmlspecialchars($visibletitle) . '</a></h1>';
-    $output .=  ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, $index, $pageversion->xhtmlformat);
+    $output .=  $pageversion->xhtml;
     $output .=  '</div>';
 
     return $output;
@@ -3531,10 +3553,10 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
         // Format the page body.
         $options = portfolio_format_text_options();
         $options->filter = true;
-        $formattedtext = format_text($pageversion->xhtml, $pageversion->xhtmlformat,
-                $options, $course->id);
-        $formattedtext = portfolio_rewrite_pluginfile_urls($formattedtext, $context->id,
+        $formattedtext = portfolio_rewrite_pluginfile_urls($pageversion->xhtml, $context->id,
                 'mod_ouwiki', 'content', $pageversion->versionid, $portfolioformat);
+        $formattedtext = format_text($formattedtext, $pageversion->xhtmlformat,
+                $options, $course->id);
 
         // Get annotations - only if using annotation system. prevents unnecessary db access.
         if ($ouwiki->annotation) {
@@ -3557,9 +3579,14 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
         $output = html_writer::tag('h2', s($title));
 
         // Last change info.
-        $user = (object)array('id' => $pageversion->userid,
-                'firstname' => $pageversion->firstname,
-                'lastname' => $pageversion->lastname);
+        $user = new stdClass();
+        foreach (explode(',', user_picture::fields()) as $field) {
+            if ($field == 'id') {
+                $user->id = $pageversion->userid;
+            } else {
+                $user->$field = $pageversion->$field;
+            }
+        }
         $lastchange = get_string('lastchange', 'ouwiki', (object)array(
                 'date' => userdate($pageversion->timecreated),
                 'userlink' => ouwiki_display_user($user, $course->id)));

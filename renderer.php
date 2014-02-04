@@ -57,8 +57,6 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $title = $pageversion->title === '' ? get_string('startpage', 'ouwiki') :
                 htmlspecialchars($pageversion->title);
 
-        $pageversion->xhtml = ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, null,
-                $pageversion->xhtmlformat);
         // setup annotations according to the page we are on
         if ($page == 'view') {
             // create the annotations
@@ -74,6 +72,8 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         // Must rewrite plugin urls AFTER doing annotations because they depend on byte position.
         $pageversion->xhtml = file_rewrite_pluginfile_urls($pageversion->xhtml, 'pluginfile.php',
                 $modcontext->id, 'mod_ouwiki', 'content', $pageversion->versionid);
+        $pageversion->xhtml = ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, null,
+                $pageversion->xhtmlformat);
 
         // get files up here so we have them for the portfolio button addition as well
         $fs = get_file_storage();
