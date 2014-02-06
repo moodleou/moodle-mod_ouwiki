@@ -110,7 +110,6 @@
 
 
 #ouwiki_belowtabs {
-    max-width:55em;
     margin-left:auto;
     margin-right:auto;
 }
@@ -867,6 +866,9 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
 .ouwiki_import .ouwiki_import_act .ouwiki_import_link a {
     margin-left: 50px;
     text-decoration: none;
+}
+.ouwiki_import .ouwiki_import_act .fitem {
+    margin-left: 40px;
 }
 .ouwiki_import .ouwiki_import_act .ouwiki_import_link img {
     margin-right: 5px;
