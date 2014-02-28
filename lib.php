@@ -54,7 +54,7 @@ function ouwiki_add_instance($data, $mform) {
 
         // template file save
         $fs = get_file_storage();
-        if ($filename = $mform->get_new_filename('template_file')) {
+        if (isset($mform) && $filename = $mform->get_new_filename('template_file')) {
             $file = $mform->save_stored_file('template_file', $context->id, 'mod_ouwiki', 'template', $ouwikiid, '/', $filename);
             $DB->set_field('ouwiki', 'template', '/'.$file->get_filename(), array('id' => $formdata->id));
         }
