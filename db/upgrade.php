@@ -463,6 +463,30 @@ WHERE
         upgrade_mod_savepoint(true, 2014012700, 'ouwiki');
     }
 
+    if ($oldversion < 2014031100) {
+
+        // Define index ouwiki_subwikis_unique_group (unique) to be added to ouwiki_subwikis.
+        $table = new xmldb_table('ouwiki_subwikis');
+        $index = new xmldb_index('ouwiki_subwikis_unique_group', XMLDB_INDEX_UNIQUE, array('wikiid', 'groupid'));
+
+        // Conditionally launch add index ouwiki_subwikis_unique_group.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Define index ouwiki_subwikis_unique_user (unique) to be added to ouwiki_subwikis.
+        $table = new xmldb_table('ouwiki_subwikis');
+        $index = new xmldb_index('ouwiki_subwikis_unique_user', XMLDB_INDEX_UNIQUE, array('wikiid', 'userid'));
+
+        // Conditionally launch add index ouwiki_subwikis_unique_user.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Ouwiki savepoint reached.
+        upgrade_mod_savepoint(true, 2014031100, 'ouwiki');
+    }
+
     // Must always return true from these functions
     return true;
 }

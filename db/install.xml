@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/ouwiki/db" VERSION="20140127" COMMENT="OU wiki database tables."
+<XMLDB PATH="mod/ouwiki/db" VERSION="20140311" COMMENT="OU wiki database tables."
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -44,6 +44,10 @@
         <KEY NAME="ouwiki_subwikis_fk_groupid" TYPE="foreign" FIELDS="groupid" REFTABLE="groups" REFFIELDS="id"/>
         <KEY NAME="ouwiki_subwikis_fk_userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="ouwiki_subwikis_unique_group" UNIQUE="true" FIELDS="wikiid, groupid" COMMENT="Make sure only one group subwiki per wikiid"/>
+        <INDEX NAME="ouwiki_subwikis_unique_user" UNIQUE="true" FIELDS="wikiid, userid" COMMENT="Make sure only one user subwiki per wikiid"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="ouwiki_pages" COMMENT="Single pages inside a subwiki. If a page has multiple versions, it still has only one entry in this table.">
       <FIELDS>
