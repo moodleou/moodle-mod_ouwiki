@@ -844,14 +844,6 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
     font-weight:bold;
 }
 
-/** Styles for edit save fail dialogue **/
-#page-mod-ouwiki-edit .moodle-dialogue-base .moodle-dialogue-lightbox {
-    z-index: 5000 !important;
-}
-#page-mod-ouwiki-edit .moodle-dialogue-base .moodle-dialogue {
-    z-index: 5000 !important;
-}
-
 /* Import process */
 #page-mod-ouwiki-import .ouwiki_import h3 {
     font-weight: bold;
