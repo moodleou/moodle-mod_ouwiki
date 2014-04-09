@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-$module->version  = 2013102100;
+$module->version  = 2014012700;
 $module->requires = 2013040500;
 $module->cron     = 60*60*24; // Once per day.
 

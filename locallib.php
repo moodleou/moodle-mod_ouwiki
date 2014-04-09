@@ -28,7 +28,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 /* Include the files that are required by this module */
-require_once($CFG->dirroot . '/course/moodleform_mod.php');
 require_once($CFG->dirroot . '/mod/ouwiki/lib.php');
 require_once($CFG->dirroot . '/mod/ouwiki/difflib.php');
 require_once($CFG->libdir . '/portfolio/caller.php');
@@ -97,6 +96,43 @@ function ouwiki_error($text, $source = null) {
 }
 
 /**
+ * Gets cm, ouwiki and subwiki based on selected activity id and subwiki id
+ * Populates vars sent, overriding initial values
+ * @param int $selectedact cm id
+ * @param int $selectedsubwiki subwiki id
+ * @param null $selectedouwiki empty
+ * @param object $course
+ * @param bool $ignorechecks Set to true to ignore activity + subwiki access checks
+ */
+function ouwiki_get_wikiinfo(&$selectedact, &$selectedsubwiki, &$selectedouwiki, $course,
+        $ignorechecks = false) {
+    global $DB;
+    $modinfo = get_fast_modinfo($course);
+    $selectedact = $modinfo->get_cm($selectedact);
+    $selectedcontext = context_module::instance($selectedact->id);
+    // Basic checks that it is OK to continue using activity.
+    if (!$ignorechecks && (!$selectedact->uservisible ||
+            !has_capability('mod/ouwiki:view', $selectedcontext))) {
+        ouwiki_error('You are not able to access the selected wiki.');
+    }
+    // Get sub wiki selected - joining to wiki activity and cm to verify all correct.
+    $sql = 'SELECT ouwiki.*, sw.userid, sw.groupid FROM {ouwiki_subwikis} sw
+    JOIN {ouwiki} ouwiki on ouwiki.id = sw.wikiid
+    JOIN {course_modules} cm on cm.instance = ouwiki.id
+    and cm.module = (SELECT id FROM {modules} where name = ?)
+    WHERE sw.id = ?';
+    $selectedouwiki = $DB->get_record_sql($sql, array('ouwiki', $selectedsubwiki), MUST_EXIST);
+
+    // Get our subwiki using locallib function to check access.
+    if (!$ignorechecks) {
+        $selectedsubwiki = ouwiki_get_subwiki($course, $selectedouwiki, $selectedact, $selectedcontext,
+                $selectedouwiki->groupid, $selectedouwiki->userid, false);
+    } else {
+        $selectedsubwiki = $DB->get_record('ouwiki_subwikis', array('id' => $selectedsubwiki));
+    }
+}
+
+/**
  * Obtains the appropriate subwiki object for a request. If one cannot
  * be obtained, either creates one or calls error() and stops.
  *
@@ -131,8 +167,11 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
             break;
 
         case OUWIKI_SUBWIKIS_GROUPS:
-            $groupid = groups_get_activity_group($cm, true);
+            if (empty($groupid)) {
+                $groupid = groups_get_activity_group($cm, true);
+            }
             if (!$groupid) {
+                // Active group not known - get first group available.
                 $groups = groups_get_activity_allowed_groups($cm);
                 if (!$groups) {
                     if (!groups_get_all_groups($cm->course, 0, $cm->groupingid)) {
@@ -290,6 +329,7 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
             $oldcontextid = null;
             $oldpagever = null;
             $oldversionid = null;
+            $attachments = array();
             for ($child = $page->firstChild; $child; $child = $child->nextSibling) {
                 if ($child->nodeType != XML_ELEMENT_NODE) {
                     continue;
@@ -317,6 +357,9 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
                     case 'versionid':
                         $oldversionid = (int) $text;
                         break;
+                    case 'attachments':
+                        $attachments = explode('|', $text);
+                        break;
                     default:
                         ouwiki_error('Failed to load wiki template - unexpected element &lt;'.
                                 $child->tagName.'>.');
@@ -325,21 +368,30 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
             if ($xhtml === null) {
                 ouwiki_error('Failed to load wiki template - required &lt;xhtml>.');
             }
-            // note: because templates are created in code outside of ouwiki this does not
-            // handle page attachments
+
             $newverid = ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $title, $xhtml,
                      -1, -1, -1, true);
 
-            // Copy any images associated with old version id..
+            // Copy any images or attachments associated with old version id.
             if ($oldfiles = $fs->get_directory_files($context->id, 'mod_ouwiki', 'template',
                     $ouwiki->id, "/$oldversionid/")) {
                 foreach ($oldfiles as $oldfile) {
-                    // copy this file to the version record.
-                    $fs->create_file_from_storedfile(array(
-                            'contextid' => $context->id,
-                            'filearea' => 'content',
-                            'itemid' => $newverid,
-                            'filepath' => '/'), $oldfile);
+                    if (in_array($oldfile->get_filename(), $attachments)) {
+                        // Copy this file to the version attachment record.
+                        $fs->create_file_from_storedfile(array(
+                                'contextid' => $context->id,
+                                'filearea' => 'attachment',
+                                'itemid' => $newverid,
+                                'filepath' => '/'), $oldfile);
+                    }
+                    if (mimeinfo('string', $oldfile->get_filename()) == 'image') {
+                        // Copy this image file to the version record.
+                        $fs->create_file_from_storedfile(array(
+                                'contextid' => $context->id,
+                                'filearea' => 'content',
+                                'itemid' => $newverid,
+                                'filepath' => '/'), $oldfile);
+                    }
                 }
             }
         }
@@ -397,11 +449,11 @@ function ouwiki_timelocked($subwiki, $ouwiki, $context) {
     if (!has_capability('mod/ouwiki:edit', $context)) {
         return false;
     }
-    if (!is_null($ouwiki->editbegin) && time() < $ouwiki->editbegin) {
+    if (!empty($ouwiki->editbegin) && time() < $ouwiki->editbegin) {
         return get_string('timelocked_before', 'ouwiki',
                 userdate($ouwiki->editbegin, get_string('strftimedate')));
     }
-    if (!is_null($ouwiki->editend) && time() >= $ouwiki->editend) {
+    if (!empty($ouwiki->editend) && time() >= $ouwiki->editend) {
         return get_string('timelocked_after', 'ouwiki');
     }
     return false;
@@ -1081,6 +1133,30 @@ function ouwiki_handle_backup_exception($e, $type = 'backup') {
 }
 
 /**
+ * Checks if page is locked by somebody else (they are currently editing it).
+ * @param int $pageid
+ * @return bool true if locked
+ */
+function ouwiki_is_page_locked($pageid) {
+    global $USER, $DB;
+
+    // Check for lock.
+    $lock = $DB->get_record('ouwiki_locks', array('pageid' => $pageid));
+    if (!empty($lock)) {
+        $timeoutok = is_null($lock->expiresat) || time() < $lock->expiresat;
+        // Consider the page locked if the lock has been confirmed.
+        // within OUWIKI_LOCK_PERSISTENCE seconds.
+        if ($lock->userid == $USER->id && $timeoutok) {
+            // Cool, it's our lock.
+            return false;
+        } else if (time()-$lock->seenat < OUWIKI_LOCK_PERSISTENCE && $timeoutok) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
  * Obtains an editing lock on a wiki page.
  *
  * @param object $ouwiki Wiki object (used just for timeout setting)
@@ -1204,7 +1280,7 @@ function ouwiki_get_page_history($pageid, $selectdeleted, $limitfrom = '', $limi
     }
 
     $sql = "SELECT v.id AS versionid, v.timecreated, v.deletedat, u.id, u.username,
-                u.firstname, u.lastname, v.wordcount, v.previousversionid,
+                u.firstname, u.lastname, v.wordcount, v.previousversionid, v.importversionid,
                 (SELECT v2.wordcount
                     FROM {ouwiki_versions} v2
                     WHERE v2.id = v.previousversionid)
@@ -1346,7 +1422,7 @@ function ouwiki_get_subwiki_recentchanges($subwikiid, $limitfrom = '', $limitnum
 
     $sql = 'SELECT v.id AS versionid, v.timecreated, v.userid,
         p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
-        u.firstname, u.lastname, u.username, v.wordcount, v.previousversionid,
+        u.firstname, u.lastname, u.username, v.wordcount, v.previousversionid, v.importversionid,
             (SELECT v2.wordcount
                 FROM {ouwiki_versions} v2
                 WHERE v2.id = v.previousversionid)
@@ -1422,7 +1498,7 @@ function ouwiki_get_subwiki_recentpages($subwikiid, $limitfrom = '', $limitnum =
 
         $sql = 'SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
                 v.id AS versionid, v.timecreated, v.userid, u.firstname, u.lastname,
-                u.username, v.wordcount
+                u.username, v.wordcount, v.importversionid
                 FROM {ouwiki_versions} v
                 INNER JOIN {ouwiki_pages} p ON v.pageid = p.id
                 LEFT JOIN {user} u ON v.userid = u.id
@@ -1612,7 +1688,7 @@ function ouwiki_internal_sort_deletions($a, $b) {
  */
 function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $content,
         $changestart = -1, $changesize = -1, $changeprevsize = -1, $nouser = null,
-        $formdata = null, $revertversionid = null) {
+        $formdata = null, $revertversionid = null, $importversionid = null) {
 
     global $DB, $USER;
     global $ouwikiinternalre, $ouwiki_count; // Nasty but I can't think of a better way!
@@ -1733,6 +1809,7 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     $version->timecreated = time();
     $version->wordcount = ouwiki_count_words($content);
     $version->previousversionid = $previousversionid;
+    $version->importversionid = $importversionid;
     if (!$nouser) {
         $version->userid = $USER->id;
     }
@@ -2961,7 +3038,7 @@ function ouwiki_get_user_participation($userid, $subwiki) {
     );
 
     $sql = 'SELECT v.id, p.title, v.timecreated, v.wordcount, p.id AS pageid,
-                v.previousversionid,
+                v.previousversionid, v.importversionid,
             (SELECT v2.wordcount
                 FROM {ouwiki_versions} v2
                 WHERE v2.id = v.previousversionid)
@@ -3028,7 +3105,7 @@ function ouwiki_get_participation($ouwiki, $subwiki, $context,
         $where = ' AND p.subwikiid = :subwikiid';
     }
 
-    $vsql = "SELECT v.id AS versionid, v.wordcount,
+    $vsql = "SELECT v.id AS versionid, v.wordcount, v.importversionid,
                     p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
                     v.userid AS userid, v.previousversionid,
                 (SELECT v2.wordcount
@@ -3081,6 +3158,9 @@ function ouwiki_sort_participation($data) {
             if (!isset($byusers[$version->userid]->pageedits)) {
                 $byusers[$version->userid]->pageedits = 0;
             }
+            if (!isset($byusers[$version->userid]->pageimports)) {
+                $byusers[$version->userid]->pageimports = array();
+            }
 
             // calculations
             if ($version->versionid == $version->firstversionid) {
@@ -3107,6 +3187,9 @@ function ouwiki_sort_participation($data) {
                         $byusers[$version->userid]->wordsadded += abs($words);
                     }
                 }
+            }
+            if (!empty($version->importversionid)) {
+                $byusers[$version->userid]->pageimports[$version->pageid] = 1;
             }
         }
     }
@@ -3166,9 +3249,9 @@ function ouwiki_display_wikiindex_page_in_index($indexitem, $subwiki, $cm) {
         $output = '';
     }
 
-    $output .= '<a class="ouw_title" href="view.php?' .
+    $output .= '<div class="ouw_title"><a class="ouw_title_link" href="view.php?' .
             ouwiki_display_wiki_parameters($indexitem->title, $subwiki, $cm).
-            '">' . htmlspecialchars($title) . '</a>';
+            '">' . htmlspecialchars($title) . '</a></div>';
     $lastchange = new StdClass;
     $lastchange->userlink = ouwiki_display_user($indexitem, $cm->course);
     $lastchange->date = ouwiki_recent_span($indexitem->timecreated).ouwiki_nice_date($indexitem->timecreated) . '</span>';
@@ -3242,13 +3325,21 @@ function ouwiki_get_sub_tree_from_index($pageid, $index) {
     return $subtree;
 }
 
-function ouwiki_tree_index($func, $pageid, &$index = null, $subwiki = null, $cm = null, $context = null) {
+function ouwiki_tree_index($func, $pageid, &$index = null, $subwiki = null, $cm = null, $context = null, $check = null) {
+    $extra = '';
     $thispage = $index[$pageid];
-    $output = '<li>' . $func($thispage, $subwiki, $cm, $index, $context);
+    if ($check) {
+        // Add a checkbox against this page.
+        $extra = html_writer::checkbox('page' . $thispage->pageid, $thispage->pageid, false, null,
+                array('id' => 'page' . $thispage->pageid, 'class' => 'ouwiki_page_checkbox'));
+        $extra .= get_accesshide(get_string('pagecheckboxlabel', 'ouwiki', $thispage->title), 'label',
+                '', 'for="page' . $thispage->pageid . '"');
+    }
+    $output = '<li>' . $extra . $func($thispage, $subwiki, $cm, $index, $context);
     if (count($thispage->children) > 0) {
         $output .= '<ul>';
         foreach ($thispage->children as $childid) {
-            $output .= ouwiki_tree_index($func, $childid, $index, $subwiki, $cm, $context);
+            $output .= ouwiki_tree_index($func, $childid, $index, $subwiki, $cm, $context, $check);
         }
         $output .= '</ul>';
     }
@@ -3317,6 +3408,29 @@ function ouwiki_subwiki_content_exists($subwikiid) {
     } else {
         return false;
     }
+}
+
+function ouwiki_get_wiki_details($version) {
+    global $DB;
+
+    $sql = 'SELECT * from {ouwiki} w, {ouwiki_subwikis} s, {ouwiki_pages} p, {ouwiki_versions} v
+    WHERE
+    s.id = p.subwikiid
+    AND w.id = s.wikiid
+    AND p.id = v.pageid
+    AND v.id = ?';
+
+    $selectedouwiki = $DB->get_record_sql($sql, array($version), MUST_EXIST);
+    $selectedouwiki->group = null;
+    $selectedouwiki->user = null;
+
+    if ($selectedouwiki->groupid) {
+        $selectedouwiki->group = groups_get_group_name($selectedouwiki->groupid);
+    } else if ($selectedouwiki->subwikis == OUWIKI_SUBWIKIS_INDIVIDUAL && $selectedouwiki->userid) {
+        $user = $DB->get_record('user', array('id' => $selectedouwiki->userid));
+        $selectedouwiki->user = fullname($user);
+    }
+    return $selectedouwiki;
 }
 
 /**
@@ -3567,7 +3681,8 @@ class ouwiki_page_portfolio_caller extends ouwiki_portfolio_caller_base {
         if (!empty($this->pageversion->title)) {
             $params['page'] = $this->pageversion->title;
         }
-        return new moodle_url('/mod/ouwiki/view.php', $params);
+        $url = new moodle_url('/mod/ouwiki/view.php', $params);
+        return $url->out(false);
     }
 
     public function get_navigation() {
@@ -3672,7 +3787,8 @@ class ouwiki_all_portfolio_caller extends ouwiki_portfolio_caller_base {
     }
 
     public function get_return_url() {
-        return new moodle_url('/mod/ouwiki/wikiindex.php', array('id' => $this->cm->id));
+        $url = new moodle_url('/mod/ouwiki/wikiindex.php', array('id' => $this->cm->id));
+        return $url->out(false);
     }
 
     private function prepare_tree_inline_styles() {

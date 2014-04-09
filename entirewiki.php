@@ -229,6 +229,20 @@ function get_online_display_content($format, $pageversion, $context, $subwiki, $
                 }
             }
             $markup .= '<xhtml>' . htmlspecialchars($pageversion->xhtml) . '</xhtml>';
+            // Add attachments.
+            if ($attachments = $fs->get_area_files($context->id, 'mod_ouwiki', 'attachment',
+                    $pageversion->versionid, 'itemid', false)) {
+                // We have attachements.
+                $markup .= '<attachments>';
+                $attachmentsarray = array();
+                foreach ($attachments as $attachment) {
+                    $filename = $attachment->get_filename();
+                    array_push($attachmentsarray, $filename);
+                    $files["/$pageversion->versionid/$filename/"] = $attachment;
+                }
+                $markup .= implode('|', $attachmentsarray);
+                $markup .= '</attachments>';
+            }
             $markup .= '</page>';
             break;
         case OUWIKI_FORMAT_RTF:

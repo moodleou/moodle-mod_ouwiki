@@ -95,6 +95,10 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         $mform->addHelpButton('enablewordcount', 'showwordcounts', 'ouwiki');
         $mform->setDefault('enablewordcount', 1);
 
+        // Enable the allow import course wiki pages into this wiki.
+        $mform->addElement('checkbox', 'allowimport', get_string('allowimport', 'ouwiki', 0));
+        $mform->addHelpButton('allowimport', 'allowimport', 'ouwiki');
+
         $this->standard_grading_coursemodule_elements();
 
         // Standard stuff
@@ -149,6 +153,11 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         if (empty($data->completioneditsenabled) || !$autocompletion) {
             $data->completionedits = 0;
         }
+
+        if (empty($data->allowimport)) {
+            $data->allowimport = 0;
+        }
+
         return $data;
     }
 

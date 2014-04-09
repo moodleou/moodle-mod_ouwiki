@@ -2,6 +2,8 @@ This script describes steps to test the use of the add template anytime facility
 and codes ability to create OU wikis from that template. It assumes that the tt server
 is set up so has to allow the Roll Forward of dummy courses.
 
+The script also tests the embedding of files and attachments into templates.
+
 NOTE: In this test case, the word 'wiki' always refers to the OU wiki.
 
 The test steps in this script follow on from each other and aren't independent,
@@ -63,6 +65,20 @@ CRE04 / admin
   DO NOT create a start page for it.
   Log back in as admin
 
+CRE08 / admin
+  In your test course TC1, create a wiki called CRE08.
+  Create the start page with 3 words.
+  Create 2 pages 'page1' and 'page2' from the start page in the wiki
+  Go to page1 and edit page
+  Click against the 'edit/insert image' tree icon.
+  Upload an image.
+  Insert the image and save.
+  Check that the image has been saved to the wiki page.
+  Go to page2 and edit page and add an attachment and save.
+  Check that the image has been saved to the wiki page.
+  Go to wiki index.
+  Download as wiki template and save the download zip file to a temp area on your PC as CRE08_template.zip
+
  Upload Template Files Tests
  ===========================
 
@@ -112,6 +128,14 @@ CRE04 / admin
   Go to course home page
   Login as example Tutor and visit CRE07 - the start page should match that of wiki CRE02
 
+  UTFT07 / admin
+  Create wiki CRE09
+  Go to edit settings
+  Choose to upload the downloaded CRE08_template.zip.
+  Save and display.
+  This should create a copy of the CRE08 wiki.
+
+
  Backup and Restore Test
  =======================
 
@@ -122,3 +146,4 @@ CRE04 / admin
   Check to see that the ouwikis have been created correctly according to the template files.
   CRE01, 03, 04, 05 and 06 should match the template of CRE01
   CRE02 and O7 should match the template of CRE02
+  CRE08 and CRE09 should match the template of CRE08
