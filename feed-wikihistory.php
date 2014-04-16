@@ -32,7 +32,8 @@ require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
 $magic = required_param('magic', PARAM_RAW);
 if ($magic != $subwiki->magic) {
-    print_error('Incorrect magic number');
+    header('HTTP/1.0 404 not found');
+    die('Incorrect magic number');
 }
 
 $newpages = optional_param('type', '', PARAM_ALPHA) == 'pages';

@@ -34,7 +34,8 @@ $pageversion = ouwiki_get_current_page($subwiki, $pagename, OUWIKI_GETPAGE_CREAT
 
 $magic = required_param('magic', PARAM_RAW);
 if ($magic != $subwiki->magic) {
-    print_error('Incorrect magic number');
+    header('HTTP/1.0 404 not found');
+    die('Incorrect magic number');
 }
 
 $rss = optional_param('format', '', PARAM_RAW) === 'rss';
