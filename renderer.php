@@ -983,7 +983,20 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $imported = '';
                 if ($change->importversionid) {
                     $wikidetails = ouwiki_get_wiki_details($change->importversionid);
-                    $imported = $wikidetails->name;
+                    $wikiname = $wikidetails->name;
+                    if ($wikidetails->courseshortname) {
+                        $coursename = $wikidetails->courseshortname. '<br/>';
+                        $imported = $coursename . $wikiname;
+                    } else {
+                        $imported = $wikiname;
+                    }
+                    if ($wikidetails->group) {
+                        $users = '<br/> [[' .$wikidetails->group. ']]';
+                        $imported = $imported . $users;
+                    } else if ($wikidetails->user) {
+                        $users = '<br/>[[' .$wikidetails->user. ']]';
+                        $imported = $imported . $users;
+                    }
                 }
                 $row[] = $imported;
             }

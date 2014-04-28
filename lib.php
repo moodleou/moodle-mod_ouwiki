@@ -716,7 +716,7 @@ function ouwiki_grade_item_delete($ouwiki) {
 function ouwiki_cm_info_dynamic(cm_info $cm) {
     if (!has_capability('mod/ouwiki:view',
             context_module::instance($cm->id))) {
-        $cm->uservisible = false;
+        $cm->set_user_visible(false);
         $cm->set_available(false);
     }
 }

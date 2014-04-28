@@ -218,13 +218,20 @@ foreach ($changes as $change) {
         }
         print "<td>$wordcountchanges</td>";
     }
+
     if ($overwritten) {
         if (!empty($change->importversionid)) {
             $selectedouwiki = ouwiki_get_wiki_details($change->importversionid);
-            print '<td>'.$selectedouwiki->name;
+            print '<td>';
+            if ($selectedouwiki->courseshortname) {
+                print $selectedouwiki->courseshortname. '<br/>';
+            }
+            print $selectedouwiki->name;
             if ($selectedouwiki->group) {
+                print '<br/>';
                 print '[[' .$selectedouwiki->group. ']]';
             } else if ($selectedouwiki->user) {
+                print '<br/>';
                 print '[[' .$selectedouwiki->user. ']]';
             }
             print '</td>';

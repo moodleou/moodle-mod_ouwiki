@@ -574,3 +574,4 @@ $string['importedstartpage'] = 'Imported start page';
 $string['importedpages'] = 'Imported pages';
 $string['importedfrom'] = 'Imported from:';
 $string['pagesimported'] = 'Pages imported';
+$string['unabletoimport'] = 'No wiki\'s available to import from.';

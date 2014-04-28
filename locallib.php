@@ -3433,7 +3433,7 @@ function ouwiki_subwiki_content_exists($subwikiid) {
 }
 
 function ouwiki_get_wiki_details($version) {
-    global $DB;
+    global $DB, $COURSE;
 
     $sql = 'SELECT * from {ouwiki} w, {ouwiki_subwikis} s, {ouwiki_pages} p, {ouwiki_versions} v
     WHERE
@@ -3445,12 +3445,15 @@ function ouwiki_get_wiki_details($version) {
     $selectedouwiki = $DB->get_record_sql($sql, array($version), MUST_EXIST);
     $selectedouwiki->group = null;
     $selectedouwiki->user = null;
-
+    $selectedouwiki->courseshortname = null;
     if ($selectedouwiki->groupid) {
         $selectedouwiki->group = groups_get_group_name($selectedouwiki->groupid);
     } else if ($selectedouwiki->subwikis == OUWIKI_SUBWIKIS_INDIVIDUAL && $selectedouwiki->userid) {
         $user = $DB->get_record('user', array('id' => $selectedouwiki->userid));
         $selectedouwiki->user = fullname($user);
+    }
+    if ($COURSE->id != $selectedouwiki->course) {
+        $selectedouwiki->courseshortname = $DB->get_field('course', 'shortname', array('id' => $selectedouwiki->course));
     }
     return $selectedouwiki;
 }

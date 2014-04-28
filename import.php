@@ -57,126 +57,153 @@ if ((!$subwiki->canedit) || (!$ouwiki->allowimport)) {
     print_error('You are not able to add content to this wiki.');
 }
 
+// Get course id of wiki that is being imported from. Only used in steps 2,3 and 4.
+$importedfromcourse = $course;
+$courseid = optional_param('courseid', 0, PARAM_INT);
+if ($courseid) {
+    $importedfromcourse = get_course($courseid);
+}
+
 echo '<div class="ouwiki_import ouwiki_import_step' . $curstep . '" id="ouwiki_belowtabs">';
 
 if ($curstep == 1) {
-    // Select wiki from course step, first get wikis.
-    $modinfo = get_fast_modinfo($course);
-    $allwikis = $modinfo->get_instances_of('ouwiki');
-    unset($allwikis[$ouwiki->id]);// Don't include current activity.
-    $availablewikis = array();
-    foreach ($allwikis as $wikiact) {
-        $wikicontext = context_module::instance($wikiact->id);
-        // Check wiki is available.
-        if (!$wikiact->uservisible ||
-                !has_capability('mod/ouwiki:view', $wikicontext)) {
-            continue;
-        }
-        // Create object for this wiki that we will use if it is shown.
-        $wikiob = new stdClass();
-        $wikiob->cm = $wikiact;
-        $wikiob->selector = array();
-        $wikiob->selectordefault = 0;
-        $wikiob->nocontent = false;
-
-        // For each wiki type do further access checks and get more info.
-        $wikiinst = $DB->get_record('ouwiki', array('id' => $wikiact->instance));
-        if (!$wikiinst) {
-            continue;
-        }
-        if ($wikiinst->subwikis == OUWIKI_SUBWIKIS_SINGLE) {
-            // Course wiki, check subwiki and start page exists.
-            if (!$wikisubwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND
-                    groupid IS NULL AND userid IS NULL', array($wikiinst->id), 'id')) {
-                $wikiob->nocontent = true;
-            } else if (!ouwiki_subwiki_content_exists($wikisubwiki->id)) {
-                $wikiob->nocontent = true;
-            } else {
-                $wikiob->selectordefault = $wikisubwiki->id;
-            }
-        } else if ($wikiinst->subwikis == OUWIKI_SUBWIKIS_GROUPS) {
-            // Group wiki. Get all groups user can see (checking they have content to import).
-            if (!$groups = groups_get_activity_allowed_groups($wikiact)) {
+    $courses = enrol_get_users_courses($USER->id, true);
+    $pageparams['step']++;
+    $wikisfound = false;
+    foreach ($courses as $listcourse) {
+        // Select wiki from course step, first get wikis.
+        $modinfo = get_fast_modinfo($listcourse);
+        $allwikis = $modinfo->get_instances_of('ouwiki');
+        unset($allwikis[$ouwiki->id]);// Don't include current activity.
+        $availablewikis = array();
+        foreach ($allwikis as $wikiact) {
+            $wikicontext = context_module::instance($wikiact->id);
+            // Check wiki is available.
+            if (!$wikiact->uservisible ||
+                    !has_capability('mod/ouwiki:view', $wikicontext)) {
                 continue;
             }
-            $default = groups_get_activity_group($wikiact);
-            foreach ($groups as $group) {
-                // Check group subwiki has content before adding it.
-                if ($wikisubwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ?
-                        AND groupid = ? AND userid IS NULL', array($wikiinst->id, $group->id), 'id')) {
-                    if (ouwiki_subwiki_content_exists($wikisubwiki->id)) {
-                        $wikiob->selector[$wikisubwiki->id] = format_string($group->name);
-                        if ($group->id == $default) {
-                            $wikiob->selectordefault = $wikisubwiki->id;
-                        }
-                    }
-                }
+            // Create object for this wiki that we will use if it is shown.
+            $wikiob = new stdClass();
+            $wikiob->cm = $wikiact;
+            $wikiob->selector = array();
+            $wikiob->selectordefault = 0;
+            $wikiob->nocontent = false;
+
+            // For each wiki type do further access checks and get more info.
+            $wikiinst = $DB->get_record('ouwiki', array('id' => $wikiact->instance));
+            if (!$wikiinst) {
+                continue;
             }
-            // If no groups have content disable wiki selector.
-            if (empty($wikiob->selector)) {
-                $wikiob->nocontent = true;
-            }
-        } else if ($wikiinst->subwikis == OUWIKI_SUBWIKIS_INDIVIDUAL) {
-            // Individual wiki. Get all users user can view (checking subwiki for content).
-            $userfields = user_picture::fields('u', null, 'uid');
-            $sql = "SELECT sw.id, $userfields
-                    FROM {ouwiki_subwikis} sw
-                    INNER JOIN {user} u ON sw.userid = u.id
-                    INNER JOIN (SELECT subwikiid
-                        FROM {ouwiki_pages}
-                        WHERE currentversionid IS NOT NULL
-                        GROUP BY subwikiid) as wp on wp.subwikiid = sw.id
-                    WHERE sw.wikiid = ?";
-            $params = array($wikiinst->id);
-            if (!has_capability('mod/ouwiki:viewallindividuals', $wikicontext)) {
-                if (!has_capability('mod/ouwiki:viewgroupindividuals', $wikicontext)) {
-                    // Can only see own wiki (if exists).
-                    $sql .= ' AND sw.userid = ?';
-                    $params[] = $USER->id;
+            if ($wikiinst->subwikis == OUWIKI_SUBWIKIS_SINGLE) {
+                // Course wiki, check subwiki and start page exists.
+                if (!$wikisubwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND
+                        groupid IS NULL AND userid IS NULL', array($wikiinst->id), 'id')) {
+                    $wikiob->nocontent = true;
+                } else if (!ouwiki_subwiki_content_exists($wikisubwiki->id)) {
+                    $wikiob->nocontent = true;
                 } else {
-                    // Can see any users that are in the same group(s).
-                    if ($theirgroups = groups_get_all_groups($wikiact->course, $USER->id,
-                            $wikiact->groupingid, 'g.id')) {
-                        $groupmembers = array();
-                        foreach ($theirgroups as $group) {
-                            if ($members = groups_get_members($group->id, 'u.id')) {
-                                $groupmembers = array_merge($groupmembers, array_keys($members));
-                            }
-                        }
-                        if (!empty($groupmembers)) {
-                            list($insql, $inparams) = $DB->get_in_or_equal($groupmembers);
-                            $sql .= 'AND sw.userid ' . $insql;
-                            $params = array_merge($params, $inparams);
-                        }
-                    }
-                }
-            }
-            $sql .= ' ORDER BY u.lastname, u.firstname';
-
-            if (!$choices = $DB->get_records_sql($sql, $params)) {
-                $wikiob->nocontent = true;
-            }
-
-            foreach ($choices as $wikisubwiki) {
-                $wikiob->selector[$wikisubwiki->id] = fullname($wikisubwiki);
-                if ($wikisubwiki->uid == $USER->id) {
                     $wikiob->selectordefault = $wikisubwiki->id;
                 }
+            } else if ($wikiinst->subwikis == OUWIKI_SUBWIKIS_GROUPS) {
+                // Group wiki. Get all groups user can see (checking they have content to import).
+                if (!$groups = groups_get_activity_allowed_groups($wikiact)) {
+                    continue;
+                }
+                $default = groups_get_activity_group($wikiact);
+                foreach ($groups as $group) {
+                    // Check group subwiki has content before adding it.
+                    if ($wikisubwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ?
+                            AND groupid = ? AND userid IS NULL', array($wikiinst->id, $group->id), 'id')) {
+                        if (ouwiki_subwiki_content_exists($wikisubwiki->id)) {
+                            $wikiob->selector[$wikisubwiki->id] = format_string($group->name);
+                            if ($group->id == $default) {
+                                $wikiob->selectordefault = $wikisubwiki->id;
+                            }
+                        }
+                    }
+                }
+                // If no groups have content disable wiki selector.
+                if (empty($wikiob->selector)) {
+                    $wikiob->nocontent = true;
+                }
+            } else if ($wikiinst->subwikis == OUWIKI_SUBWIKIS_INDIVIDUAL) {
+                // Individual wiki. Get all users user can view (checking subwiki for content).
+                $userfields = user_picture::fields('u', null, 'uid');
+                $sql = "SELECT sw.id, $userfields
+                        FROM {ouwiki_subwikis} sw
+                        INNER JOIN {user} u ON sw.userid = u.id
+                        INNER JOIN (SELECT subwikiid
+                            FROM {ouwiki_pages}
+                            WHERE currentversionid IS NOT NULL
+                            GROUP BY subwikiid) as wp on wp.subwikiid = sw.id
+                        WHERE sw.wikiid = ?";
+                $params = array($wikiinst->id);
+                if (!has_capability('mod/ouwiki:viewallindividuals', $wikicontext)) {
+                    if (!has_capability('mod/ouwiki:viewgroupindividuals', $wikicontext)) {
+                        // Can only see own wiki (if exists).
+                        $sql .= ' AND sw.userid = ?';
+                        $params[] = $USER->id;
+                    } else {
+                        // Can see any users that are in the same group(s).
+                        if ($theirgroups = groups_get_all_groups($wikiact->course, $USER->id,
+                                $wikiact->groupingid, 'g.id')) {
+                            $groupmembers = array();
+                            foreach ($theirgroups as $group) {
+                                if ($members = groups_get_members($group->id, 'u.id')) {
+                                    $groupmembers = array_merge($groupmembers, array_keys($members));
+                                }
+                            }
+                            if (!empty($groupmembers)) {
+                                list($insql, $inparams) = $DB->get_in_or_equal($groupmembers);
+                                $sql .= 'AND sw.userid ' . $insql;
+                                $params = array_merge($params, $inparams);
+                            }
+                        }
+                    }
+                }
+                $sql .= ' ORDER BY u.lastname, u.firstname';
+
+                if (!$choices = $DB->get_records_sql($sql, $params)) {
+                    $wikiob->nocontent = true;
+                }
+
+                foreach ($choices as $wikisubwiki) {
+                    $wikiob->selector[$wikisubwiki->id] = fullname($wikisubwiki);
+                    if ($wikisubwiki->uid == $USER->id) {
+                        $wikiob->selectordefault = $wikisubwiki->id;
+                    }
+                }
             }
+            // Add wiki info to list of available wiki activities.
+            $availablewikis[] = $wikiob;
         }
-        // Add wiki info to list of available wiki activities.
-        $availablewikis[] = $wikiob;
+        $courserenderer = $PAGE->get_renderer('course');
+        // Create selection forms for available wikis.
+        $pageparams['courseid'] = $listcourse->id;
+        $i = 0;
+        foreach ($availablewikis as $showwiki) {
+            if ($i == 0) {
+                $coursename = $listcourse->shortname . ' ' . $listcourse->fullname;
+                echo html_writer::div($coursename);
+            }
+            $i++;
+
+            echo html_writer::start_div('ouwiki_import_act');
+            $customdata = array('wikiinfo' => $showwiki, 'params' => $pageparams,
+                    'actlink' => $courserenderer->course_section_cm_name($showwiki->cm));
+            $form = new mod_ouwiki_import_wikiselect_form(null, $customdata);
+            $form->display();
+            echo html_writer::end_div();
+            $wikisfound = true;
+        }
     }
-    $courserenderer = $PAGE->get_renderer('course');
-    // Create selection forms for available wikis.
-    $pageparams['step']++;
-    foreach ($availablewikis as $showwiki) {
-        echo html_writer::start_div('ouwiki_import_act');
-        $customdata = array('wikiinfo' => $showwiki, 'params' => $pageparams,
-                'actlink' => $courserenderer->course_section_cm_name($showwiki->cm));
-        $form = new mod_ouwiki_import_wikiselect_form(null, $customdata);
-        $form->display();
-        echo html_writer::end_div();
+
+    if (!$wikisfound) {
+        // If courses are empty print a warning message.
+        echo $OUTPUT->notification(get_string('unabletoimport', 'ouwiki'));
+        unset($pageparams['step']);
+        echo $OUTPUT->continue_button(new moodle_url('/mod/ouwiki/view.php', $pageparams));
     }
 } else if ($curstep == 2) {
     // Select pages, first ensure step 1 data correct.
@@ -185,10 +212,12 @@ if ($curstep == 1) {
         // Full page list available e.g. from cancel.
         $pagelist = explode(',', $pagelist);
     }
+
     $selectedact = required_param('importid', PARAM_INT);
     $selectedsubwiki = required_param('subwikiid' . $selectedact, PARAM_INT);
     $selectedouwiki = '';
-    ouwiki_get_wikiinfo($selectedact, $selectedsubwiki, $selectedouwiki, $course);
+
+    ouwiki_get_wikiinfo($selectedact, $selectedsubwiki, $selectedouwiki, $importedfromcourse);
 
     echo html_writer::tag('p', get_string('import_selectwiki', 'ouwiki', $selectedact->get_formatted_name()));
 
@@ -220,6 +249,7 @@ if ($curstep == 1) {
     // Prepare form parameters.
     $wikiinfo = array('importid' => $selectedact->id , 'subwikiid' => $selectedsubwiki->id);
     $pageparams['step']++;
+    $pageparams['courseid'] = $importedfromcourse->id;
     $form = new mod_ouwiki_import_pageselect_form(null, array('params' => array_merge($pageparams,
             $wikiinfo), 'pages' => $pages));
     $form->display();
@@ -229,7 +259,8 @@ if ($curstep == 1) {
     $selectedact = required_param('importid', PARAM_INT);
     $selectedsubwiki = required_param('subwikiid', PARAM_INT);
     $selectedouwiki = '';
-    ouwiki_get_wikiinfo($selectedact, $selectedsubwiki, $selectedouwiki, $course);
+
+    ouwiki_get_wikiinfo($selectedact, $selectedsubwiki, $selectedouwiki, $importedfromcourse);
 
     // Build up index, get selected pages - making sure sub pages are included.
     $index = ouwiki_get_subwiki_index($selectedsubwiki->id);
@@ -308,6 +339,7 @@ if ($curstep == 1) {
     $wikiinfo = array('importid' => $selectedact->id , 'subwikiid' => $selectedsubwiki->id,
             'subwikiid' . $selectedact->id => $selectedsubwiki->id, 'pages' => implode(',', $pagelist));
     $pageparams['step']++;
+    $pageparams['courseid'] = $importedfromcourse->id;
     $form = new mod_ouwiki_import_confirm_form(null, array('params' => array_merge($pageparams, $wikiinfo),
             'confirmdata' => $confirmdata));
     $form->display();
@@ -317,7 +349,8 @@ if ($curstep == 1) {
     $selectedact = required_param('importid', PARAM_INT);
     $selectedsubwiki = required_param('subwikiid', PARAM_INT);
     $selectedouwiki = '';
-    ouwiki_get_wikiinfo($selectedact, $selectedsubwiki, $selectedouwiki, $course);
+
+    ouwiki_get_wikiinfo($selectedact, $selectedsubwiki, $selectedouwiki, $importedfromcourse);
 
     $pagelist = explode(',', required_param('pages', PARAM_SEQUENCE));// Page ids to import.
     $conflictmerge = optional_param('conflictmerge', 0, PARAM_INT);// Page conflict setting.
