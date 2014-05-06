@@ -72,6 +72,9 @@ if (!is_null($frompage)) {
     if (trim($pagename) === '') {
         print_error('emptypagetitle', 'ouwiki', $returnurl);
     }
+    // Strip whitespace from new page name from form (editor does this for other links).
+    $pagename = preg_replace('/\s+/', ' ', $pagename);
+
     $addpage = true;
 }
 
