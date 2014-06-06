@@ -1,7 +1,7 @@
 OU wiki
 =======
 
-Copyright 2012 The Open University
+Copyright 2014 The Open University
 
 
 This is an alternative wiki that you can install into standard Moodle.
@@ -53,7 +53,7 @@ community for testing on other systems.
 
 Requires:
 
-Moodle 2.2+
+Moodle 2.6+
 Postgres / MySQL
 
 Install:
