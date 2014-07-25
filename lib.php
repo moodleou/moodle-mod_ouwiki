@@ -180,7 +180,8 @@ function ouwiki_delete_instance($id) {
 function ouwiki_get_extra_capabilities() {
     // Note: I made this list by searching for moodle/ within the module
     return array('moodle/site:accessallgroups', 'moodle/site:viewfullnames',
-            'moodle/course:manageactivities');
+            'moodle/course:manageactivities', 'report/restrictuser:view',
+            'report/restrictuser:restrict', 'report/restrictuser:removerestrict');
 }
 
 /**
