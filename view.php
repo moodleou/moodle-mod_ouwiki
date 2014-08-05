@@ -102,18 +102,16 @@ if ($timelocked = ouwiki_timelocked($subwiki, $ouwiki, $context)) {
 }
 
 // init JS module
-if (ajaxenabled()) {
-    $stringlist[] = array('typeinsectionname', 'ouwiki');
-    $stringlist[] = array('typeinpagename', 'ouwiki');
-    $stringlist[] = array('collapseannotation', 'ouwiki');
-    $stringlist[] = array('expandannotation', 'ouwiki');
-    $jsmodule = array('name'     => 'mod_ouwiki_view',
-                      'fullpath' => '/mod/ouwiki/module.js',
-                      'requires' => array('base', 'event', 'io', 'node', 'anim', 'panel'),
-                      'strings'  => $stringlist
-                     );
-    $PAGE->requires->js_init_call('M.mod_ouwiki_view.init', array(), true, $jsmodule);
-}
+$stringlist[] = array('typeinsectionname', 'ouwiki');
+$stringlist[] = array('typeinpagename', 'ouwiki');
+$stringlist[] = array('collapseannotation', 'ouwiki');
+$stringlist[] = array('expandannotation', 'ouwiki');
+$jsmodule = array('name'     => 'mod_ouwiki_view',
+                  'fullpath' => '/mod/ouwiki/module.js',
+                  'requires' => array('base', 'event', 'io', 'node', 'anim', 'panel'),
+                  'strings'  => $stringlist
+                 );
+$PAGE->requires->js_init_call('M.mod_ouwiki_view.init', array(), true, $jsmodule);
 
 // Footer
 ouwiki_print_footer($course, $cm, $subwiki, $pagename);

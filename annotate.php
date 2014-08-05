@@ -286,16 +286,6 @@ echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagenam
 // Tabs
 ouwiki_print_tabs('annotate', $pagename, $subwiki, $cm, $context, $pageversion->versionid ? true : false, $pageversion->locked);
 
-// check to see if ajax is enabled in the user profile. It is required for the annotate page
-if (!ajaxenabled()) {
-    print '<div class="ouwiki_nojs_message"><p>'.get_string('ajaxnotenabled', 'ouwiki').'</p></div>'.
-            '<div class="ouwiki_jsrequired"><p>'.get_string('jsajaxrequired', 'ouwiki').'</p></div>';
-
-    // print the footer and stop
-    ouwiki_print_footer($course, $cm, $subwiki, $pagename);
-    exit();
-}
-
 // prints the div that contains a message when js is disabled in the browser so cannot annotate.
 print '<div id="ouwiki_belowtabs_annotate_nojs"><p>'.get_string('jsnotenabled', 'ouwiki').'</p>'.
         '<div class="ouwiki_jsrequired"><p>'.get_string('jsajaxrequired', 'ouwiki').'</p></div></div>';
@@ -348,17 +338,15 @@ echo '    </div>';
 echo '</div>';
 
 // init JS module
-if (ajaxenabled()) {
-    $stringlist[] = array('add', 'ouwiki');
-    $stringlist[] = array('cancel', 'ouwiki');
-    $jsmodule = array('name'     => 'mod_ouwiki_annotate',
-                      'fullpath' => '/mod/ouwiki/module.js',
-                      'requires' => array('base', 'event', 'io', 'node', 'anim', 'panel',
-                                          'yui2-container', 'yui2-dragdrop'),
-                      'strings'  => $stringlist
-                     );
-    $PAGE->requires->js_init_call('M.mod_ouwiki_annotate.init', array(), true, $jsmodule);
-}
+$stringlist[] = array('add', 'ouwiki');
+$stringlist[] = array('cancel', 'ouwiki');
+$jsmodule = array('name'     => 'mod_ouwiki_annotate',
+                  'fullpath' => '/mod/ouwiki/module.js',
+                  'requires' => array('base', 'event', 'io', 'node', 'anim', 'panel',
+                                      'yui2-container', 'yui2-dragdrop'),
+                  'strings'  => $stringlist
+                 );
+$PAGE->requires->js_init_call('M.mod_ouwiki_annotate.init', array(), true, $jsmodule);
 
 // close <div id="#ouwiki_belowtabs_annotate">
 print '</div>';
