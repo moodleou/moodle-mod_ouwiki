@@ -492,25 +492,14 @@ M.mod_ouwiki_edit = {
                     // Save failed, alert of network or session issue.
                     btns.set('disabled', true);
                     var content = M.util.get_string('savefailnetwork', 'ouwiki');
-                    var panel = new M.core.dialogue({
-                        headerContent: M.util.get_string('savefailtitle', 'ouwiki'),
-                        bodyContent: content,
-                        width: 400,
-                        centered: true,
+                    var panel = new M.core.alert({
+                        title: M.util.get_string('savefailtitle', 'ouwiki'),
+                        message: content,
                         render: true,
-                        zIndex: 5000,
-                        buttons: {
-                            footer: [
-                                {
-                                    name: 'ok',
-                                    label: M.util.get_string('close', 'form'),
-                                    action: oncancel
-                                }
-                            ]
-                        },
                         plugins: [Y.Plugin.Drag],
                         modal: true
                     });
+                    panel.show();
                     function oncancel(evt) {
                         evt.preventDefault();
                         panel.hide();

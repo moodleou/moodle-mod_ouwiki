@@ -14,8 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-$module->version  = 2014042800;
-$module->requires = 2013040500;
-$module->cron     = 60*60*24; // Once per day.
+/**
+ * Version.
+ *
+ * @package mod_ouwiki
+ * @copyright 2014 The Open University
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
-$module->displayversion = 'Unstable development version';
+$plugin->version  = 2014150800;
+$plugin->requires = 2014051200;
+$plugin->cron     = 60 * 60 * 24; // Once per day.
+$plugin->component = 'mod_ouwiki';
+$plugin->maturity = MATURITY_STABLE;
+$plugin->release = '2.7 r1';

@@ -453,7 +453,7 @@ $stringlist = array(
 $jsmodule = array(
         'name' => 'mod_ouwiki_edit',
         'fullpath' => '/mod/ouwiki/module.js',
-        'requires' => array('base', 'event', 'io', 'node', 'anim', 'moodle-core-notification', 'button'),
+        'requires' => array('base', 'event', 'io', 'node', 'anim', 'moodle-core-notification-alert', 'button'),
         'strings'  => $stringlist
 );
 $PAGE->requires->js_init_call('M.mod_ouwiki_edit.init', null, true, $jsmodule);
