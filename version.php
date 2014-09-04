@@ -22,7 +22,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version  = 2014040900;
+$plugin->version  = 2014090400;
 $plugin->requires = 2014051200;
 $plugin->cron     = 60 * 60 * 24; // Once per day.
 $plugin->component = 'mod_ouwiki';
