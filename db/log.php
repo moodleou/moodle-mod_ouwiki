@@ -47,5 +47,7 @@ $logs = array(
     array('module' => 'ouwiki', 'action' => 'view all', 'mtable' => 'ouwiki', 'field' => 'name'),
     array('module' => 'ouwiki', 'action' => 'viewold', 'mtable' => 'ouwiki', 'field' => 'name'),
     array('module' => 'ouwiki', 'action' => 'wikihistory', 'mtable' => 'ouwiki', 'field' => 'name'),
-    array('module' => 'ouwiki', 'action' => 'wikiindex', 'mtable' => 'ouwiki', 'field' => 'name')
+    array('module' => 'ouwiki', 'action' => 'wikiindex', 'mtable' => 'ouwiki', 'field' => 'name'),
+    array('module' => 'ouwiki', 'action' => 'page created', 'mtable' => 'ouwiki', 'field' => 'name'),
+    array('module' => 'ouwiki', 'action' => 'page updated', 'mtable' => 'ouwiki', 'field' => 'name')
 );

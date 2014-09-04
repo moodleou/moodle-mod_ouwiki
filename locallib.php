@@ -1084,11 +1084,12 @@ function ouwiki_print_header($ouwiki, $cm, $subwiki, $pagename, $afterpage = nul
 function ouwiki_print_footer($course, $cm, $subwiki, $pagename = null, $logurl = null,
         $logaction = null, $loginfo = null) {
     global $PAGE, $OUTPUT;
+    $info = '';
 
     echo '</div>';
     echo $OUTPUT->footer();
 
-    // Log
+    // Log.
     $url = $logurl ? $logurl : preg_replace('~^.*/ouwiki/~', '', $_SERVER['PHP_SELF']);
 
     $url .= (strpos($url, '?') === false ? '?' : '&').'id='.$cm->id;
@@ -1098,11 +1099,9 @@ function ouwiki_print_footer($course, $cm, $subwiki, $pagename = null, $logurl =
     if ($subwiki->userid) {
         $url .= '&user='.$subwiki->userid;
     }
-    if ($pagename !== null) {
+    if (!empty($pagename)) {
         $url .= '&page='.urlencode($pagename);
         $info = $pagename;
-    } else {
-        $info = '';
     }
     if ($loginfo) {
         if ($info) {
@@ -1110,8 +1109,21 @@ function ouwiki_print_footer($course, $cm, $subwiki, $pagename = null, $logurl =
         }
         $info .= $loginfo;
     }
+
     $action = $logaction ? $logaction : preg_replace('~\..*$~', '', $url);
-    add_to_log($course->id, 'ouwiki', $action, $url, $info, $cm->id);
+
+    // Log usage view.
+    $params = array(
+            'context' => context_module::instance($cm->id),
+            'objectid' => $subwiki->wikiid,
+            'other' => array('info' => $info, 'action' => $action, 'logurl' => $url)
+    );
+
+    $event = \mod_ouwiki\event\ouwiki_viewed::create($params);
+    $event->add_record_snapshot('course_modules', $cm);
+    $event->add_record_snapshot('course', $course);
+    $event->trigger();
+
 }
 
 function ouwiki_nice_date($time, $insentence = null, $showrecent = null) {
@@ -2682,15 +2694,19 @@ function ouwiki_is_page_editing_locked($pageid) {
  *
  * @param object $pageversion Page/version object
  * @param int $cmid Course module id
+ * @param string pagename
  * @return string $result Contains the html for the form
  */
-function ouwiki_display_lock_page_form($pageversion, $cmid) {
+function ouwiki_display_lock_page_form($pageversion, $cmid, $pagename) {
     $result='';
 
     $genericformdetails ='<form method="get" action="lock.php">
     <div class="ouwiki_lock_div">
     <input type="hidden" name="ouw_pageid" value="'.$pageversion->pageid.'" />
     <input type="hidden" name="id" value="'.$cmid.'" />';
+    if (!empty($pagename)) {
+        $genericformdetails .= '<input type="hidden" name="page" value="' . $pagename . '" />';
+    }
     $buttonvalue = ($pageversion->locked == '1') ?  get_string('unlockpage', 'ouwiki') :
             get_string('lockpage', 'ouwiki');
 

@@ -42,9 +42,15 @@ $section = optional_param('section', null, PARAM_RAW);
 
 $urlparams = array();
 $urlparams['id'] = $cm->id;
-$urlparams['page'] = $pagename;
-$urlparams['newsection'] = $newsection;
-$urlparams['section'] = $section;
+if (!empty($pagename)) {
+    $urlparams['page'] = $pagename;
+}
+if (!empty($newsection)) {
+    $urlparams['newsection'] = $newsection;
+}
+if (!empty($section)) {
+    $urlparams['section'] = $section;
+}
 
 // sort out if the action was save or cancel
 $save = $action === get_string('savechanges') ? true : false;
@@ -222,6 +228,7 @@ if ($save) {
         exit;
     }
 
+    $event = null;
     if ($section) {
         ouwiki_save_new_version_section($course, $cm, $ouwiki, $subwiki, $pagename, $pageversion->xhtml, $formdata->content['text'], $sectiondetails, $formdata);
     } else {
@@ -243,9 +250,33 @@ if ($save) {
         $completion->update_state($cm, COMPLETION_COMPLETE);
     }
 
-    // release lock and redirect
+    // Release lock, log and redirect.
     ouwiki_release_lock($pageversion->pageid);
 
+    // Log.
+    $info = '';
+    if ($pagename) {
+        $info = $pagename;
+    }
+
+    // Log usage edit.
+    $params = array(
+            'context' => $context,
+            'objectid' => $pageversion->pageid,
+            'other' => array('info' => $info, 'logurl' => $url->out_as_local_url())
+    );
+
+    if ($addpage) {
+        $event = \mod_ouwiki\event\page_created::create($params);
+    } else {
+        $event = \mod_ouwiki\event\page_updated::create($params);
+    }
+    $event->add_record_snapshot('course_modules', $cm);
+    $event->add_record_snapshot('course', $course);
+    $event->add_record_snapshot('ouwiki', $ouwiki);
+    $event->trigger();
+
+    // Redirect.
     redirect($returnurl);
     exit;
 }

@@ -105,17 +105,17 @@ if (!$lockok) {
 // To have got this far everything checks out so lock or unlock the page as requested
 if ($action == get_string('lockpage', 'ouwiki')) {
     ouwiki_lock_editing($pageid, true);
-    $event = 'lock';
+    $eventtype = 'lock';
 } else if ($action == get_string('unlockpage', 'ouwiki')) {
     ouwiki_lock_editing($pageid, false);
-    $event = 'unlock';
+    $eventtype = 'unlock';
 }
 
 // all done - release the editing lock...
 ouwiki_release_lock($pageversion->pageid);
 
 // add to moodle log...
-$url = 'lock.php';
+$url = 'view.php';
 $url .= (strpos($url, '?')===false ? '?' : '&').'id='.$cm->id;
 if ($subwiki->groupid) {
     $url .= '&group='.$subwiki->groupid;
@@ -123,13 +123,31 @@ if ($subwiki->groupid) {
 if ($subwiki->userid) {
     $url .= '&user='.$subwiki->userid;
 }
+$info = '';
 if ($pagename) {
     $url .= '&page='.urlencode($pagename);
     $info = $pagename;
-} else {
-    $info = '';
 }
-add_to_log($course->id, 'ouwiki', $event, $url, $info, $cm->id);
+
+// Add to event log.
+
+// Log usage view.
+$params = array(
+        'context' => $context,
+        'objectid' => $pageid,
+        'other' => array('info' => $info, 'logurl' => $url)
+);
+
+$event = null;
+if ($eventtype == 'lock') {
+    $event = \mod_ouwiki\event\page_lock::create($params);
+} else {
+    $event = \mod_ouwiki\event\page_unlock::create($params);
+}
+$event->add_record_snapshot('course_modules', $cm);
+$event->add_record_snapshot('course', $course);
+$event->add_record_snapshot('ouwiki', $ouwiki);
+$event->trigger();
 
 // redirect back to the view page.
-redirect('view.php?id='.$id);
+redirect($url);

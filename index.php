@@ -45,8 +45,6 @@ require_course_login($course->id, true);
 $PAGE->set_pagelayout('incourse');
 $context = context_course::instance($course->id);
 
-add_to_log($course->id, 'ouwiki', 'view all', "index.php?id=$course->id", '');
-
 // Get all required strings.
 $strname = get_string('name');
 $strsectionname = get_string('sectionname', 'format_' . $course->format);
@@ -98,6 +96,15 @@ foreach ($ouwikis as $ouwiki) {
 }
 
 echo html_writer::table($table);
+
+// Log usage view.
+$params = array(
+    'context' => $context,
+);
+
+$event = \mod_ouwiki\event\course_module_instance_list_viewed::create($params);
+$event->add_record_snapshot('course', $course);
+$event->trigger();
 
 // Finish the page.
 echo $OUTPUT->footer();

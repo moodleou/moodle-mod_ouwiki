@@ -129,12 +129,31 @@ try {
 // Unlock page
 ouwiki_release_lock($pageversion->pageid);
 
-// Log delete or undelete action
+// Log delete or undelete action.
 $ouwikiparamsurl = ouwiki_display_wiki_parameters($pagename, $subwiki, $cm, OUWIKI_PARAMS_URL);
-add_to_log($course->id, 'ouwiki', 'version'.$action, 'delete.php?'.$ouwikiparamsurl.'&amp;version='.$versionid, '', $cm->id);
 
+$logurl = 'delete.php?' . $ouwikiparamsurl . '&amp;version=' . $versionid;
+
+// Add to log.
+$params = array(
+        'context' => $context,
+        'objectid' => $pageversion->pageid,
+        'other' => array('logurl' => $logurl)
+);
+
+$event = null;
+if ($action == 'delete') {
+    $event = \mod_ouwiki\event\page_version_deleted::create($params);
+} else {
+    // Undeleting.
+    $event = \mod_ouwiki\event\page_version_undeleted::create($params);
+}
+$event->add_record_snapshot('course_modules', $cm);
+$event->add_record_snapshot('course', $course);
+$event->add_record_snapshot('ouwiki', $ouwiki);
+$event->trigger();
+
+// Redirect to view what is now the current version.
 $redirecturl = new moodle_url('/mod/ouwiki/history.php');
-
-// Redirect to view what is now the current version
 redirect($redirecturl.'?'.$ouwikiparamsurl);
 exit;

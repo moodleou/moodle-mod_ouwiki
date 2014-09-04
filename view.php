@@ -84,7 +84,7 @@ if ($pageversion) {
         print ouwiki_display_create_page_form($subwiki, $cm, $pageversion);
     }
     if (has_capability('mod/ouwiki:lock', $context)) {
-        print ouwiki_display_lock_page_form($pageversion, $id);
+        print ouwiki_display_lock_page_form($pageversion, $id, $pagename);
     }
 } else {
     // Page does not exist
