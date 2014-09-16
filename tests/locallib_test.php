@@ -62,6 +62,11 @@ class ouwiki_locallib_test extends advanced_testcase {
     ouwiki_get_subwiki_recentpages()
     ouwiki_get_subwiki_recentchanges()
     ouwiki_init_pages()
+    ouwiki_get_subwiki_index()
+    ouwiki_build_tree()
+    ouwiki_tree_index()
+    ouwiki_display_entirewiki_page_in_index()
+    ouwiki_get_sub_tree_from_index()
 
     Functions not covered:
     Delete/undelete page version - no backend functions for this process
@@ -88,7 +93,8 @@ class ouwiki_locallib_test extends advanced_testcase {
         $startpagename = 'startpage';
         $formdata = null;
         $startpageversion = ouwiki_get_current_page($subwiki, $startpagename, OUWIKI_GETPAGE_CREATE);
-        $verid = ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $startpagename, $startpagename, -1, -1, -1, null, $formdata);
+        $verid = ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $startpagename, $startpagename,
+                -1, -1, -1, null, $formdata);
         $this->assertEquals(1, $verid);
         // Create a page.
         $pagename1 = 'testpage1';
@@ -336,9 +342,271 @@ class ouwiki_locallib_test extends advanced_testcase {
     }
 
     /*
+     *  Test the OU Wiki structure functions.
+     *  The tree structure should be set up as below. The numbering of pages is done deliberatly as follows to aid testing.
+     *
+     *                                      P1
+     *                                      |
+     *                         ------------------------------
+     *                         P2           P3              P9
+     *                                 ----------        --------
+     *                                 P4      P8        P10   P12
+     *                              --------              |
+     *                              P5    P7             P11
+     *                              P6
+     *
+     *  An Alternative way to view the structure above is shown below. The data is created to reflect the structure,
+     *  though that does not effect the testing of the processes since the data is created out of sequence from the way
+     *  the structure is shown below as it might be in reality.
+     *
+     *     P1
+     *       P2
+     *       P3
+     *         P4
+     *           P5
+     *             P6
+     *           P7
+     *         P8
+     *       P9
+     *         P10
+     *           P11
+     *         P12
+     */
+
+    public function test_ouwiki_structure() {
+        $this->resetAfterTest(true);
+        $user = $this->get_new_user();
+        $course = $this->get_new_course();
+
+        // Setup a wiki to use.
+        $ouwiki = $this->get_new_ouwiki($course->id, OUWIKI_SUBWIKIS_SINGLE);
+        $cm = get_coursemodule_from_instance('ouwiki', $ouwiki->id);
+        $this->assertNotEmpty($cm);
+        $context = context_module::instance($cm->id);
+        $groupid = 0;
+        $this->setUser($user);
+        $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $user->id, true);
+
+        // Create the start page.
+        $startpagename = 'testpage1';
+        $formdata = null;
+        $startpageversion = ouwiki_get_current_page($subwiki, $startpagename, OUWIKI_GETPAGE_CREATE);
+        $verid = ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $startpagename, $startpagename,
+                -1, -1, -1, null, $formdata);
+        $this->assertEquals(1, $verid);
+
+        // Create a page with no sub pages.
+        $pagename2 = 'testpage2';
+        $content2 = 'testcontent2';
+        ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $startpagename, $pagename2, $content2, $formdata);
+        // Try get that page.
+        $pageversion = ouwiki_get_current_page($subwiki, $pagename2);
+        $this->assertEquals($pageversion->title, $pagename2);
+        // Test fullname info from ouwiki_get_current_page.
+        $this->assertEquals(fullname($user), fullname($pageversion));
+
+        // Add another page to start page.
+        $pagename3 = 'testpage3';
+        $content3 = 'testcontent3';
+        // We don't get anything returned for this.
+        ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $startpagename, $pagename3, $content3, $formdata);
+        // Try get that page.
+        $pageversion = ouwiki_get_current_page($subwiki, $pagename3);
+        $this->assertEquals($pageversion->title, $pagename3);
+        // Test fullname info from ouwiki_get_current_page.
+        $this->assertEquals(fullname($user), fullname($pageversion));
+
+        // Add another page to start page.
+        $pagename9 = 'testpage9';
+        $content9 = 'testcontent9';
+        // We don't get anything returned for this.
+        ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $startpagename, $pagename9, $content9, $formdata);
+        // Try get that page.
+        $pageversion = ouwiki_get_current_page($subwiki, $pagename9);
+        $this->assertEquals($pageversion->title, $pagename9);
+        // Test fullname info from ouwiki_get_current_page.
+        $this->assertEquals(fullname($user), fullname($pageversion));
+
+        // Add pages to testpage3.
+
+        // Add page to test page 3.
+        $pagename4 = 'testpage4';
+        $content4 = 'testcontent4';
+        // We don't get anything returned for this.
+        ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $pagename3, $pagename4, $content4, $formdata);
+        // Try get that page.
+        $pageversion = ouwiki_get_current_page($subwiki, $pagename4);
+        $this->assertEquals($pageversion->title, $pagename4);
+        // Test fullname info from ouwiki_get_current_page.
+        $this->assertEquals(fullname($user), fullname($pageversion));
+
+        // Add another page to testpage 3.
+        $pagename8 = 'testpage8';
+        $content8 = 'testcontent8';
+        // We don't get anything returned for this.
+        ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $pagename3, $pagename8, $content8, $formdata);
+        // Try get that page.
+        $pageversion = ouwiki_get_current_page($subwiki, $pagename8);
+        $this->assertEquals($pageversion->title, $pagename8);
+        // Test fullname info from ouwiki_get_current_page.
+        $this->assertEquals(fullname($user), fullname($pageversion));
+
+        // Add pages to testpage4.
+
+        // Add page to test page 4.
+        $pagename5 = 'testpage5';
+        $content5 = 'testcontent5';
+        // We don't get anything returned for this.
+        ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $pagename4, $pagename5, $content5, $formdata);
+        // Try get that page.
+        $pageversion = ouwiki_get_current_page($subwiki, $pagename5);
+        $this->assertEquals($pageversion->title, $pagename5);
+        // Test fullname info from ouwiki_get_current_page.
+        $this->assertEquals(fullname($user), fullname($pageversion));
+
+        // Add another page to testpage 4.
+        $pagename7 = 'testpage7';
+        $content7 = 'testcontent7';
+        // We don't get anything returned for this.
+        ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $pagename4, $pagename7, $content7, $formdata);
+        // Try get that page.
+        $pageversion = ouwiki_get_current_page($subwiki, $pagename7);
+        $this->assertEquals($pageversion->title, $pagename7);
+        // Test fullname info from ouwiki_get_current_page.
+        $this->assertEquals(fullname($user), fullname($pageversion));
+
+        // Add page to test page 5.
+        $pagename6 = 'testpage6';
+        $content6 = 'testcontent6';
+        // We don't get anything returned for this.
+        ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $pagename5, $pagename6, $content6, $formdata);
+        // Try get that page.
+        $pageversion = ouwiki_get_current_page($subwiki, $pagename6);
+        $this->assertEquals($pageversion->title, $pagename6);
+        // Test fullname info from ouwiki_get_current_page.
+        $this->assertEquals(fullname($user), fullname($pageversion));
+
+        // Add page to test page 9.
+        $pagename10 = 'testpage10';
+        $content10 = 'testcontent10';
+        // We don't get anything returned for this.
+        ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $pagename9, $pagename10, $content10, $formdata);
+        // Try get that page.
+        $pageversion = ouwiki_get_current_page($subwiki, $pagename10);
+        $this->assertEquals($pageversion->title, $pagename10);
+        // Test fullname info from ouwiki_get_current_page.
+        $this->assertEquals(fullname($user), fullname($pageversion));
+
+        // Add another page to testpage 9.
+        $pagename12 = 'testpage12';
+        $content12 = 'testcontent12';
+        // We don't get anything returned for this.
+        ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $pagename9, $pagename12, $content12, $formdata);
+        // Try get that page.
+        $pageversion = ouwiki_get_current_page($subwiki, $pagename12);
+        $this->assertEquals($pageversion->title, $pagename12);
+        // Test fullname info from ouwiki_get_current_page.
+        $this->assertEquals(fullname($user), fullname($pageversion));
+
+        // Add page to test page 10.
+        $pagename11 = 'testpage11';
+        $content11 = 'testcontent11';
+        // We don't get anything returned for this.
+        ouwiki_create_new_page($course, $cm, $ouwiki, $subwiki, $pagename10, $pagename11, $content11, $formdata);
+        // Try get that page.
+        $pageversion = ouwiki_get_current_page($subwiki, $pagename11);
+        $this->assertEquals($pageversion->title, $pagename11);
+        // Test fullname info from ouwiki_get_current_page.
+        $this->assertEquals(fullname($user), fullname($pageversion));
+
+        // Create the index.
+        $index = ouwiki_get_subwiki_index($subwiki->id);
+
+        // Check to see that there are 12 posts.
+        $this->assertEquals(count($index), 12);
+        reset($index);
+
+        $orphans = false;
+        // Check for orphan posts - there should be none.
+        foreach ($index as $indexitem) {
+            if (count($indexitem->linksfrom) == 0 && $indexitem->title !== 'testpage1') {
+                $orphans = true;
+                break;
+            }
+        }
+        $this->assertEquals($orphans, false);
+
+        // Test tree structure functions.
+        // Build tree.
+        ouwiki_build_tree($index);
+
+        // Check to see whether pages have the correct number of children in them including the root node.
+        $page = $this->get_page_from_index_by_pagename('testpage3', $index);
+        $subtree = ouwiki_get_sub_tree_from_index($page->pageid, $index);
+        $this->assertEquals(6, count($subtree));
+
+        // Check to see whether pages have the correct number of children in them including the root node.
+        $page = $this->get_page_from_index_by_pagename('testpage4', $index);
+        $subtree = ouwiki_get_sub_tree_from_index($page->pageid, $index);
+        $this->assertEquals(4, count($subtree));
+
+        // Check linkto, linksfrom, and children arrays for testpage 4
+        // - see structure diagram in function description for links to, from, and children for P4.
+        $linksfrom = $page->linksfrom;
+        $linksto = $page->linksto;
+        $children = $page->children;
+        $this->assertEquals(count($linksfrom), 1);
+        $this->assertEquals(count($linksto), 2);
+        $this->assertEquals(count($children), 2);
+        // Test linksfrom from testpage 4.
+        $p = $this->get_page_from_index_by_pageid($linksfrom[0], $index);
+        $this->assertEquals($p->title, $pagename3);
+        // Test linksto for testpage 4.
+        $p = $this->get_page_from_index_by_pageid($linksto[0], $index);
+        $this->assertEquals($p->title, $pagename5);
+        $p = $this->get_page_from_index_by_pageid($linksto[1], $index);
+        $this->assertEquals($p->title, $pagename7);
+        // Test children for testpage 4.
+        $p = $this->get_page_from_index_by_pageid($children[0], $index);
+        $this->assertEquals($p->title, $pagename5);
+        $p = $this->get_page_from_index_by_pageid($children[1], $index);
+        $this->assertEquals($p->title, $pagename7);
+
+        // Check to see whether pages have the correct number of children in them including the root node.
+        $page = $this->get_page_from_index_by_pagename('testpage5', $index);
+        $this->assertEquals(2, count(ouwiki_get_sub_tree_from_index($page->pageid, $index)));
+
+        // Check to see whether pages have the correct number of children in them including the root node.
+        $page = $this->get_page_from_index_by_pagename('testpage9', $index);
+        $this->assertEquals(4, count(ouwiki_get_sub_tree_from_index($page->pageid, $index)));
+
+        // Check to see whether pages have the correct number of children in them including the root node.
+        $page = $this->get_page_from_index_by_pagename('testpage10', $index);
+        $this->assertEquals(2, count(ouwiki_get_sub_tree_from_index($page->pageid, $index)));
+    }
+
+    /*
      These functions enable us to create database entries and/or grab objects to make it possible to test the
-    many permuations required for OU Wiki.
+     many permuations required for OU Wiki.
     */
+
+    public function get_page_from_index_by_pagename($pagename, $index) {
+        foreach ($index as $indexitem) {
+            if ($indexitem->title === $pagename) {
+                return $indexitem;
+            }
+        }
+        return null;
+    }
+
+    public function get_page_from_index_by_pageid($pageid, $index) {
+        foreach ($index as $indexitem) {
+            if ($indexitem->pageid === $pageid) {
+                return $indexitem;
+            }
+        }
+        return null;
+    }
 
     public function get_new_user() {
         return $this->getDataGenerator()->create_user(array('username' => 'testouwikiuser'));
@@ -412,4 +680,5 @@ class ouwiki_locallib_test extends advanced_testcase {
         $this->assertEquals($canaccess, $subwiki->canedit);
         $this->assertEquals($canaccess, $subwiki->canannotate);
     }
+
 }
