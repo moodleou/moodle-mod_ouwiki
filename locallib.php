@@ -3399,6 +3399,9 @@ function ouwiki_build_tree(&$index) {
 
     // Preprocess: build links TO as well as FROM.
     foreach ($index as $indexitem) {
+        if (empty($indexitem->linksfrom)) {
+            continue;
+        }
         foreach ($indexitem->linksfrom as $fromid) {
             $index[$fromid]->linksto[] = $indexitem->pageid;
         }
