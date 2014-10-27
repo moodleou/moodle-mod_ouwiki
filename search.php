@@ -33,6 +33,7 @@ $url = new moodle_url('/mod/ouwiki/search.php', array('id'=>$id, 'user'=>$userid
 $PAGE->set_url($url);
 $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, get_string('searchresults'), $context, null, null, null, '', '', $querytext);
+echo html_writer::start_div();
 $query = new local_ousearch_search($querytext);
 $query->set_coursemodule($cm);
 if ($subwiki->groupid) {
