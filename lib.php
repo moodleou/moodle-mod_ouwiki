@@ -722,21 +722,6 @@ function ouwiki_cm_info_dynamic(cm_info $cm) {
     }
 }
 
-function ouwiki_cron() {
-    global $CFG;
-
-    require_once($CFG->dirroot . '/mod/ouwiki/mod_ouwiki_cron.php');
-
-    try {
-        mod_ouwiki_cron::cron();
-    } catch (moodle_exception $e) {
-        mtrace("An ouwiki exception occurred and ouwiki cron was aborted: " .
-                $e->getMessage() . "\n\n" .
-                $e->debuginfo . "\n\n" .
-                $e->getTraceAsString()."\n\n");
-    }
-}
-
 /**
  * List of view style log actions
  * @return array

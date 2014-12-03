@@ -15,15 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version.
+ * Definition of Forum scheduled tasks.
  *
  * @package mod_ouwiki
+ * @category task
  * @copyright 2014 The Open University
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version  = 2014120300;
-$plugin->requires = 2014051200;
-$plugin->component = 'mod_ouwiki';
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '2.7 r1';
+defined('MOODLE_INTERNAL') || die();
+
+$tasks = array(
+    array(
+        'classname' => 'mod_ouwiki\task\daily_housekeeping',
+        'blocking' => 0,
+        'minute' => '45',
+        'hour' => '4',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*'
+    )
+);
