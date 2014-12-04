@@ -44,7 +44,7 @@ class page_version_deleted extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'd';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
-        $this->data['objecttable'] = 'ouwiki_versions';
+        $this->data['objecttable'] = 'page_version';
     }
 
     /**

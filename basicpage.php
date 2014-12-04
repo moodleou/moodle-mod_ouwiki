@@ -40,7 +40,7 @@ if (is_null($pagename)) {
 }
 
 // Restrict page name
-if (core_text::strlen($pagename) > 200) {
+if (textlib::strlen($pagename) > 200) {
     print_error('pagenametoolong', 'ouwiki');
 }
 // Convert nbsp to space
