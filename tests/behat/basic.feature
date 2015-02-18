@@ -651,15 +651,15 @@ Feature: Test Post and Comment on OUwiki entry
     When I press "Save changes"
     Then "Hide annotations" "link" should be visible
     And "Expand annotations" "link" should be visible
-    When I click on "#annotation2" "css_element"
+    When I click on "span.ouwiki-annotation-tag:nth-of-type(1)" "css_element"
     Then I should see "web"
     And I should see "Teacher 1"
-    When I click on "#annotation1" "css_element"
+    When I click on "span.ouwiki-annotation-tag:nth-of-type(2)" "css_element"
     Then I should see "spider"
     And I should see "Teacher 1"
     # Can not test for photos
     And "Collapse annotations" "link" should be visible
-    When I click on "#annotation2" "css_element"
+    When I click on "span.ouwiki-annotation-tag:nth-of-type(1)" "css_element"
     Then I should not see "web"
     And "Collapse annotations" "link" should not be visible
     And "Hide annotations" "link" should be visible
@@ -675,10 +675,10 @@ Feature: Test Post and Comment on OUwiki entry
     And I should not see "spider"
     And "Show annotations" "link" should be visible
     When I click on "Show annotations" "link"
-    Then "#annotation1" "css_element" should be visible
-    And "#annotation2" "css_element" should be visible
+    Then "span.ouwiki-annotation-tag:nth-of-type(2)" "css_element" should be visible
+    And "span.ouwiki-annotation-tag:nth-of-type(1)" "css_element" should be visible
     # collapse "web" annotation, but leave "spider" open
-    When I click on "#annotation2" "css_element"
+    When I click on "span.ouwiki-annotation-tag:nth-of-type(1)" "css_element"
     Then I should not see "web"
     And I should see "spider"
     And "Expand annotations" "link" should be visible

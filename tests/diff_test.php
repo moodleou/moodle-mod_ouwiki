@@ -281,11 +281,9 @@ line breaks</li>
 
         // Add version1 - no attachments.
         $ver1id = ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, null, 'TEST', -1, -1, -1, false, null);
-        $this->assertEquals(1, $ver1id);
 
         // Add version 2 - no attachments.
         $ver2id = ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, null, 'TEST', -1, -1, -1, false, null);
-        $this->assertEquals(2, $ver2id);
 
         // Check diff when no attachments.
         $fs = get_file_storage();

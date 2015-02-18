@@ -76,6 +76,7 @@ class ouwiki_locallib_test extends advanced_testcase {
 
 
     public function test_ouwiki_pages_and_versions() {
+        global $DB;
         $this->resetAfterTest(true);
         $user = $this->get_new_user();
         $course = $this->get_new_course();
@@ -95,7 +96,7 @@ class ouwiki_locallib_test extends advanced_testcase {
         $startpageversion = ouwiki_get_current_page($subwiki, $startpagename, OUWIKI_GETPAGE_CREATE);
         $verid = ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $startpagename, $startpagename,
                 -1, -1, -1, null, $formdata);
-        $this->assertEquals(1, $verid);
+
         // Create a page.
         $pagename1 = 'testpage1';
         $content1 = 'testcontent';
@@ -112,7 +113,12 @@ class ouwiki_locallib_test extends advanced_testcase {
         $content3 = 'testcontent3';
         ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename1, $content2, -1, -1, -1, null, $formdata);
         $verid = ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename1, $content3, -1, -1, -1, null, $formdata);
-        $this->assertEquals(5, $verid);
+        $versions = $DB->get_records('ouwiki_versions');
+        $versionids = array();
+        foreach ($versions as $version) {
+            $versionids[] = $version->id;
+        }
+        $this->assertEquals(max($versionids), $verid);
         $pageversion = ouwiki_get_current_page($subwiki, $pagename1);
         $this->assertEquals($content3, $pageversion->xhtml);
 
@@ -122,10 +128,10 @@ class ouwiki_locallib_test extends advanced_testcase {
 
         // Last version should match $content3.
         $version = array_shift($history);
-        $this->assertEquals(5, $version->versionid);
+        $this->assertEquals(max($versionids), $version->versionid);
         $this->assertEquals($user->id, $version->id);
         $this->assertEquals(1, $version->wordcount);
-        $this->assertEquals(4, $version->previousversionid);
+        $this->assertEquals($pageversion->previousversionid, $version->previousversionid);
         $this->assertNull($version->importversionid);
 
         // Add another page.
@@ -138,24 +144,24 @@ class ouwiki_locallib_test extends advanced_testcase {
         // Test recent pages.
         $changes = ouwiki_get_subwiki_recentpages($subwiki->id);
         $this->assertEquals('array', gettype($changes));
-        $this->assertEquals(fullname($user), fullname($changes[1]));
+        $this->assertEquals(fullname($user), fullname(current($changes)));
         // First page should be startpage.
-        $this->assertEquals($changes[1]->title, $startpagename);
+        $this->assertEquals(end($changes)->title, $startpagename);
         // 3rd page should be pagename2.
-        $this->assertEquals($changes[3]->title, $pagename2);
+        $this->assertEquals(reset($changes)->title, $pagename2);
 
-        $testfullname = fullname($changes[1]);
+        $testfullname = fullname(current($changes));
         $this->assertEquals(fullname($user), $testfullname);
 
         // Test recent wiki changes.
         $changes = ouwiki_get_subwiki_recentchanges($subwiki->id);
-        $testfullname = fullname($changes[1]);
+        $testfullname = fullname(reset($changes));
         $this->assertEquals(fullname($user), $testfullname);
-        $this->assertEquals($changes[1]->title, $startpagename);
+        $this->assertEquals(reset($changes)->title, $startpagename);
         // Sixth change should be to testpage2  - when we created testpage2.
-        $this->assertEquals($changes[6]->title, $pagename2);
+        $this->assertEquals(next($changes)->title, $pagename2);
         // Seventh change shouldbe start page again - when we linked to testpage2 to startpage.
-        $this->assertEquals($changes[7]->title, $startpagename);
+        $this->assertEquals(end($changes)->title, $startpagename);
 
     }
 
@@ -393,7 +399,6 @@ class ouwiki_locallib_test extends advanced_testcase {
         $startpageversion = ouwiki_get_current_page($subwiki, $startpagename, OUWIKI_GETPAGE_CREATE);
         $verid = ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $startpagename, $startpagename,
                 -1, -1, -1, null, $formdata);
-        $this->assertEquals(1, $verid);
 
         // Create a page with no sub pages.
         $pagename2 = 'testpage2';

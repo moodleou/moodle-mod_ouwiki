@@ -83,9 +83,10 @@ class mod_ouwiki_generator_testcase extends advanced_testcase {
 
         // Test create_content() without subwiki or page/edit.
         $newpage = $generator->create_content($wiki);
+        $version = $DB->get_record('ouwiki_versions', array('pageid' => $newpage->pageid));
         $this->assertInstanceOf('stdClass', $newpage);
         $this->assertEquals('OU Wiki Test Page1', $newpage->title);
-        $this->assertEquals(1, $newpage->currentversionid);
+        $this->assertEquals($version->id, $newpage->currentversionid);
         $this->assertTrue($newpage->currentversionid == $newpage->firstversionid &&
                 $newpage->currentversionid == $newpage->versionid);
         $this->assertEquals('Test content', $newpage->xhtml);
