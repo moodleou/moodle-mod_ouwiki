@@ -590,14 +590,14 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
 
         case OUWIKI_SUBWIKIS_INDIVIDUAL:
             $user = $DB->get_record('user', array('id' => $subwiki->userid),
-                    'id, username, ' . user_picture::fields());
+                    'username, ' . user_picture::fields());
             $wikifor = ouwiki_display_user($user, $cm->course);
             $usernamefields = user_picture::fields('u');
             if (has_capability('mod/ouwiki:viewallindividuals', $context)) {
                 // Get list of everybody...
                 $choicefield = 'user';
                 try {
-                    $choices = $DB->get_records_sql('SELECT u.id, ' . $usernamefields .
+                    $choices = $DB->get_records_sql('SELECT ' . $usernamefields .
                             ' FROM {ouwiki_subwikis} sw
                             INNER JOIN {user} u ON sw.userid = u.id
                             WHERE sw.wikiid = ?
@@ -840,7 +840,7 @@ function ouwiki_get_prevnext_version_details($pageversion) {
             array($pageversion->pageid, $pageversion->timecreated), 0, 1);
     $prevnext->prev = $prev ? current($prev) : false;
 
-    $nextsql = "SELECT v.id AS versionid, v.timecreated, u.id, $userfields
+    $nextsql = "SELECT v.id AS versionid, v.timecreated, $userfields
                 FROM {ouwiki_versions} v
                 LEFT JOIN {user} u ON u.id = v.userid
                 WHERE v.pageid = ?
@@ -1302,7 +1302,7 @@ function ouwiki_get_page_history($pageid, $selectdeleted, $limitfrom = '', $limi
 
     $userfields = user_picture::fields('u');
 
-    $sql = "SELECT v.id AS versionid, v.timecreated, v.deletedat, u.id, u.username,
+    $sql = "SELECT v.id AS versionid, v.timecreated, v.deletedat, u.username,
                 $userfields, v.wordcount, v.previousversionid, v.importversionid,
                 (SELECT v2.wordcount
                     FROM {ouwiki_versions} v2
