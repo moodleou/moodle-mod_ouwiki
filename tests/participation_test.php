@@ -85,7 +85,7 @@ class ouwiki_participation_test extends advanced_testcase {
         $cm = get_coursemodule_from_instance('ouwiki', $ouwiki->id);
         $this->assertNotEmpty($cm);
 
-        $context = context_module::instance($cm->instance);
+        $context = context_module::instance($cm->id);
 
         $group = $this->get_new_group($course->id);
         $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $group->id, $USER->id, true);
