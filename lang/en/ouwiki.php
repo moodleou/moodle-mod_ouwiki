@@ -582,4 +582,5 @@ $string['event:ouwikiundelete'] = 'ouwiki version undelete';
 $string['event:ouwikidelete'] = 'ouwiki version delete';
 $string['event:ouwikipagecreated'] = 'ouwiki page created';
 $string['event:ouwikipageupdated'] = 'ouwiki page updated';
+$string['event:savefailed'] = 'Session fail on page save';
 $string['ouwikicrontask'] = 'OU wiki maintenance jobs';

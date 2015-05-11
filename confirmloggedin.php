@@ -34,6 +34,22 @@ try {
     require_login(null, true);
     require_sesskey();
 } catch (moodle_exception $e) {
+    $pid = 0;
+    $url = '/mod/ouwiki/edit.php';
+    if (!empty($_SERVER['HTTP_REFERER'])) {
+        $url = new moodle_url($_SERVER['HTTP_REFERER']);
+        $rpid = $url->get_param('id');
+        if (!empty($rpid)) {
+            $pid = $rpid;
+        }
+        $url = $url->out_as_local_url();
+    }
+    $params = array(
+            'context' => context_system::instance(),
+            'other' => array('page' => $url, 'pid' => $pid)
+    );
+    $event = \mod_ouwiki\event\save_failed::create($params);
+    $event->trigger();
     exit;
 }
 
