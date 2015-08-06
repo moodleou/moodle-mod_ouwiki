@@ -35,7 +35,11 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', get_string('required'), 'required', null, 'client');
 
-        $this->add_intro_editor(false, get_string('wikiintro', 'wiki'));
+        if (method_exists($this, 'standard_intro_elements')) {
+            $this->standard_intro_elements(get_string('wikiintro', 'wiki'));
+        } else {
+            $this->add_intro_editor(false, get_string('wikiintro', 'wiki'));
+        }
 
         $mform->addElement('header', 'wikifieldset', get_string('wikisettings', 'wiki'));
 
