@@ -160,7 +160,7 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
             if ($create) {
                 $subwiki = ouwiki_create_subwiki($ouwiki, $cm, $course);
                 ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context);
-                ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki);
+                ouwiki_init_pages($course, $cm, $ouwiki, $subwiki);
                 return $subwiki;
             }
             ouwiki_error('Wiki does not exist. View wikis before attempting other actions.');
@@ -193,7 +193,7 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
             if ($create) {
                 $subwiki =  ouwiki_create_subwiki($ouwiki, $cm, $course, null, $groupid);
                 ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $othergroup);
-                ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki);
+                ouwiki_init_pages($course, $cm, $ouwiki, $subwiki);
                 return $subwiki;
             }
             ouwiki_error('Wiki does not exist. View wikis before attempting other actions.');
@@ -244,7 +244,7 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
             if ($create) {
                 $subwiki =  ouwiki_create_subwiki($ouwiki, $cm, $course, $userid);
                 ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $otheruser, !$otheruser);
-                ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki);
+                ouwiki_init_pages($course, $cm, $ouwiki, $subwiki);
                 return $subwiki;
             }
             ouwiki_error('Wiki does not exist. View wikis before attempting other actions.');
@@ -280,7 +280,7 @@ function ouwiki_create_subwiki($ouwiki, $cm, $course, $userid = null, $groupid =
  * @param object $subwiki Subwiki object
  * @param object $ouwiki OU wiki object
  */
-function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki) {
+function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki) {
     global $CFG;
 
     if (is_null($ouwiki->template)) {

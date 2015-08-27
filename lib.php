@@ -109,7 +109,7 @@ function ouwiki_update_instance($data, $mform) {
         foreach ($subwikis as $subwiki) {
             if (!ouwiki_subwiki_content_exists($subwiki->id)) {
                 // Amend any empty wikis from template.
-                ouwiki_init_pages($course, $cm, $ouwiki, $subwiki, $ouwiki);
+                ouwiki_init_pages($course, $cm, $ouwiki, $subwiki);
             }
         }
     }
