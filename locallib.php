@@ -3427,12 +3427,8 @@ function ouwiki_build_tree(&$index) {
 }
 
 function ouwiki_has_subwikis($ouwikiid) {
-    $rs = ouwiki_get_subwikis($ouwikiid);
-    if (!empty($rs)) {
-        return true;
-    } else {
-        return false;
-    }
+    global $DB;
+    return $DB->record_exists('ouwiki_subwikis', array('wikiid' => $ouwikiid));
 }
 
 function ouwiki_get_subwikis($wikiid) {
@@ -3443,12 +3439,7 @@ function ouwiki_get_subwikis($wikiid) {
 
 function ouwiki_subwiki_content_exists($subwikiid) {
     global $DB;
-    $rs = $DB->get_records_select('ouwiki_pages', 'subwikiid = ? AND currentversionid IS NOT null', array($subwikiid));
-    if (!empty($rs)) {
-        return true;
-    } else {
-        return false;
-    }
+    return $DB->record_exists_select('ouwiki_pages', 'subwikiid = ? AND currentversionid IS NOT null', array($subwikiid));
 }
 
 function ouwiki_get_wiki_details($version) {

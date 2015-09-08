@@ -28,6 +28,8 @@
 require_once(dirname(__FILE__) . '/../../config.php');
 require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
+raise_memory_limit(MEMORY_EXTRA);
+
 $treemode = optional_param('type', '', PARAM_ALPHA) == 'tree';
 $id = required_param('id', PARAM_INT); // Course Module ID
 
