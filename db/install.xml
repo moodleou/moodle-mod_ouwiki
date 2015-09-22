@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/ouwiki/db" VERSION="20140311" COMMENT="OU wiki database tables."
+<XMLDB PATH="mod/ouwiki/db" VERSION="20150630" COMMENT="OU wiki database tables."
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -56,7 +56,7 @@
         <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Title for the page. All pages must have a title, but the start page for the wiki is set to empty string."/>
         <FIELD NAME="currentversionid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Points to the most recent entry in ouwiki_versions. This is the entry that will appear when viewing the page normally. May be null if there are no versions of the page yet."/>
         <FIELD NAME="locked" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Allows the page to be locked. Introduced with the Annotations commenting system to allow page locking while editing annotations."/>
-        <FIELD NAME="firstversionid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Points to the entry in ouwiki_versions that first related to this page. This is used for participation calculations to help with query load at that point."/>
+        <FIELD NAME="firstversionid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Points to the entry in ouwiki_versions that first related to this page. This is used for participation calculations to help with query load at that point."/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="primary key of the table, please edit me"/>
@@ -80,7 +80,7 @@
         <FIELD NAME="deletedat" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="timestamp when page version was deleted"/>
         <FIELD NAME="xhtmlformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="wordcount" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="previousversionid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Points to the entry in ouwiki_versions of the previous version for the page. This is used for participation calculations to help with query load at that point."/>
+        <FIELD NAME="previousversionid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Points to the entry in ouwiki_versions of the previous version for the page. This is used for participation calculations to help with query load at that point."/>
         <FIELD NAME="importversionid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
