@@ -722,6 +722,25 @@ function ouwiki_cm_info_dynamic(cm_info $cm) {
 }
 
 /**
+ * Show last updated date + time (version created).
+ *
+ * @param cm_info $cm
+ */
+function ouwiki_cm_info_view(cm_info $cm) {
+    global $CFG;
+    if (!$cm->uservisible) {
+        return;
+    }
+    require_once($CFG->dirroot . '/mod/ouwiki/locallib.php');
+
+    $lastpostdate = ouwiki_get_last_modified($cm, $cm->get_course());
+    if (!empty($lastpostdate)) {
+        $cm->set_after_link(html_writer::span(get_string('lastmodified', 'ouwiki',
+                userdate($lastpostdate, get_string('strftimerecent', 'ouwiki'))), 'lastmodtext ouwikilmt'));
+    }
+}
+
+/**
  * List of view style log actions
  * @return array
  */

@@ -18,6 +18,9 @@ $string['modulenameplural'] = 'OU wikis';
 $string['pluginadministration'] = 'OU wiki administration';
 $string['pluginname'] = 'OU wiki';
 
+$string['lastmodified'] = 'Last edit: {$a}';
+$string['strftimerecent'] = '%d %B %y, %H:%M';
+
 $string['summary'] = 'Summary';
 
 $string['attachments'] = 'Attachments';

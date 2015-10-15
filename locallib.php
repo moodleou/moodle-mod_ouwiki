@@ -2830,6 +2830,8 @@ function ouwiki_print_editlock($lock, $ouwiki) {
  * account the user's groups/individual settings if required. (Does not check
  * that user can view the wiki.)
  *
+ * Info is static cached, so can be called in multiple places on page.
+ *
  * @param object $cm Course-modules entry for wiki
  * @param object $Course Course object
  * @param int $userid User ID or 0 = current
@@ -2841,7 +2843,29 @@ function ouwiki_get_last_modified($cm, $course, $userid = 0) {
     if (!$userid) {
         $userid = $USER->id;
     }
-    $ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance));
+
+    static $results;
+    if (!isset($results)) {
+        $results = array();
+    }
+    if (!array_key_exists($userid, $results)) {
+        $results[$userid] = array();
+    } else if (array_key_exists($cm->id, $results[$userid])) {
+        return $results[$userid][$cm->id];
+    }
+
+    static $ouwikis;
+    if (!isset($ouwikis)) {
+        $ouwikis = array();
+    }
+    if (empty($ouwikis[$course->id])) {
+        $ouwikis[$course->id] = $DB->get_records('ouwiki', array('course' => $course->id));
+    }
+    // Get wiki record.
+    if (!isset($ouwikis[$course->id][$cm->instance])) {
+        return false;
+    }
+    $ouwiki = $ouwikis[$course->id][$cm->instance];
 
     // Default applies no restriction
     $restrictjoin = '';
@@ -2902,7 +2926,9 @@ function ouwiki_get_last_modified($cm, $course, $userid = 0) {
         'wikiid'     => $cm->instance
     );
 
-    return $DB->get_field_sql($sql, $params);
+    $result = $DB->get_field_sql($sql, $params);
+    $results[$userid][$cm->id] = $result;
+    return $result;
 }
 
 /**

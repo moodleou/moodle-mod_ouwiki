@@ -67,6 +67,7 @@ class ouwiki_locallib_test extends advanced_testcase {
     ouwiki_tree_index()
     ouwiki_display_entirewiki_page_in_index()
     ouwiki_get_sub_tree_from_index()
+    ouwiki_get_last_modified()
 
     Functions not covered:
     Delete/undelete page version - no backend functions for this process
@@ -590,6 +591,39 @@ class ouwiki_locallib_test extends advanced_testcase {
         $this->assertEquals(2, count(ouwiki_get_sub_tree_from_index($page->pageid, $index)));
     }
 
+    /**
+     * Simple test of last modified time returning
+     */
+    public function test_ouwiki_get_last_modified() {
+        global $DB;
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        $user = $this->get_new_user();
+        $user2 = $this->get_new_user('testouwikiuser2');
+        $course = $this->get_new_course();
+        $ouwiki = $this->get_new_ouwiki($course->id, OUWIKI_SUBWIKIS_SINGLE);
+        $cm = get_coursemodule_from_instance('ouwiki', $ouwiki->id);
+        $context = context_module::instance($cm->id);
+
+        $result = ouwiki_get_last_modified($cm, $course);
+        $this->assertEmpty($result);
+
+        // Create page + test last modified returns something.
+        $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, 0, $user2->id, true);
+        $page = ouwiki_get_current_page($subwiki, 'startpage', OUWIKI_GETPAGE_CREATE);
+        ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, 'startpage', 'content', -1, -1, -1);
+
+        $result = ouwiki_get_last_modified($cm, $course, $user2->id);
+        $this->assertNotEmpty($result);
+        // Check other user gets a time.
+        $result2 = ouwiki_get_last_modified($cm, $course, $user->id);
+        $this->assertNotEmpty($result2);
+        $this->assertEquals($result, $result2);
+        // Check admin gets cached.
+        $result = ouwiki_get_last_modified($cm, $course);
+        $this->assertEmpty($result);
+    }
+
     /*
      These functions enable us to create database entries and/or grab objects to make it possible to test the
      many permuations required for OU Wiki.
@@ -613,8 +647,8 @@ class ouwiki_locallib_test extends advanced_testcase {
         return null;
     }
 
-    public function get_new_user() {
-        return $this->getDataGenerator()->create_user(array('username' => 'testouwikiuser'));
+    public function get_new_user($username = 'testouwikiuser') {
+        return $this->getDataGenerator()->create_user(array('username' => $username));
     }
 
 
