@@ -741,6 +741,37 @@ function ouwiki_cm_info_view(cm_info $cm) {
 }
 
 /**
+ * Return wikis on course that have last modified date for current user
+ *
+ * @param stdClass $course
+ * @return array
+ */
+function ouwiki_get_ourecent_activity($course) {
+    global $CFG;
+    require_once($CFG->dirroot . '/mod/ouwiki/locallib.php');
+
+    $modinfo = get_fast_modinfo($course);
+
+    $return = array();
+
+    foreach ($modinfo->get_instances_of('ouwiki') as $wiki) {
+        if ($wiki->uservisible) {
+            $lastpostdate = ouwiki_get_last_modified($wiki, $wiki->get_course());
+            if (!empty($lastpostdate)) {
+                $data = new stdClass();
+                $data->cm = $wiki;
+                $data->text = get_string('lastmodified', 'ouwiki',
+                        userdate($lastpostdate, get_string('strftimerecent', 'ouwiki')));
+                $data->date = $lastpostdate;
+                $return[$data->cm->id] = $data;
+            }
+        }
+    }
+    return $return;
+}
+
+
+/**
  * List of view style log actions
  * @return array
  */
