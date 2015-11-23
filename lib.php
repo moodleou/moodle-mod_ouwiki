@@ -555,6 +555,66 @@ function ouwiki_user_outline($course, $user, $mod, $wiki) {
 }
 
 /**
+ * Prints detailed summary information about what a user has done,
+ * for user activity reports.
+ * @param object $course
+ * @param object $user
+ * @param object $mod
+ * @param object $wiki
+ */
+function ouwiki_user_complete($course, $user, $mod, $wiki) {
+    global $DB, $CFG, $OUTPUT, $USER, $PAGE;
+
+    require_once("$CFG->libdir/gradelib.php");
+    $grades = grade_get_grades($course->id, 'mod', 'ouwiki', $wiki->id, $user->id);
+    if (!empty($grades->items[0]->grades)) {
+        $grade = reset($grades->items[0]->grades);
+        if ($grade != '-') {
+            echo $OUTPUT->container(get_string('grade').': '.$grade->str_long_grade);
+            if ($grade->str_feedback) {
+                echo $OUTPUT->container(get_string('feedback').': '.$grade->str_feedback);
+            }
+        }
+    }
+
+    $usergroups = array();
+    if ($wiki->subwikis == 1) {
+        $wikigroups = groups_get_activity_allowed_groups($mod);
+        foreach ($wikigroups as $mygroup) {
+            if (groups_is_member($mygroup->id, $user->id)) {
+                $usergroups[] = $mygroup;
+            }
+        }
+    }
+
+    require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
+    $context = context_module::instance($mod->id);
+    $fullname = fullname($user, has_capability('moodle/site:viewfullnames', $context));
+
+    $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
+    echo '<div class="ouwiki_user_complete_report">';
+    if (empty($usergroups)) {
+        $subwiki = ouwiki_get_subwiki($course, $wiki, $mod, $context, 0, $user->id, true);
+        $canview = ouwiki_can_view_participation($course, $wiki, $subwiki, $mod, $USER->id);
+        list($newuser, $changes) = ouwiki_get_user_participation($user->id, $subwiki);
+        echo $ouwikioutput->ouwiki_render_user_participation($user, $changes, $mod, $course, $wiki,
+            $subwiki, '', 0, '', $canview, $context, $fullname,
+            false, '');
+    } else {
+        foreach ($usergroups as $group) {
+            $subwiki = ouwiki_get_subwiki($course, $wiki, $mod, $context, $group->id, $user->id, true);
+            $canview = ouwiki_can_view_participation($course, $wiki, $subwiki, $mod, $USER->id);
+            list($newuser, $changes) = ouwiki_get_user_participation($user->id, $subwiki);
+            echo "<h5>".get_string("group").": ".$group->name."</h5>";
+            echo $ouwikioutput->ouwiki_render_user_participation($user, $changes, $mod, $course, $wiki,
+                $subwiki, '', $group->id, '', $canview, $context, $fullname,
+                false, $group->name);
+        }
+    }
+    echo '</div>';
+}
+
+/**
  * Serves the ouwiki attachments. Implements needed access control ;-)
  *
  * @param object $course
