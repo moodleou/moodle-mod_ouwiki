@@ -490,41 +490,67 @@ function ouwiki_print_overview($courses, &$htmlarray) {
 /**
  * Returns summary information about what a user has done,
  * for user activity reports.
- * @param $course
- * @param $user
- * @param $mod
- * @param $wiki
- * @return object
+ * @param object $course
+ * @param object $user
+ * @param object $mod
+ * @param object $wiki
+ * @return object A standard object with 2 variables: info (number of edits for this user) and time (last modified)
  */
 function ouwiki_user_outline($course, $user, $mod, $wiki) {
-    global $DB;
+    global $DB, $CFG;
 
-    $result = null;
-    $logsview = $DB->get_records_select('log', "userid = ? AND module = 'ouwiki'
-        AND action = 'view' AND cmid = ?", array($user->id, $mod->id), "time ASC");
-    $logsedit = $DB->get_records_select('log', "userid = ? AND module = 'ouwiki'
-        AND action = 'edit' AND cmid = ?", array($user->id, $mod->id), "time ASC");
-    if ($logsview) {
-        $numviews = count($logsview);
-        $lastlog = array_pop($logsview);
-        $result = new object();
-        $result->info = get_string('numviews', '', $numviews);
-        $result->time = $lastlog->time;
-    }
-    if ($logsedit) {
-        if ($logsview) {
-            $numviews = count($logsedit);
-            $lastlog = array_pop($logsedit);
-            $result->info .= ', and '.get_string('numedits', 'ouwiki', $numviews);
-            $result->time = $lastlog->time > $result->time ? $lastlog->time : $result->time;
-        } else {
-            $numviews = count($logsedit);
-            $lastlog = array_pop($logsedit);
-            $result = new object();
-            $result->info = get_string('numedits', 'ouwiki', $numviews);
-            $result->time = $lastlog->time;
+    // Get user grades.
+    require_once("$CFG->libdir/gradelib.php");
+    $grades = grade_get_grades($course->id, 'mod', 'ouwiki', $wiki->id, $user->id);
+    if (empty($grades->items[0]->grades)) {
+        $grade = false;
+    } else {
+        $grade = reset($grades->items[0]->grades);
+        if ($grade->str_grade == '-') {
+            $grade = false;
         }
     }
+
+    // Get user edits.
+    $params = array(
+        'userid' => $user->id,
+        'ouwikiid' => $wiki->id
+    );
+
+    $vsql = "SELECT v.id AS versionid, v.timecreated
+            FROM {ouwiki_pages} p
+                JOIN {ouwiki_subwikis} s ON s.id = p.subwikiid
+                JOIN {ouwiki_versions} v ON v.pageid = p.id
+            WHERE v.userid = :userid
+                AND s.wikiid = :ouwikiid
+                AND v.deletedat IS NULL
+            ORDER BY v.timecreated ASC";
+    $versions = $DB->get_records_sql($vsql, $params);
+
+    $result = null;
+
+    if (!empty($versions)) {
+        $result = new stdClass();
+        $result->info = get_string('numedits', 'ouwiki', count($versions));
+
+        if ($grade) {
+            $result->info .= ', ' . get_string('grade') . ': ' . $grade->str_long_grade;
+        }
+
+        $timecreated = end($versions)->timecreated;
+
+        $result->time = $timecreated;
+    } else if ($grade) {
+        $result = new stdClass();
+        $result->info = get_string('grade') . ': ' . $grade->str_long_grade;
+        // If grade was last modified by the user themselves use date graded. Otherwise use date submitted.
+        if ($grade->usermodified == $user->id || empty($grade->datesubmitted)) {
+            $result->time = $grade->dategraded;
+        } else {
+            $result->time = $grade->datesubmitted;
+        }
+    }
+
     return $result;
 }
 
