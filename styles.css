@@ -900,3 +900,8 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
     font-size: 0.8em;
     margin-left: 5px;
 }
+
+#page-report-outline-user .ouwiki_user_complete_report h2 {
+    font: inherit;
+}
+
