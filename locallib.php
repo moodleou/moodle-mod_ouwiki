@@ -3338,7 +3338,7 @@ function ouwiki_display_entirewiki_page_in_index($pageinfo, $subwiki, $cm, $inde
     $pageversion = ouwiki_get_current_page($subwiki, $pageinfo->title);
     // If the page hasn't really been created yet, skip it.
     if (is_null($pageversion->xhtml)) {
-        continue;
+        return '';
     }
     $visibletitle = $pageversion->title === '' ? get_string('startpage', 'ouwiki') : $pageversion->title;
 
