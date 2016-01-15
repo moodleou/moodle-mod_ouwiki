@@ -27,6 +27,9 @@ require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
 
 class mod_ouwiki_renderer extends plugin_renderer_base {
 
+    // Hold some parameters locally.
+    public $params;
+
     /**
      * Print the main page content
      *
@@ -34,39 +37,40 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      *   we can make links
      * @param object $cm Course-module object (again for making links)
      * @param object $pageversion Data from page and version tables.
+     * @param bool $gewgaws A decorator indicator.
+     * @param string $page Page type
+     * @param int $showwordcount
      * @param bool $hideannotations If true, adds extra class to hide annotations
      * @return string HTML content for page
      */
     public function ouwiki_print_page($subwiki, $cm, $pageversion, $gewgaws = null,
             $page = 'history', $showwordcount = 0, $hideannotations = false) {
-        $output = '';
-        $modcontext = context_module::instance($cm->id);
 
         global $CFG, $ouwikiinternalre;
-
         require_once($CFG->libdir . '/filelib.php');
 
-        // Get annotations - only if using annotation system. prevents unnecessary db access
+        $output = '';
+        $modcontext = context_module::instance($cm->id);
+        $title = $pageversion->title === '' ? get_string('startpage', 'ouwiki') :
+                htmlspecialchars($pageversion->title);
+
+        // Get annotations - only if using annotation system. Prevents unnecessary db access.
         if ($subwiki->annotation) {
             $annotations = ouwiki_get_annotations($pageversion);
         } else {
             $annotations = '';
         }
 
-        // Title
-        $title = $pageversion->title === '' ? get_string('startpage', 'ouwiki') :
-                htmlspecialchars($pageversion->title);
-
-        // setup annotations according to the page we are on
-        if ($page == 'view') {
-            // create the annotations
+        // Setup annotations according to the page we are on.
+            if ($page == 'view') {
             if ($subwiki->annotation && count($annotations)) {
-                $pageversion->xhtml = ouwiki_highlight_existing_annotations($pageversion->xhtml, $annotations, 'view');
+                $pageversion->xhtml =
+                        ouwiki_highlight_existing_annotations($pageversion->xhtml, $annotations, 'view');
             }
         } else if ($page == 'annotate') {
-            // call function for the annotate page
             $pageversion->xhtml = ouwiki_setup_annotation_markers($pageversion->xhtml);
-            $pageversion->xhtml = ouwiki_highlight_existing_annotations($pageversion->xhtml, $annotations, 'annotate');
+            $pageversion->xhtml =
+                    ouwiki_highlight_existing_annotations($pageversion->xhtml, $annotations, 'annotate');
         }
 
         // Must rewrite plugin urls AFTER doing annotations because they depend on byte position.
@@ -75,27 +79,17 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $pageversion->xhtml = ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, null,
                 $pageversion->xhtmlformat);
 
-        // get files up here so we have them for the portfolio button addition as well
+        // Get files here so we have them for the portfolio button addition as well.
         $fs = get_file_storage();
         $files = $fs->get_area_files($modcontext->id, 'mod_ouwiki', 'attachment',
                 $pageversion->versionid, "timemodified", false);
 
+        // Start gathering output.
         $output .= html_writer::start_tag('div', array('class' => 'ouwiki-content' .
                 ($hideannotations ? ' ouwiki-hide-annotations' : '')));
-        $output .= html_writer::start_tag('div', array('class' => 'ouw_topheading'));
-        $output .= html_writer::start_tag('div', array('class' => 'ouw_heading'));
-        $output .= html_writer::tag('h2', format_string($title),
-                array('class' => 'ouw_topheading'));
+        $output .= $this->get_topheading_section($title, $gewgaws, $pageversion, $annotations, $files);
 
-        if ($gewgaws) {
-            $output .= $this->render_heading_bit(1, $pageversion->title, $subwiki,
-                    $cm, null, $annotations, $pageversion->locked, $files,
-                    $pageversion->pageid);
-        } else {
-            $output .= html_writer::end_tag('div');
-        }
-
-        // List of recent changes
+        // List of recent changes.
         if ($gewgaws && $pageversion->recentversions) {
             $output .= html_writer::start_tag('div', array('class' => 'ouw_recentchanges'));
             $output .= get_string('recentchanges', 'ouwiki').': ';
@@ -113,7 +107,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $output .= ouwiki_nice_date($recentversion->timecreated);
                 $output .= html_writer::end_tag('span');
                 $output .= ' (';
-                $recentversion->id = $recentversion->userid; // so it looks like a user object
+                $recentversion->id = $recentversion->userid; // So it looks like a user object.
                 $output .= ouwiki_display_user($recentversion, $cm->course, false);
                 $output .= ')';
             }
@@ -130,18 +124,17 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             $output .= html_writer::end_tag('div');
         }
 
+        $output .= $this->get_new_annotations_section($gewgaws, $pageversion, $annotations, $files);
         $output .= html_writer::end_tag('div');
-        $output .= html_writer::start_tag('div', array('class' => 'ouw_belowmainhead'));
 
-        // spacer
+        // Main content of page.
+        $output .= html_writer::start_tag('div', array('class' => 'ouw_belowmainhead'));
         $output .= html_writer::start_tag('div', array('class' => 'ouw_topspacer'));
         $output .= html_writer::end_tag('div');
-
-        // Content of page
         $output .= $pageversion->xhtml;
 
         if ($gewgaws) {
-            // Add in links/etc. around headings.
+            // Add in links around headings.
             $ouwikiinternalre = new stdClass();
             $ouwikiinternalre->pagename = $pageversion->title;
             $ouwikiinternalre->subwiki = $subwiki;
@@ -154,19 +147,101 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                     '|<h([1-9]) id="ouw_s([0-9]+_[0-9]+)">(.*?)(<br\s*/>)?</h[1-9]>|s',
                     'ouwiki_internal_re_heading', $output);
         }
-        $output .= html_writer::start_tag('div', array('class'=>'clearer'));
-        $output .= html_writer::end_tag('div');
+        $output .= html_writer::tag('div', '', array('class' => 'clearer'));
+        $output .= html_writer::end_tag('div'); // End of ouw_belowmainhead.
 
-        $output .= html_writer::end_tag('div');
-
-        // Render wordcount
+        // Add wordcount.
         if ($showwordcount) {
             $output .= $this->ouwiki_render_wordcount($pageversion->wordcount);
         }
 
-        $output .= html_writer::end_tag('div');
+        $output .= html_writer::end_tag('div'); // End of ouwiki-content.
 
-        // attached files
+        // Add attached files.
+        $output .= $this->get_attached_files($files, $modcontext, $pageversion);
+
+        // Pages that link to this page.
+        if ($gewgaws) {
+            $links = ouwiki_get_links_to($pageversion->pageid);
+            if (count($links) > 0) {
+                $output .= $this->get_links_to($links);
+            }
+        }
+
+        // Display the orphaned annotations.
+        if ($subwiki->annotation && $annotations && $page != 'history') {
+            $orphaned = '';
+            foreach ($annotations as $annotation) {
+                if ($annotation->orphaned) {
+                    $orphaned .= $this->ouwiki_print_hidden_annotation($annotation);
+                }
+            }
+            if ($orphaned !== '') {
+                $output .= html_writer::start_div('ouw-orphaned-annotations');
+                $output .= html_writer::tag('h3', get_string('orphanedannotations', 'ouwiki'));
+                $output .= $orphaned;
+                $output .= html_writer::end_div();
+            } else {
+                $output = $output;
+            }
+        }
+
+        $output .= $this->get_new_buttons_section($gewgaws, $pageversion);
+
+        return array($output, $annotations);
+    }
+
+    /**
+     * Returns html for a replaceable topheading section.
+     *
+     * @param string $title
+     * @param bool $gewgaws A decorator indicator.
+     * @param object $pageversion
+     * @param object $annotations
+     * @param array $files
+     * @return string
+     */
+    public function get_topheading_section($title, $gewgaws, $pageversion, $annotations, $files) {
+        $subwiki = $this->params->subwiki;
+        $cm = $this->params->cm;
+        $output = html_writer::start_tag('div', array('class' => 'ouw_topheading'));
+        $output .= html_writer::start_tag('div', array('class' => 'ouw_heading'));
+        $output .= html_writer::tag('h2', format_string($title),
+                array('class' => 'ouw_topheading'));
+        if ($gewgaws) {
+            $output .= $this->render_heading_bit(1, $pageversion->title, $subwiki,
+                    $cm, null, $annotations, $pageversion->locked, $files,
+                    $pageversion->pageid);
+        } else {
+            $output .= html_writer::end_tag('div');
+        }
+        return $output;
+    }
+
+    /**
+     * Returns empty string.
+     *
+     * @param bool $gewgaws A decorator indicator.
+     * @param object $pageversion
+     * @param object $annotations
+     * @param array $files
+     * @return string
+     */
+    public function get_new_annotations_section($gewgaws, $pageversion, $annotations, $files) {
+        return '';
+    }
+
+    /**
+     * Returns html for attached files.
+     *
+     * @param array $files
+     * @param object $modcontext
+     * @param object $pageversion
+     * @return string
+     */
+    public function get_attached_files($files, $modcontext, $pageversion) {
+        global $CFG;
+        $output = '';
         if ($files) {
             $output .= html_writer::start_tag('div', array('class' => 'ouwiki-post-attachments'));
             $output .= html_writer::tag('h3', get_string('attachments', 'ouwiki'),
@@ -178,7 +253,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $mimetype = $file->get_mimetype();
                 $iconimage = html_writer::empty_tag('img',
                         array('src' => $this->output->pix_url(file_mimetype_icon($mimetype)),
-                        'alt' => $mimetype, 'class' => 'icon'));
+                                'alt' => $mimetype, 'class' => 'icon'));
                 $path = file_encode_url($CFG->wwwroot . '/pluginfile.php', '/' . $modcontext->id .
                         '/mod_ouwiki/attachment/' . $pageversion->versionid . '/' . $filename);
                 $output .= html_writer::tag('a', $iconimage, array('href' => $path));
@@ -188,55 +263,52 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             $output .= html_writer::end_tag('ul');
             $output .= html_writer::end_tag('div');
         }
+        return $output;
+    }
 
-        // pages that link to this page
-        if ($gewgaws) {
-            $links = ouwiki_get_links_to($pageversion->pageid);
-            if (count($links) > 0) {
-                $output .= html_writer::start_tag('div', array('class'=>'ouw_linkedfrom'));
-                $output .= html_writer::tag('h3', get_string(
-                        count($links) == 1 ? 'linkedfromsingle' : 'linkedfrom', 'ouwiki'),
-                        array('class'=>'ouw_topheading'));
-                $output .= html_writer::start_tag('ul');
-                $first = true;
-                foreach ($links as $link) {
-                    $output .= html_writer::start_tag('li');
-                    if ($first) {
-                        $first = false;
-                    } else {
-                        $output .= '&#8226; ';
-                    }
-                    $linktitle = ($link->title) ? htmlspecialchars($link->title) :
-                            get_string('startpage', 'ouwiki');
-                    $output .= html_writer::tag('a', $linktitle,
-                            array('href' => $CFG->wwwroot . '/mod/ouwiki/view.php?' .
-                            ouwiki_display_wiki_parameters(
-                                $link->title, $subwiki, $cm, OUWIKI_PARAMS_URL)));
-                    $output .= html_writer::end_tag('li');
-                }
-                $output .= html_writer::end_tag('ul');
-                $output .= html_writer::end_tag('div');
-            }
-        }
-
-        // disply the orphaned annotations
-        if ($subwiki->annotation && $annotations && $page != 'history') {
-            $orphaned = '';
-            foreach ($annotations as $annotation) {
-                if ($annotation->orphaned) {
-
-                    $orphaned .= $this->ouwiki_print_hidden_annotation($annotation);
-                }
-            }
-            if ($orphaned !== '') {
-                $output .= html_writer::tag('h3', get_string('orphanedannotations', 'ouwiki'));
-                $output .= $orphaned;
+    /**
+     * Returns html for the linked from links.
+     *
+     * @param array $links
+     * @return string
+     */
+    public function get_links_to($links) {
+        global $CFG;
+        $output = html_writer::start_tag('div', array('class'=>'ouw_linkedfrom'));
+        $output .= html_writer::tag('h3', get_string(
+                count($links) == 1 ? 'linkedfromsingle' : 'linkedfrom', 'ouwiki'),
+                array('class'=>'ouw_topheading'));
+        $output .= html_writer::start_tag('ul');
+        $first = true;
+        foreach ($links as $link) {
+            $output .= html_writer::start_tag('li');
+            if ($first) {
+                $first = false;
             } else {
-                $output = $output;
+                $output .= '&#8226; ';
             }
+            $linktitle = ($link->title) ? htmlspecialchars($link->title) :
+            get_string('startpage', 'ouwiki');
+            $output .= html_writer::tag('a', $linktitle,
+                    array('href' => $CFG->wwwroot . '/mod/ouwiki/view.php?' .
+                            ouwiki_display_wiki_parameters(
+                                    $link->title, $this->params->subwiki, $this->params->cm, OUWIKI_PARAMS_URL)));
+            $output .= html_writer::end_tag('li');
         }
+        $output .= html_writer::end_tag('ul');
+        $output .= html_writer::end_tag('div');
+        return $output;
+    }
 
-        return array($output, $annotations);
+    /**
+     * Returns empty string.
+     *
+     * @param bool $gewgaws A decorator indicator.
+     * @param object $pageversion
+     * @return string
+     */
+    public function get_new_buttons_section($gewgaws, $pageversion) {
+        return '';
     }
 
     public function render_heading_bit($headingnumber, $pagename, $subwiki, $cm,
@@ -250,21 +322,14 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         if ($subwiki->canedit && !$locked) {
             $str = $xhtmlid ? 'editsection' : 'editpage';
 
-            $output .= html_writer::tag('a', get_string($str, 'ouwiki'), array(
-                    'href' => $CFG->wwwroot . '/mod/ouwiki/edit.php?' .
-                        ouwiki_display_wiki_parameters($pagename, $subwiki, $cm, OUWIKI_PARAMS_URL) .
-                        ($xhtmlid ? '&section=' . $xhtmlid : ''),
-                    'class' => 'ouw_' . $str));
+            $output .= $this->ouwiki_get_edit_link($str, $pagename, $subwiki, $cm, $xhtmlid);
         }
 
         // output the annotate link if using annotation system, only for page not section
         if (!$xhtmlid && $subwiki->annotation) {
             // Add annotate link
             if ($subwiki->canannotate) {
-                $output .= ' ' .html_writer::tag('a', get_string('annotate', 'ouwiki'),
-                        array('href' => $CFG->wwwroot.'/mod/ouwiki/annotate.php?' .
-                        ouwiki_display_wiki_parameters($pagename, $subwiki, $cm, OUWIKI_PARAMS_URL),
-                        'class' => 'ouw_annotate'));
+                $output .= $this->ouwiki_get_annotate_link($pagename, $subwiki, $cm);
             }
 
             // 'Expand/collapse all' and 'Show/hide all' annotation controls
@@ -307,7 +372,6 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         // On main page, add export button
         if (!$xhtmlid && $CFG->enableportfolios) {
-            require_once($CFG->libdir . '/portfoliolib.php');
             $button = new portfolio_add_button();
             $button->set_callback_options('ouwiki_page_portfolio_caller',
                     array('pageid' => $pageid), 'mod_ouwiki');
@@ -327,6 +391,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
     /**
      * Renders the 'export entire wiki' link.
+     *
      * @param object $subwiki Subwiki data object
      * @param bool $anyfiles True if any page of subwiki contains files
      * @param array $wikiparamsarray associative array
@@ -339,7 +404,6 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             return '';
         }
 
-        require_once($CFG->libdir . '/portfoliolib.php');
         $button = new portfolio_add_button();
         $button->set_callback_options('ouwiki_all_portfolio_caller',
                $wikiparamsarray, 'mod_ouwiki');
@@ -570,7 +634,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      */
     public function ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagename, $context,
             $afterpage = null, $hideindex = null, $notabs = null, $head = '', $title='', $querytext = '') {
-        global $USER, $OUTPUT;
+
         $output = '';
 
         if ($pagename == null) {
@@ -582,7 +646,24 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $canview = ouwiki_can_view_participation($course, $ouwiki, $subwiki, $cm);
         $page = basename($_SERVER['PHP_SELF']);
 
-        // Print group/user selector
+        // Gather params for later use - saves passing as attributes within the renderer.
+        $this->params = new StdClass();
+        $this->params->ouwiki = $ouwiki;
+        $this->params->cm = $cm;
+        $this->params->subwiki = $subwiki;
+        $this->params->course = $course;
+        $this->params->pagename = $pagename;
+        $this->params->hideindex = $hideindex;
+        $this->params->canview = $canview;
+        $this->params->page = $page;
+
+        // Add wiki name header.
+        $output .= $this->get_wiki_heading_text();
+
+        // Add rss and atom feeds.
+        $output .= $this->get_feeds_section();
+
+        // Add group/user selector.
         $showselector = true;
         if (($page == 'userparticipation.php' && $canview != OUWIKI_MY_PARTICIPATION)
             || $page == 'participation.php'
@@ -595,105 +676,166 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             $output .= $selector;
         }
 
-        // Print index link
-        if (!$hideindex) {
-            $output .= html_writer::start_tag('div', array('id' => 'ouwiki_indexlinks'));
-            $output .= html_writer::start_tag('ul');
+        // Add index links.
+        list($content, $participationstr) = $this->ouwiki_get_links();
+        $output .= $content;
 
-            if ($page == 'wikiindex.php') {
-                $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_index'));
-                $output .= html_writer::start_tag('span');
-                $output .= get_string('index', 'ouwiki');
-                $output .= html_writer::end_tag('span');
-                $output .= html_writer::end_tag('li');
-            } else {
-                $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_index'));
-                $output .= html_writer::tag('a', get_string('index', 'ouwiki'),
-                        array('href' => 'wikiindex.php?'.
-                        ouwiki_display_wiki_parameters('', $subwiki, $cm, OUWIKI_PARAMS_URL)));
-                $output .= html_writer::end_tag('li');
-            }
-            if ($page == 'wikihistory.php') {
-                $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_history'));
-                $output .= html_writer::start_tag('span');
-                $output .= get_string('wikirecentchanges', 'ouwiki');
-                $output .= html_writer::end_tag('span');
-                $output .= html_writer::end_tag('li');
-            } else {
-                $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_history'));
-                $output .= html_writer::tag('a', get_string('wikirecentchanges', 'ouwiki'),
-                        array('href' => 'wikihistory.php?'.
-                        ouwiki_display_wiki_parameters('', $subwiki, $cm, OUWIKI_PARAMS_URL)));
-                $output .= html_writer::end_tag('li');
-            }
-            // Check for mod setting and ability to edit that enables this link.
-            if (($subwiki->canedit) && ($ouwiki->allowimport)) {
-                $output .= html_writer::start_tag('li', array('id' => 'ouwiki_import_pages'));
-                if ($page == 'import.php') {
-                    $output .= html_writer::tag('span', get_string('import', 'ouwiki'));
-                } else {
-                    $importlink = new moodle_url('/mod/ouwiki/import.php',
-                            ouwiki_display_wiki_parameters($pagename, $subwiki, $cm, OUWIKI_PARAMS_ARRAY));
-                    $output .= html_writer::link($importlink, get_string('import', 'ouwiki'));
-                }
-                $output .= html_writer::end_tag('li');
-            }
-            if ($canview == OUWIKI_USER_PARTICIPATION) {
-                $participationstr = get_string('participationbyuser', 'ouwiki');
-                $participationpage = 'participation.php?' .
-                    ouwiki_display_wiki_parameters('', $subwiki, $cm, OUWIKI_PARAMS_URL);
-            } else if ($canview == OUWIKI_MY_PARTICIPATION) {
-                $participationstr = get_string('myparticipation', 'ouwiki');
-                $participationpage = 'userparticipation.php?' .
-                        ouwiki_display_wiki_parameters('', $subwiki, $cm, OUWIKI_PARAMS_URL);
-                $participationpage .= '&user='.$USER->id;
-            }
+        // Add page heading.
+        $output .= $this->ouwiki_get_page_heading($participationstr);
 
-            if ($canview > OUWIKI_NO_PARTICIPATION) {
-                if (($cm->groupmode != 0) && isset($subwiki->groupid)) {
-                    $participationpage .= '&group='.$subwiki->groupid;
-                }
-                if ($page == 'participation.php' || $page == 'userparticipation.php') {
-                    $output .= html_writer::start_tag('li',
-                        array('id' => 'ouwiki_nav_participation'));
-                    $output .= html_writer::start_tag('span');
-                    $output .= $participationstr;
-                    $output .= html_writer::end_tag('span');
-                    $output .= html_writer::end_tag('li');
-                } else {
-                    $output .= html_writer::start_tag('li',
-                        array('id' => 'ouwiki_nav_participation'));
-                    $output .= html_writer::tag('a', $participationstr,
-                            array('href' => $participationpage));
-                    $output .= html_writer::end_tag('li');
-                }
-            }
-
-            $output .= html_writer::end_tag('ul');
-
-            $output .= html_writer::end_tag('div');
-        } else {
-            $output .= html_writer::start_tag('div', array('id' => 'ouwiki_noindexlink'));
-            $output .= html_writer::end_tag('div');
-        }
-        if ($page == 'participation.php' || $page == 'userparticipation.php') {
-            $output .= $OUTPUT->heading($participationstr);
-        }
-
-        $output .= html_writer::start_tag('div', array('class' => 'clearer'));
-        $output .= html_writer::end_tag('div');
+        $output .= html_writer::div('', 'clearer');
         if ($notabs) {
             $extraclass = $selector ? ' ouwiki_gotselector' : '';
-            $output .= html_writer::start_tag('div',
-                    array('id' => 'ouwiki_belowtabs', 'class' => 'ouwiki_notabs'.$extraclass));
-            $output .= html_writer::end_tag('div');
+            $output .= html_writer::div('', 'ouwiki_notabs' . $extraclass,
+                    array('id' => 'ouwiki_belowtabs'));
         }
 
         return $output;
     }
 
     /**
-     * Format the wordcount for display
+     * Returns empty string.
+     *
+     * @return string
+     */
+    public function get_wiki_heading_text() {
+        return '';
+    }
+
+    /**
+     * Returns empty string.
+     *
+     * @return string
+     */
+    public function get_feeds_section() {
+        return '';
+    }
+
+    /**
+     * Returns page heading (if required).
+     *
+     * @param string $participationstr Page heading title.
+     * @return string
+     */
+    public function ouwiki_get_page_heading($participationstr) {
+        $output = '';
+        if ($this->params->page == 'participation.php' ||
+                $this->params->page == 'userparticipation.php') {
+            $output .= $this->output->heading($participationstr);
+        }
+        return $output;
+    }
+
+    /**
+     * Returns html for the links (wiki index etc.), and a participation string.
+     *
+     * @return array
+     */
+    public function ouwiki_get_links() {
+        $output = '';
+        $participationstr = '';
+        if (!$this->params->hideindex) {
+            $output .= html_writer::start_tag('div', array('id' => 'ouwiki_indexlinks'));
+            list($content, $participationstr) = $this->ouwiki_get_links_content();
+            $output .= $content;
+            $output .= html_writer::end_tag('div');
+        } else {
+            $output .= html_writer::start_tag('div', array('id' => 'ouwiki_noindexlink'));
+            $output .= html_writer::end_tag('div');
+        }
+        return array($output, $participationstr);
+    }
+
+    /**
+     * Returns html for the content of the links, and a participation string.
+     *
+     * @return array
+     */
+    public function ouwiki_get_links_content() {
+        global $USER;
+        $output = html_writer::start_tag('ul');
+        if ($this->params->page == 'wikiindex.php') {
+            $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_index'));
+            $output .= html_writer::start_tag('span');
+            $output .= get_string('index', 'ouwiki');
+            $output .= html_writer::end_tag('span');
+            $output .= html_writer::end_tag('li');
+        } else {
+            $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_index'));
+            $output .= html_writer::tag('a', get_string('index', 'ouwiki'),
+                    array('href' => 'wikiindex.php?'.
+                            ouwiki_display_wiki_parameters('', $this->params->subwiki,
+                                    $this->params->cm, OUWIKI_PARAMS_URL),
+                            'class' => 'osep-smallbutton'));
+            $output .= html_writer::end_tag('li');
+        }
+        if ($this->params->page == 'wikihistory.php') {
+            $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_history'));
+            $output .= html_writer::start_tag('span');
+            $output .= get_string('wikirecentchanges', 'ouwiki');
+            $output .= html_writer::end_tag('span');
+            $output .= html_writer::end_tag('li');
+        } else {
+            $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_history'));
+            $output .= html_writer::tag('a', get_string('wikirecentchanges', 'ouwiki'),
+                    array('href' => 'wikihistory.php?'.
+                            ouwiki_display_wiki_parameters('', $this->params->subwiki,
+                                    $this->params->cm, OUWIKI_PARAMS_URL),
+                            'class' => 'osep-smallbutton'));
+            $output .= html_writer::end_tag('li');
+        }
+        // Check for mod setting and ability to edit that enables this link.
+        if (($this->params->subwiki->canedit) && ($this->params->ouwiki->allowimport)) {
+            $output .= html_writer::start_tag('li', array('id' => 'ouwiki_import_pages'));
+            if ($this->params->page == 'import.php') {
+                $output .= html_writer::tag('span', get_string('import', 'ouwiki'));
+            } else {
+                $importlink = new moodle_url('/mod/ouwiki/import.php',
+                        ouwiki_display_wiki_parameters($this->params->pagename,
+                                $this->params->subwiki, $this->params->cm, OUWIKI_PARAMS_ARRAY));
+                $output .= html_writer::link($importlink, get_string('import', 'ouwiki'),
+                        array('class' => 'osep-smallbutton'));
+            }
+            $output .= html_writer::end_tag('li');
+        }
+        if ($this->params->canview == OUWIKI_USER_PARTICIPATION) {
+            $participationstr = get_string('participationbyuser', 'ouwiki');
+            $participationpage = 'participation.php?' .
+                    ouwiki_display_wiki_parameters('', $this->params->subwiki, $this->params->cm,
+                            OUWIKI_PARAMS_URL);
+        } else if ($this->params->canview == OUWIKI_MY_PARTICIPATION) {
+            $participationstr = get_string('myparticipation', 'ouwiki');
+            $participationpage = 'userparticipation.php?' .
+                    ouwiki_display_wiki_parameters('', $this->params->subwiki, $this->params->cm,
+                            OUWIKI_PARAMS_URL);
+            $participationpage .= '&user=' . $USER->id;
+        }
+        if ($this->params->canview > OUWIKI_NO_PARTICIPATION) {
+            if (($this->params->cm->groupmode != 0) && isset($this->params->subwiki->groupid)) {
+                $participationpage .= '&group=' . $this->params->subwiki->groupid;
+            }
+            if ($this->params->page == 'participation.php' ||
+                    $this->params->page == 'userparticipation.php') {
+                $output .= html_writer::start_tag('li',
+                        array('id' => 'ouwiki_nav_participation'));
+                $output .= html_writer::start_tag('span');
+                $output .= $participationstr;
+                $output .= html_writer::end_tag('span');
+                $output .= html_writer::end_tag('li');
+            } else {
+                $output .= html_writer::start_tag('li',
+                        array('id' => 'ouwiki_nav_participation'));
+                $output .= html_writer::tag('a', $participationstr,
+                        array('href' => $participationpage, 'class' => 'osep-smallbutton'));
+                $output .= html_writer::end_tag('li');
+            }
+        }
+        $output .= html_writer::end_tag('ul');
+        return array($output, $participationstr);
+    }
+
+    /**
+     * Format the wordcount for display.
      *
      * @param string $wordcount
      * @return output
@@ -1083,5 +1225,136 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
             $mform->display();
         }
+    }
+
+    /**
+     * Get html for the introduction.
+     *
+     * @param string $ouwikiintro
+     * @param int $contextid
+     * @return string
+     */
+    public function ouwiki_get_intro($ouwikiintro, $contextid) {
+        $intro = file_rewrite_pluginfile_urls($ouwikiintro, 'pluginfile.php', $contextid,
+                'mod_ouwiki', 'intro', null);
+        $intro = format_text($intro);
+        $intro = html_writer::tag('div', $intro, array('class' => 'ouw_intro'));
+        return $intro;
+    }
+
+    /**
+     * Get html for the edit link.
+     *
+     * @param string $str
+     * @param string $pagename
+     * @param object $subwiki
+     * @param object $cm
+     * @param string $xhtmlid
+     * @return string
+     */
+    public function ouwiki_get_edit_link($str, $pagename, $subwiki, $cm, $xhtmlid) {
+        global $CFG;
+        return html_writer::tag('a', get_string($str, 'ouwiki'), array(
+                'href' => $CFG->wwwroot . '/mod/ouwiki/edit.php?' .
+                ouwiki_display_wiki_parameters($pagename, $subwiki, $cm, OUWIKI_PARAMS_URL) .
+                ($xhtmlid ? '&section=' . $xhtmlid : ''),
+                'class' => 'ouw_' . $str));
+    }
+
+    /**
+     * Get html for the annotate link.
+     *
+     * @param string $str
+     * @param string $pagename
+     * @param object $subwiki
+     * @param object $cm
+     * @param string $xhtmlid
+     * @return string
+     */
+    public function ouwiki_get_annotate_link($pagename, $subwiki, $cm) {
+        global $CFG;
+        return ' ' .html_writer::tag('a', get_string('annotate', 'ouwiki'), array(
+                'href' => $CFG->wwwroot.'/mod/ouwiki/annotate.php?' .
+                ouwiki_display_wiki_parameters($pagename, $subwiki, $cm, OUWIKI_PARAMS_URL),
+                'class' => 'ouw_annotate'));
+    }
+
+    /**
+     * Get html for the add new section and page forms, and the lock page button.
+     *
+     * @param object $subwiki
+     * @param object $cm
+     * @param object $pageversion
+     * @param object $context
+     * @param int $id
+     * @param string $pagename
+     * @return string
+     */
+    public function ouwiki_get_addnew($subwiki, $cm, $pageversion, $context, $id, $pagename) {
+        $output = '';
+        if ($subwiki->canedit && $pageversion->locked != '1') {
+            $output .= ouwiki_display_create_page_form($subwiki, $cm, $pageversion);
+        }
+        if (has_capability('mod/ouwiki:lock', $context)) {
+            $output .= ouwiki_display_lock_page_form($pageversion, $id, $pagename);
+        }
+        return $output;
+    }
+
+    /**
+     * Returns empty string.
+     *
+     * @param object $subwiki
+     * @param object $cm
+     * @param object $context
+     * @param object $pageversion
+     * @param bool $addlock If true allows inclusion of the lock page button.
+     * @return string
+     */
+    public function get_bottom_buttons($subwiki, $cm, $context, $pageversion, $addlock) {
+        return '';
+    }
+
+    /**
+     * Returns empty string.
+     *
+     * @param array $files
+     * @param int $modcontextid
+     * @param int $pageversionversionid
+     * @param bool $fcheck If true then the files array will be checked.
+     * @return string
+     */
+    public function get_attachments($files, $modcontextid, $pageversionversionid, $fcheck = false) {
+        return '';
+    }
+
+    /**
+     * Returns html for the atom and rss feeds.
+     *
+     * @param string $atomurl
+     * @param string $rssurl
+     * @return string
+     */
+    public function ouwiki_get_feeds($atomurl, $rssurl) {
+        $a = new stdClass();
+        $a->atom = $atomurl;
+        $a->rss = $rssurl;
+        $url = str_replace('&amp;', '&', $atomurl);
+        $rssicon = html_writer::img($this->output->pix_url('rss', 'ouwiki'), '');
+        $rsslink = html_writer::link($url, $rssicon, array('title' => get_string('feedalt', 'ouwiki')));
+        $content = html_writer::span(get_string('feedsubscribe', 'ouwiki', $a));
+        return html_writer::tag('p', $rsslink . $content, array('class' => 'ouw_subscribe'));
+    }
+
+    /**
+     * No return, functionality to be overwritten.
+     *
+     * @param string $type page or subwiki only
+     * @param int $id
+     * @param int $courseid
+     * @param int $tree optional (for subwiki type only)
+     */
+    public function set_export_button($type, $id, $courseid, $tree = 0) {
+        return;
     }
 }

@@ -60,6 +60,7 @@ $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 $wikiparams = ouwiki_display_wiki_parameters('', $subwiki, $cm);
 
 // Do header
+$ouwikioutput->set_export_button('subwiki', $subwiki->id, $course->id, !empty($treemode) ? 1 : 0);
 echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, get_string('index', 'ouwiki'), $context, null, false);
 
 // Print tabs for selecting index type
@@ -190,6 +191,9 @@ WHERE
     }
     print '</ul></div>';
 }
+
+$pageversion = ouwiki_get_current_page($subwiki, $pagename);
+echo $ouwikioutput->get_bottom_buttons($subwiki, $cm, $context, $pageversion, false);
 
 // Footer
 ouwiki_print_footer($course, $cm, $subwiki, $pagename);

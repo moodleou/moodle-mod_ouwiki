@@ -41,6 +41,12 @@ $completion->set_module_viewed($cm);
 
 $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 
+// Get the current page version
+$pageversion = ouwiki_get_current_page($subwiki, $pagename);
+
+if ($pageversion) {
+    $ouwikioutput->set_export_button('page', $pageversion->pageid, $course->id);
+}
 echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagename, $context);
 
 // Check consistency in setting subwikis and group mode
@@ -54,18 +60,13 @@ if (($cm->groupmode > 0) && !isset($subwiki->groupid)) {
         Please change Group mode to 'No groups'.", 'error', $courselink);
 }
 
-// Get the current page version
-$pageversion = ouwiki_get_current_page($subwiki, $pagename);
 $locked = ($pageversion) ? $pageversion->locked : false;
 
 ouwiki_print_tabs('view', $pagename, $subwiki, $cm, $context, $pageversion ? true : false, $locked);
 
 if (($pagename === '' || $pagename === null) && strlen(preg_replace('/\s|<br\s*\/?>|<p>|<\/p>/',
         '', $ouwiki->intro)) > 0) {
-    $intro = file_rewrite_pluginfile_urls($ouwiki->intro, 'pluginfile.php', $context->id,
-            'mod_ouwiki', 'intro', null);
-    $intro = format_text($intro);
-    print '<div class="ouw_intro">' . $intro . '</div>';
+    echo $ouwikioutput->ouwiki_get_intro($ouwiki->intro, $context->id);
 }
 
 if ($pageversion) {
@@ -80,12 +81,8 @@ if ($pageversion) {
     $data = $ouwikioutput->ouwiki_print_page($subwiki, $cm, $pageversion, true, 'view',
             $ouwiki->enablewordcount, (bool)$hideannotations);
     echo $data[0];
-    if ($subwiki->canedit && $pageversion->locked != '1') {
-        print ouwiki_display_create_page_form($subwiki, $cm, $pageversion);
-    }
-    if (has_capability('mod/ouwiki:lock', $context)) {
-        print ouwiki_display_lock_page_form($pageversion, $id, $pagename);
-    }
+    echo $ouwikioutput->ouwiki_get_addnew($subwiki, $cm, $pageversion, $context, $id, $pagename);
+    echo $ouwikioutput->get_bottom_buttons($subwiki, $cm, $context, $pageversion, true);
 } else {
     // Page does not exist
     print '<p>'.get_string($pagename ? 'pagedoesnotexist' : 'startpagedoesnotexist', 'ouwiki').'</p>';

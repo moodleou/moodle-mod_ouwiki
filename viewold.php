@@ -117,5 +117,10 @@ print "
 $data = $ouwikioutput->ouwiki_print_page($subwiki, $cm, $pageversion, false, 'viewold', $ouwiki->enablewordcount);
 print($data[0]);
 
+// Add a div to be closed in print_footer, so ensuring div id=osep-pagewrapper (white background)
+// is not closed early.
+// Note no bottom button here.
+echo '<div>';
+
 // Footer
 ouwiki_print_footer($course, $cm, $subwiki, $pagename);

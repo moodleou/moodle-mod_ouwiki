@@ -312,10 +312,13 @@ $customdata[1] = $pageversion;
 $customdata[2] = $pagename;
 $customdata[3] = $userid;
 $customdata[4] = has_capability('mod/ouwiki:lock', $context);
+echo html_writer::start_div('ouw-annotation-list');
 echo html_writer::tag('h2', get_string('annotations', 'ouwiki'));
+echo html_writer::end_div();
 
 $annotateform = new mod_ouwiki_annotate_form('annotate.php?id='.$id, $customdata);
 $annotateform->display();
+echo $ouwikioutput->get_bottom_buttons($subwiki, $cm, $context, $pageversion, true);
 
 $usedannotations = array();
 foreach ($annotations as $annotation) {

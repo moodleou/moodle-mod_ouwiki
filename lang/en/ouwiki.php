@@ -289,6 +289,7 @@ $string['typeinpagename']='Type page name here';
 $string['add']='Add';
 $string['typeinsectionname']='Type section title here';
 $string['addnewsection']='Add new section to this page';
+$string['addnewsection1']='Add new section';
 $string['createdbyon'] = 'created by {$a->name} on {$a->date}';
 
 $string['numedits'] = '{$a} edits';

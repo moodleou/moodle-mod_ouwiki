@@ -427,7 +427,6 @@ if ($section) {
 
 // print the preview box
 if ($content) {
-    $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
     echo $ouwikioutput->ouwiki_print_preview($content, $pagename, $subwiki, $cm, $pageversion->xhtmlformat);
     $existing = $content;
 }
@@ -476,6 +475,8 @@ $data->content = array('text' => $currenttext,
 $mform->set_data($data);
 
 $mform->display();
+
+echo $ouwikioutput->get_bottom_buttons($subwiki, $cm, $context, $pageversion, false);
 
 $stringlist = array(
         array('savefailnetwork', 'ouwiki'),

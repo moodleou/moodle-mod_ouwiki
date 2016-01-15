@@ -130,7 +130,8 @@ if ($overwritten) {
 }
 
 print "
-<table>
+<table class='generaltable'>
+<thead>
 <tr><th scope='col'>$strdate</th><th scope='col'>$strtime</th><th scope='col'>$strpage</th>".
 ($newpages?'':'<th><span class="accesshide">'.$strview.'</span></th>');
 if ($ouwiki->enablewordcount) {
@@ -140,7 +141,7 @@ if ($overwritten) {
     print '<th scope="col">' . $strimport . '</th>';
 }
 print "
-  <th scope='col'>$strperson</th></tr>
+  <th scope='col'>$strperson</th></tr></thead><tbody>
 ";
 
 $strchanges = get_string('changes', 'ouwiki');
@@ -241,7 +242,7 @@ foreach ($changes as $change) {
 </tr>";
 }
 
-print '</table>';
+print '</tbody></table>';
 
 if (empty($changes)) {
     echo get_string('nowikipages', 'ouwiki');
@@ -266,12 +267,10 @@ if ($count > OUWIKI_PAGESIZE || $from > 0) {
     print '&nbsp;</div></div>';
 }
 
-$a = new stdClass();
-$a->atom = $atomurl;
-$a->rss = $rssurl;
-print '<p class="ouw_subscribe"><a href="'.$atomurl.'" title="'.get_string('feedalt', 'ouwiki').
-    '"><img src="'.$OUTPUT->pix_url('rss', 'ouwiki').'" alt=""/></a> <span>'.
-    get_string('feedsubscribe', 'ouwiki', $a).'</span></p>';
+echo $ouwikioutput->ouwiki_get_feeds($atomurl, $rssurl);
+
+$pageversion = ouwiki_get_current_page($subwiki, $pagename);
+echo $ouwikioutput->get_bottom_buttons($subwiki, $cm, $context, $pageversion, false);
 
 // Footer
 ouwiki_print_footer($course, $cm, $subwiki);

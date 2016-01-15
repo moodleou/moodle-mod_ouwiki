@@ -52,11 +52,6 @@
 #page-mod-ouwiki-contributions th {
     text-align:left;
     padding: 5px 12px 5px 4px;
-    background: #a7d2ff;
-    border-left: 1px solid #a7d2ff;
-    border-right: 1px solid #a7d2ff;
-    border-top:1px solid #888;
-    border-bottom:1px dotted #888;
 }
 .dir-rtl#page-mod-ouwiki-history .ouw_history th,
 .dir-rtl#page-mod-ouwiki-wikihistory th,
@@ -68,17 +63,6 @@
 #page-mod-ouwiki-wikihistory td,
 #page-mod-ouwiki-contributions td {
     padding: 3px 12px 3px 4px;
-    border-bottom:1px dotted #888;
-}
-#page-mod-ouwiki-wikihistory td.ouw_rightcol,
-#page-mod-ouwiki-contributions td.ouw_rightcol,
-#page-mod-ouwiki-history .ouw_history td.ouw_rightcol {
-    border-right:1px dotted #888;
-}
-#page-mod-ouwiki-wikihistory td.ouw_leftcol,
-#page-mod-ouwiki-contributions td.ouw_leftcol,
-#page-mod-ouwiki-history .ouw_history td.ouw_leftcol {
-    border-left:1px dotted #888;
 }
 #page-mod-ouwiki-history .ouw_history td.check,
 #page-mod-ouwiki-history .ouw_history td.comparebutton {
@@ -729,7 +713,7 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
 }
 
 #page-mod-ouwiki-annotate #mform1 .fitem .fitemtitle {
-    margin-left: -30px;
+    padding-right: 15px;
     width: 160px;
 }
 
@@ -899,4 +883,7 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
 .ouwikilmt {
     font-size: 0.8em;
     margin-left: 5px;
+}
+.ouw-comparebutton-wrapper {
+    text-align: right;
 }

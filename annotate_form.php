@@ -42,7 +42,8 @@ class mod_ouwiki_annotate_form extends moodleform {
             $editnumber = 1;
             foreach ($annotations as $annotation) {
                 if (!$annotation->orphaned) {
-                    $mform->addElement('textarea', 'edit'.$annotation->id, $editnumber, array('cols'=>'40', 'rows'=>'3'));
+                    $mform->addElement('textarea', 'edit'.$annotation->id, '(' . $editnumber . ')',
+                            array('cols'=>'40', 'rows'=>'3'));
                     $mform->setDefault('edit'.$annotation->id, $annotation->content);
                     $editnumber++;
                 } else {

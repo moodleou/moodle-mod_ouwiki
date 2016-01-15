@@ -132,7 +132,8 @@ print "
 <form name='ouw_history' class='ouw_history' method='get' action='history.php'>
 <input type='hidden' name='compare' value='1'/>
 $wikiinputs
-<table>
+<table class='generaltable'>
+<thead>
 <tr><th scope='col'>".get_string('date')."</th><th scope='col'>".get_string('time')."</th><th><span class='accesshide'>".get_string('actionheading', 'ouwiki')."</span>
 </th>";
 if ($ouwiki->enablewordcount) {
@@ -142,7 +143,7 @@ if ($overwritten) {
     print '<th scope="col">'.get_string('importedfrom', 'ouwiki').'</th>';
 }
 print "<th scope='col'>".get_string('changedby', 'ouwiki')."</th><th scope='col'><span class='accesshide'>".get_string('compare', 'ouwiki')."</span></th>";
-print '</tr>';
+print '</thead></tr><tbody>';
 
 $lastdate = '';
 $changeindex = 0;
@@ -247,9 +248,11 @@ foreach ($changes as $change) {
     $changeindex++;
 }
 
-print "
-<tr><td colspan='5' class='comparebutton'><input id='ouw_comparebutton' type='submit' value='".get_string('compareselected', 'ouwiki')."' /></td></tr>
-</table></form>";
+print "</tbody></table>";
+$input = '<input id="ouw_comparebutton" type="submit" value="' .
+        get_string('compareselected', 'ouwiki') . '" class="osep-smallbutton" />';
+echo html_writer::div($input, 'ouw-comparebutton-wrapper');
+print "</form>";
 
 // The page works without JS. If you do have it, though, this script ensures
 // you can't click compare without having two versions selected.
@@ -272,12 +275,10 @@ function ouw_check() {
 </script>
 ';
 
-$a = new stdClass();
-$a->atom = $atomurl;
-$a->rss = $rssurl;
-print '<p class="ouw_subscribe"><a href="'.$atomurl.'" title="'.get_string('feedalt', 'ouwiki').
-    '"><img src="'.$OUTPUT->pix_url('rss', 'ouwiki').'" alt=""/></a> <span>'.
-    get_string('feedsubscribe', 'ouwiki', $a).'</span></p>';
+echo $ouwikioutput->ouwiki_get_feeds($atomurl, $rssurl);
+
+$pageversion = ouwiki_get_current_page($subwiki, $pagename);
+echo $ouwikioutput->get_bottom_buttons($subwiki, $cm, $context, $pageversion, false);
 
 // Footer
 ouwiki_print_footer($course, $cm, $subwiki, $pagename);
