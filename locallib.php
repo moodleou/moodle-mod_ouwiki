@@ -64,6 +64,7 @@ define('OUWIKI_RESULTSPERPAGE', 10);
 
 // general
 define('OUWIKI_LINKS_SQUAREBRACKETS', '/\[\[(.*?)\]\]/');
+define('OUWIKI_LINKS_SQUAREBRACKETS_ALTTEXT', '/\[\[(.*?)(\|.*?)*\]\]/');
 define('OUWIKI_SYSTEMUSER', -1);
 define('OUWIKI_TIMEOUT_EXTRA', 60);
 define('OUWIKI_FEEDSIZE', 50);
@@ -1820,15 +1821,15 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     $content = preg_replace_callback('/<h([1-9])>/', 'ouwiki_internal_re_headings', $content);
     $sizeafter = strlen($content);
 
-    // Replace wiki links to [[Start page]] with the correct (non
-    // language-specific) format [[]]
-    $regex = str_replace('.*?', preg_quote(get_string('startpage', 'ouwiki')),
-        OUWIKI_LINKS_SQUAREBRACKETS) . 'ui';
-    $newcontent = @preg_replace($regex, '[[]]', $content);
+    // Replace wiki links to [[Start page]] or [[Start page|Alt text]] 
+    // with the correct (non language-specific) format [[]] or [[|Alt text]]
+    $regex = preg_replace('~\.\*\?~', preg_quote(get_string('startpage', 'ouwiki')),
+        OUWIKI_LINKS_SQUAREBRACKETS_ALTTEXT, 1) . 'ui';
+    $newcontent = @preg_replace($regex, '[[$2]]', $content);
     if ($newcontent === null) {
         // Unicode support not available! Change the regex and try again
         $regex = preg_replace('~ui$~', 'i', $regex);
-        $newcontent = preg_replace($regex, '[[]]', $content);
+        $newcontent = preg_replace($regex, '[[$2]]', $content);
     }
     $content = $newcontent;
 
