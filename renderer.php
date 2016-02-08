@@ -798,6 +798,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             }
             $output .= html_writer::end_tag('li');
         }
+        $participationstr = '';
         if ($this->params->canview == OUWIKI_USER_PARTICIPATION) {
             $participationstr = get_string('participationbyuser', 'ouwiki');
             $participationpage = 'participation.php?' .
