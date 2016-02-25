@@ -488,7 +488,7 @@ $jsmodule = array(
         'requires' => array('base', 'event', 'io', 'node', 'anim', 'moodle-core-notification-alert', 'button'),
         'strings'  => $stringlist
 );
-$PAGE->requires->js_init_call('M.mod_ouwiki_edit.init', null, true, $jsmodule);
+$PAGE->requires->js_init_call('M.mod_ouwiki_edit.init', array($context->id), true, $jsmodule);
 
 // Footer
 ouwiki_print_footer($course, $cm, $subwiki, $pagename);
