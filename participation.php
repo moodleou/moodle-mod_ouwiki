@@ -106,6 +106,7 @@ $ouwikioutput->ouwiki_render_participation_list($cm, $course, $pagename, $groupi
 // Footer
 if (empty($download)) {
     $pageversion = ouwiki_get_current_page($subwiki, $pagename);
+    echo $ouwikioutput->get_link_back_to_wiki($cm);
     echo $ouwikioutput->get_bottom_buttons($subwiki, $cm, $context, $pageversion, false);
     ouwiki_print_footer($course, $cm, $subwiki, $pagename, null, 'view');
 }

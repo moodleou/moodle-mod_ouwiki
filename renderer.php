@@ -1358,4 +1358,16 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
     public function set_export_button($type, $id, $courseid, $tree = 0) {
         return;
     }
+
+    /**
+     * Return a button-like link which takes the user back to the main page.
+     * @param $cm, course-module object.
+     */
+    public function get_link_back_to_wiki($cm) {
+        global $CFG;
+        $label = $cm->name;
+        $url = $CFG->wwwroot . '/mod/ouwiki/view.php?id=' . $cm->id;
+        return html_writer::tag('div', link_arrow_left($label, $url), array('id' => 'ouwiki-arrowback'));
+    }
+
 }
