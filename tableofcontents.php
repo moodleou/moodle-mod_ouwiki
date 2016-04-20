@@ -71,6 +71,11 @@ class TableOfContents {
     return $output;
   }
 
+  /**
+   * Generates the chapter number for a heading, for example "1.0.2"
+   * @param  array $h An array of alle heading numbers
+   * @return string    The chapter number
+   */
   private function getChapterNumber($h) {
     $number = "";
 
