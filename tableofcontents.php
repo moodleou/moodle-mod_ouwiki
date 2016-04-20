@@ -57,7 +57,8 @@ class TableOfContents {
             foreach($h5tree as $h5 => $h6tree) {
               foreach($h6tree as $h6 => $obj) {
                 if($obj) {
-                  $output .= '<li><a href="#'.$obj->id.'">'.$obj->name .'</a></li>';
+                  $h = array($h1, $h2, $h3, $h4, $h5, $h6);
+                  $output .= '<li><a href="#'.$obj->id.'">'.$this->getChapterNumber($h)." ".$obj->name .'</a></li>';
                 }
               }
             }
@@ -68,6 +69,30 @@ class TableOfContents {
     $output .= "</ul>";
 
     return $output;
+  }
+
+  private function getChapterNumber($h) {
+    $number = "";
+
+    // Generate full number with unnecessary zeros and dots
+    // Example: 1.2.0.0.0.0
+    for($i = 0; $i <= 6; $i++) {
+      $number .= $h[$i] . '.';
+    }
+
+    $str = "";
+    $bool = true;
+
+    // Deletes unnecessary dots and zeros from the right side
+    // Example: 1.2.0.0.0.0 becomes 1.2
+    while($bool) {
+      $str = rtrim($number, '.');
+      $str = rtrim($str, '0');
+      $bool = ($str !== $number) ? true : false;
+      $number = $str;
+    }
+
+    return rtrim($number, '.');
   }
 
   /*
