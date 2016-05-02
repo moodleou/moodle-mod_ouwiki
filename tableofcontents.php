@@ -28,6 +28,8 @@ class TableOfContents {
   // 6: <h1> - <h6>
   // n: the number of headings
   private $ToC = array(array(array(array(array(array())))));
+  private $reducedToC = null;
+
   private $html = "";
 
   private $lastH1 = 0;
@@ -36,11 +38,15 @@ class TableOfContents {
   private $lastH4 = 0;
   private $lastH5 = 0;
   private $lastH6 = 0;
+
   private $lastLvl = 0;
+  private $minLvl = 0;
 
   public function __construct($html) {
     $this->html = $html;
     $this->parseHtml($html);
+
+    $this->setMinLvl();
   }
 
   /*
@@ -48,8 +54,11 @@ class TableOfContents {
   */
   public function toHtml() {
     $toc = $this->ToC;
-    $output = "<h3>" . get_string('tableofcontents', 'ouwiki') . "</h3>";
-    $output .= "<ul>";
+    $output = "<h3 class='ouwtopheading'>" . get_string('tableofcontents', 'ouwiki') . "</h3>";
+
+    // Helps building the nested <ul>-elements
+    $lastlvl = 0;
+
     foreach($toc as $h1 => $h2tree) {
       foreach($h2tree as $h2 => $h3tree) {
         foreach($h3tree as $h3 => $h4tree) {
@@ -57,8 +66,33 @@ class TableOfContents {
             foreach($h5tree as $h5 => $h6tree) {
               foreach($h6tree as $h6 => $obj) {
                 if($obj) {
+                  // Get the chapter number, for example 1.2.3
                   $h = array($h1, $h2, $h3, $h4, $h5, $h6);
-                  $output .= '<li><a href="#'.$obj->id.'">'.$this->getChapterNumber($h)." ".$obj->name .'</a></li>';
+                  $chapterNumber = $this->getChapterNumber($h);
+
+                  // Get the level, for this example 3
+                  $currentLvl = $this->getLvlByChapterNumber($chapterNumber);
+
+                  // The elements heading
+                  $element = '<li><a href="#'.$obj->id.'">'.$chapterNumber." ".$obj->name .'</a></li>';
+
+                  // New nested <ul>
+                  if($currentLvl > $lastlvl) {
+                    $output .= str_repeat("<ul>", $currentLvl - $lastlvl);
+                    $output .= $element;
+                  }
+                  // Close as many <ul> as necessary
+                  elseif ($currentLvl < $lastlvl) {
+                    $output .= str_repeat("</ul>", $lastlvl - $currentLvl);
+                    $output .= $element;
+                  }
+                  // Same level, just add <li>
+                  else {
+                    $output .= $element;
+                  }
+
+                  // Set helper
+                  $lastlvl = $currentLvl;
                 }
               }
             }
@@ -66,9 +100,33 @@ class TableOfContents {
         }
       }
     }
-    $output .= "</ul>";
-
     return $output;
+  }
+
+  /**
+   * Returns the headings level by the chapter number
+   *
+   * For example: 1.2.3 => 3
+   *              1.3   => 2
+   * @param  String $n The chapter number
+   * @return Number The headings lvel
+   */
+  private function getLvlByChapterNumber($n) {
+    $e = explode('.', $n);
+    return count($e);
+  }
+
+  /**
+   * Sets the minimum level of headings
+   *
+   * If there are only <h3> and <h4> headings the minlvl is 2
+   */
+  private function setMinLvl() {
+    $reducedToC = $this->ToC;
+    while(!isset($reducedToC[1])) {
+      $reducedToC = $reducedToC[0];
+      $this->minLvl++;
+    }
   }
 
   /**
@@ -97,7 +155,9 @@ class TableOfContents {
       $number = $str;
     }
 
-    return rtrim($number, '.');
+    $str = rtrim($number, '.');
+
+    return substr($str, 2*$this->minLvl);
   }
 
   /*
