@@ -42,6 +42,8 @@ class TableOfContents {
   private $lastLvl = 0;
   private $minLvl = 0;
 
+  public $numberOfHeadings;
+
   public function __construct($html) {
     $this->html = $html;
     $this->parseHtml($html);
@@ -53,7 +55,13 @@ class TableOfContents {
   * returns the table of contents as printable html
   */
   public function toHtml() {
+    // No headings => no reason for a table of contents
+    if($this->numberOfHeadings < 1) {
+      return "";
+    }
+
     $toc = $this->ToC;
+    //echo "<pre>" . print_r($toc, true) . "</pre>";
     $output = "<h3 class='ouwtopheading'>" . get_string('tableofcontents', 'ouwiki') . "</h3>";
 
     // Helps building the nested <ul>-elements
@@ -108,8 +116,8 @@ class TableOfContents {
    *
    * For example: 1.2.3 => 3
    *              1.3   => 2
-   * @param  String $n The chapter number
-   * @return Number The headings lvel
+   * @param  string $n The chapter number
+   * @return int The headings lvel
    */
   private function getLvlByChapterNumber($n) {
     $e = explode('.', $n);
@@ -123,7 +131,7 @@ class TableOfContents {
    */
   private function setMinLvl() {
     $reducedToC = $this->ToC;
-    while(!isset($reducedToC[1])) {
+    while(!isset($reducedToC[1]) && isset($reducedToC[0])) {
       $reducedToC = $reducedToC[0];
       $this->minLvl++;
     }
@@ -139,7 +147,7 @@ class TableOfContents {
 
     // Generate full number with unnecessary zeros and dots
     // Example: 1.2.0.0.0.0
-    for($i = 0; $i <= 6; $i++) {
+    for($i = 0; $i < 6; $i++) {
       $number .= $h[$i] . '.';
     }
 
@@ -166,28 +174,28 @@ class TableOfContents {
   * @param String $html The html-snippet to parse
   */
   private function parseHtml($html) {
-    $reader = new XMLReader();
-    $reader->xml($html);
+    $dom = new DOMDocument();
+    $dom->loadHTML('<?xml encoding="UTF-8">' . $html);
 
-    $headings = [];
-    $output = "";
+    // Get all Headings
+    $xpath = new DOMXPath($dom);
+    $query = '//h1 | //h2 | //h3 | //h4 | //h5 | //h6 | //H1 | //H2 | //H3 | //H4 | //H5 | //H6';
+    $headings = $xpath->query($query);
 
-    $lastlevel = 0;
+    $this->numberOfHeadings = $headings->length;
 
-    // traverse the tree
-    while($reader->read() !== false) {
-      $tag = $reader->name;
-      $content = $reader->readString();
-      $matches = null;
+    if($headings->length > 0 ) {
+      foreach ($headings as $heading) {
+        // Get Heading level: <h6> => 6
+        $lvl = substr($heading->tagName, 1);
 
-      // is it a h1-h6 heading?
-      preg_match('/[hH][1-6]/', $tag, $matches);
-      if(!empty($content) && count($matches) > 0) {
-        // example: h1 -> 1
-        $lvl = substr($tag, 1);
+        // Get id:
         // <h1 id="ouw_s0_0"> => ouw_s0_0
-        $id = $reader->getAttribute("id");
-        $this->addToTree($lvl, $content, $id);
+        $attributes = $heading->attributes;
+        $id = $attributes->getNamedItem('id')->value;
+
+        // Add heading to data structure
+        $this->addToTree($lvl, $heading->nodeValue, $id);
       }
     }
   }
