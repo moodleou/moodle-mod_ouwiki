@@ -761,13 +761,13 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         global $USER;
         $output = html_writer::start_tag('ul');
         if ($this->params->page == 'wikiindex.php') {
-            $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_index'));
+            $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_index' , 'style' => "display: inline-block !important"));
             $output .= html_writer::start_tag('span');
             $output .= get_string('index', 'ouwiki');
             $output .= html_writer::end_tag('span');
             $output .= html_writer::end_tag('li');
         } else {
-            $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_index'));
+            $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_index' , 'style' => "display: inline-block !important"));
             $output .= html_writer::tag('a', get_string('index', 'ouwiki'),
                     array('href' => 'wikiindex.php?'.
                             ouwiki_display_wiki_parameters('', $this->params->subwiki,
@@ -776,13 +776,13 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             $output .= html_writer::end_tag('li');
         }
         if ($this->params->page == 'wikihistory.php') {
-            $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_history'));
+            $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_history' , 'style' => "display: inline-block !important"));
             $output .= html_writer::start_tag('span');
             $output .= get_string('wikirecentchanges', 'ouwiki');
             $output .= html_writer::end_tag('span');
             $output .= html_writer::end_tag('li');
         } else {
-            $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_history'));
+            $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_history' , 'style' => "display: inline-block !important"));
             $output .= html_writer::tag('a', get_string('wikirecentchanges', 'ouwiki'),
                     array('href' => 'wikihistory.php?'.
                             ouwiki_display_wiki_parameters('', $this->params->subwiki,
@@ -792,7 +792,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         }
         // Check for mod setting and ability to edit that enables this link.
         if (($this->params->subwiki->canedit) && ($this->params->ouwiki->allowimport)) {
-            $output .= html_writer::start_tag('li', array('id' => 'ouwiki_import_pages'));
+            $output .= html_writer::start_tag('li', array('id' => 'ouwiki_import_pages' , 'style' => "display: inline-block !important"));
             if ($this->params->page == 'import.php') {
                 $output .= html_writer::tag('span', get_string('import', 'ouwiki'));
             } else {
@@ -823,14 +823,14 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             if ($this->params->page == 'participation.php' ||
                     $this->params->page == 'userparticipation.php') {
                 $output .= html_writer::start_tag('li',
-                        array('id' => 'ouwiki_nav_participation'));
+                        array('id' => 'ouwiki_nav_participation' , 'style' => "display: inline-block !important"));
                 $output .= html_writer::start_tag('span');
                 $output .= $participationstr;
                 $output .= html_writer::end_tag('span');
                 $output .= html_writer::end_tag('li');
             } else {
                 $output .= html_writer::start_tag('li',
-                        array('id' => 'ouwiki_nav_participation'));
+                        array('id' => 'ouwiki_nav_participation' , 'style' => "display: inline-block !important"));
                 $output .= html_writer::tag('a', $participationstr,
                         array('href' => $participationpage, 'class' => 'osep-smallbutton'));
                 $output .= html_writer::end_tag('li');
