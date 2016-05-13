@@ -3,7 +3,7 @@ $html = <<<HTML
     <!DOCTYPE HTML>
     <html lang="en">
     <head>
-        <title>Test Canvas</title>
+        <title>Editeur</title>
         <link rel="stylesheet" href="css/style.css">
         <script src="js/jquery.min.js"></script>
         <script type="text/javascript" src="js/resize.js"></script>
