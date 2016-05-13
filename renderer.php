@@ -830,6 +830,19 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $output .= html_writer::end_tag('li');
             }
         }
+        $output .= html_writer::start_tag('script', array('src' => "./print/js/print.js"));
+        $output .= html_writer::end_tag('script');
+
+        $output .= html_writer::start_tag('li');
+        $output .= html_writer::start_tag('a', array('id' => "buttonPrint",'onclick' => "printcontent('ouwiki_content')", 'style' => "cursor: pointer")).get_string('print' , 'ouwiki');
+        $output .= html_writer::end_tag('a');
+        $output .= html_writer::end_tag('li');
+
+        $output .= html_writer::start_tag('li');
+        $output .= html_writer::start_tag('a', array('id' => "buttonPrintPDF",'href' => "print/printPDF.php", 'style' => "cursor: pointer", 'target' => "_blank")).get_string('printpdf', 'ouwiki');
+        $output .= html_writer::end_tag('a');
+        $output .= html_writer::end_tag('li');
+        
         $output .= html_writer::end_tag('ul');
         return array($output, $participationstr);
     }

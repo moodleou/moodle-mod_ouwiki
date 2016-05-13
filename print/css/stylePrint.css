@@ -1,0 +1,27 @@
+@media screen {
+    body {
+        margin-right: 50%;
+        text-align: justify;
+    }
+
+    button {
+        color : black;
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        margin-left: 110%;
+    }
+
+    table {
+        width: 100% !important;
+    }
+}
+
+@media print {
+    body {
+        text-align: justify;
+    }
+
+    button {
+        display: none;
+    }
+}
+
