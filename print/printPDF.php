@@ -10,4 +10,5 @@ $test = $_SESSION['versionid'];
 $pdf = new HTML2PDF('P', 'LETTER', 'fr');
 $pdf->setTestIsImage(false); //If true then impossible to create a pdf with images, problem of link of image impossible to load
 $pdf->writeHTML($test);
+ob_end_clean();
 $pdf->Output('courspdf.pdf');
