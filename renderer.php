@@ -684,6 +684,12 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $output .= $this->ouwiki_get_page_heading($participationstr);
 
         $output .= html_writer::div('', 'clearer');
+        
+        //Get back the current contents of the page for the imprission
+        $currentversion = ouwiki_get_current_page($subwiki,$pagename);
+        $currentversion->xhtml = file_rewrite_pluginfile_urls($currentversion->xhtml, 'pluginfile.php', $context->id, 'mod_ouwiki', 'content', $currentversion->versionid);
+        $_SESSION['versionid'] =  $currentversion->xhtml;
+        
         if ($notabs) {
             $extraclass = $selector ? ' ouwiki_gotselector' : '';
             $output .= html_writer::div('', 'ouwiki_notabs' . $extraclass,
