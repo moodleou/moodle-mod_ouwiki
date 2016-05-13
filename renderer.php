@@ -689,6 +689,19 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $currentversion = ouwiki_get_current_page($subwiki,$pagename);
         $currentversion->xhtml = file_rewrite_pluginfile_urls($currentversion->xhtml, 'pluginfile.php', $context->id, 'mod_ouwiki', 'content', $currentversion->versionid);
         $_SESSION['versionid'] =  $currentversion->xhtml;
+
+         global $DB;
+        $sql = "SELECT title
+                FROM {ouwiki_pages}
+                WHERE subwikiid = ?";
+        $sqlres = $DB->get_records_sql($sql,array($subwiki->id));
+
+        $_SESSION['allpages'] = "";
+        foreach ($sqlres as $value){
+            $allpages = ouwiki_get_current_page($subwiki,$value->title);
+            $allpages->xhtml = file_rewrite_pluginfile_urls($allpages->xhtml, 'pluginfile.php', $context->id, 'mod_ouwiki', 'content', $allpages->versionid);
+            $_SESSION['allpages'] .=  $allpages->xhtml;
+        }
         
         if ($notabs) {
             $extraclass = $selector ? ' ouwiki_gotselector' : '';
