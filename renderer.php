@@ -206,8 +206,17 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $cm = $this->params->cm;
         $output = html_writer::start_tag('div', array('class' => 'ouw_topheading'));
         $output .= html_writer::start_tag('div', array('class' => 'ouw_heading'));
+
         $output .= html_writer::tag('h2', format_string($title),
                 array('class' => 'ouw_topheading'));
+
+        // Add table of contents
+        global $CFG;
+        require_once($CFG->dirroot.'/mod/ouwiki/tableofcontents.php');
+        $toc = new TableOfContents($pageversion->xhtml);
+        $output .= $toc->toHtml();
+
+        
         if ($gewgaws) {
             $output .= $this->render_heading_bit(1, $pageversion->title, $subwiki,
                     $cm, null, $annotations, $pageversion->locked, $files,
