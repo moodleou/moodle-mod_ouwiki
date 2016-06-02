@@ -685,7 +685,6 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         $output .= html_writer::div('', 'clearer');
 
-
         //Request to find pages bound to the page of departure
         global $DB;
         $sql = "SELECT title
@@ -728,7 +727,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             $output .= html_writer::start_tag('a', array('href' => "$href", 'style' => "cursor: pointer; ")).$value.html_writer::end_tag('a');
             $output .= html_writer::end_tag('li');
         }
-        
+
         if ($notabs) {
             $extraclass = $selector ? ' ouwiki_gotselector' : '';
             $output .= html_writer::div('', 'ouwiki_notabs' . $extraclass,
