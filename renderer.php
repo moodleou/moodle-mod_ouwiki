@@ -684,7 +684,50 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $output .= $this->ouwiki_get_page_heading($participationstr);
 
         $output .= html_writer::div('', 'clearer');
-        
+
+        //Request to find pages bound to the page of departure
+        global $DB;
+        $sql = "SELECT title
+                FROM {ouwiki_pages}
+                WHERE subwikiid = ?";
+        $sqlres = $DB->get_records_sql($sql,array($subwiki->id));
+
+        $output .= html_writer::start_tag('hr', array('style' => "width:10%; margin:auto; margin-bottom: 1%; margin-top: 15px;"));
+        $output .= html_writer::start_tag('ul', array('style' => "list-style-type:none; margin : 0; text-align : right; margin-bottom:10px; margin-top:15px;"));
+
+        //Loop which travel the result of the request and allows to show the navigation bar
+        foreach ($sqlres as $value){
+            $nocurrentpage = html_writer::start_tag('li', array('style' => "padding: 5px; display: inline-block;"));
+            if($value->title==NULL){
+                $value = "Page de départ";
+                if($_GET['page']==NULL){
+                    $href =  "http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+                    $output .= html_writer::start_tag('li', array('style' => "padding: 5px; display: inline-block; border: 1px solid #ddd;  border-radius: 5px; "));
+                }else {
+                    $href = "http://" . $_SERVER['HTTP_HOST'] . "/mod/ouwiki/view.php?id=" .$_GET['id'];
+                    $output .= $nocurrentpage;
+                }
+            }
+            else{
+                $value = $value->title;
+                if($_GET["page"]==NULL ) {
+                    $href = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . "&page=$value";
+                    $output .= $nocurrentpage;
+
+                }else if($_GET["page"]!=$value){
+                    $href = "http://" . $_SERVER['HTTP_HOST'] . "/mod/ouwiki/view.php?id=" . $_GET['id'] . "&page=$value";
+                    $output .= $nocurrentpage;
+                }else{
+                    $href = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+                    $output .= html_writer::start_tag('li', array('style' => "padding: 5px; display: inline-block; border: 1px solid #ddd;  border-radius: 5px; "));
+
+                }
+            }
+
+            $output .= html_writer::start_tag('a', array('href' => "$href", 'style' => "cursor: pointer; ")).$value.html_writer::end_tag('a');
+            $output .= html_writer::end_tag('li');
+        }
+
         if ($notabs) {
             $extraclass = $selector ? ' ouwiki_gotselector' : '';
             $output .= html_writer::div('', 'ouwiki_notabs' . $extraclass,
