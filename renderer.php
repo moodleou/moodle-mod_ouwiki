@@ -692,6 +692,14 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 WHERE subwikiid = ?";
         $sqlres = $DB->get_records_sql($sql,array($subwiki->id));
 
+        //concatenated titles into string
+        $tab = "";
+        foreach ($sqlres as $value){
+            $tab .= "$value->title"."splitword";
+        }
+        $_SESSION['titre']=$tab;
+
+
         $output .= html_writer::start_tag('hr', array('style' => "width:10%; margin:auto; margin-bottom: 1%; margin-top: 15px;"));
         $output .= html_writer::start_tag('ul', array('style' => "list-style-type:none; margin : 0; text-align : right; margin-bottom:10px; margin-top:15px;"));
 
@@ -874,6 +882,34 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $output .= html_writer::end_tag('li');
             }
         }
+
+                $output .= html_writer::start_tag('script', array('src' => "./print/js/print.js"));
+        $output .= html_writer::end_tag('script');
+
+        $output .= html_writer::start_tag('script', array('src' => "./print/js/printAll.js"));
+        $output .= html_writer::end_tag('script');
+
+        $output .= html_writer::start_tag('script', array('src' => "./canvas/js/jquery.min.js"));
+        $output .= html_writer::end_tag('script');
+
+        $output .= html_writer::start_tag('li');
+        $output .= html_writer::start_tag('a', array('id' => "buttonPrint",'onclick' => "printcontent()", 'style' => "cursor: pointer")).get_string('print' , 'ouwiki');
+        $output .= html_writer::end_tag('a');
+        $output .= html_writer::end_tag('li');
+
+        //TODO
+        /*$output .= html_writer::start_tag('li');
+        $output .= html_writer::start_tag('a', array('id' => "buttonPrintPDF",'href' => "print/printPDF.php", 'style' => "cursor: pointer, diplay: inline-block", 'target' => "_blank")).get_string('printpdf', 'ouwiki');
+        $output .= html_writer::end_tag('a');
+        $output .= html_writer::end_tag('li');*/
+
+        $titles = $_SESSION['titre'];
+
+        $output .= html_writer::start_tag('li');
+        $output .= html_writer::start_tag('a', array('id' => "buttonPrintAll", 'onclick' => "printallcontent(\"$titles\")", 'style' => "cursor: pointer, , diplay: inline-block")).get_string('printall', 'ouwiki');
+        $output .= html_writer::end_tag('a');
+        $output .= html_writer::end_tag('li');
+
         $output .= html_writer::end_tag('ul');
         return array($output, $participationstr);
     }
