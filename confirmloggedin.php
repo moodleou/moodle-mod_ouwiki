@@ -31,7 +31,11 @@ header('Content-Type: text/plain');
 try {
     // Test session - These functions throw exceptions so trap and exit if they fail.
     // This saves 404 errors and sends a smaller page.
-    require_login(null, true);
+    $contextid = required_param('contextid', PARAM_INT);
+    list($context, $course, $cm) = get_context_info_array($contextid);
+    $PAGE->set_url('/mod/ouwiki/confirmloggedin.php');
+    $PAGE->set_context($context);
+    require_login($course, false, $cm);
     require_sesskey();
 } catch (moodle_exception $e) {
     $pid = 0;
