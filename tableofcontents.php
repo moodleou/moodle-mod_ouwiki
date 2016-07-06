@@ -47,7 +47,6 @@ class TableOfContents {
   public function __construct($html) {
     $this->html = $html;
     $this->parseHtml($html);
-
     $this->setMinLvl();
   }
 
@@ -108,6 +107,8 @@ class TableOfContents {
         }
       }
     }
+    
+    $output .= "</ul>";
     return $output;
   }
 
