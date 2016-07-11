@@ -61,7 +61,7 @@ class TableOfContents {
 
     $toc = $this->ToC;
     //echo "<pre>" . print_r($toc, true) . "</pre>";
-    $output = "<h3 class='ouwtopheading'>" . get_string('tableofcontents', 'ouwiki') . "</h3>";
+    $output = PHP_EOL . "<h3 class='ouwtopheading'>" . get_string('tableofcontents', 'ouwiki') . "</h3>" . PHP_EOL;
 
     // Helps building the nested <ul>-elements
     $lastlvl = 0;
@@ -81,16 +81,16 @@ class TableOfContents {
                   $currentLvl = $this->getLvlByChapterNumber($chapterNumber);
 
                   // The elements heading
-                  $element = '<li><a href="#'.$obj->id.'">'.$chapterNumber." ".$obj->name .'</a></li>';
+                  $element = '<li><a href="#'.$obj->id.'">'.$chapterNumber." ".$obj->name .'</a></li>' . PHP_EOL;
 
                   // New nested <ul>
                   if($currentLvl > $lastlvl) {
-                    $output .= str_repeat("<ul>", $currentLvl - $lastlvl);
+                    $output .= str_repeat("<ul>" . PHP_EOL, $currentLvl - $lastlvl);
                     $output .= $element;
                   }
                   // Close as many <ul> as necessary
                   elseif ($currentLvl < $lastlvl) {
-                    $output .= str_repeat("</ul>", $lastlvl - $currentLvl);
+                    $output .= str_repeat("</ul>" . PHP_EOL, $lastlvl - $currentLvl);
                     $output .= $element;
                   }
                   // Same level, just add <li>
@@ -108,7 +108,7 @@ class TableOfContents {
       }
     }
     
-    $output .= "</ul>";
+    $output .= str_repeat("</ul>" . PHP_EOL, $lastlvl);
     return $output;
   }
 
@@ -189,7 +189,17 @@ class TableOfContents {
       foreach ($headings as $heading) {
         // Get Heading level: <h6> => 6
         $lvl = substr($heading->tagName, 1);
-
+        
+        $childNodes = $heading->childNodes;
+        for($i = 0; $i < $childNodes->length; $i++) {
+            $node = $childNodes->item($i);
+            if(isset($node->tagName)) {
+                $heading->removeChild($node);
+                echo "Child removed! <br />";
+            }
+        }
+        
+        
         // Get id:
         // <h1 id="ouw_s0_0"> => ouw_s0_0
         $attributes = $heading->attributes;
