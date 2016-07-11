@@ -195,7 +195,6 @@ class TableOfContents {
             $node = $childNodes->item($i);
             if(isset($node->tagName)) {
                 $heading->removeChild($node);
-                echo "Child removed! <br />";
             }
         }
         
