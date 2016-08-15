@@ -101,6 +101,9 @@ if ($rss) {
 
 $pageparams = ouwiki_display_wiki_parameters($pagename, $subwiki, $cm);
 
+$changeindex = 0;
+$changeids = array_keys($changes);
+
 foreach ($changes as $change) {
     $a = new StdClass;
     $a->name = htmlspecialchars(fullname($change));
@@ -112,7 +115,11 @@ foreach ($changes as $change) {
     }
     $itemtitle = $ouwiki->name.' - '.$pagetitle.' ('.ouwiki_nice_date($change->timecreated).')';
 
-    $nextchange = next($changes);
+    $nextchange = false;
+    if ($changeindex + 1 < count($changes)) {
+        $nextchange = $changes[$changeids[$changeindex + 1]];
+    }
+
     if ($nextchange) {
         $a->url = $CFG->wwwroot.'/mod/ouwiki/diff.php?'.$pageparams.'&amp;v1='.
             $nextchange->versionid.'&amp;v2='.$change->versionid;
@@ -141,6 +148,8 @@ foreach ($changes as $change) {
   <summary type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml">'.$itemdescription.'</div></summary>
 </entry>';
     }
+
+    $changeindex++;
 }
 
 if ($rss) {
