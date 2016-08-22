@@ -184,8 +184,8 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
                 $groupid = reset($groups)->id;
             }
             $othergroup = !groups_is_member($groupid);
-            $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid = ?
-                    AND userid IS NULL', array($ouwiki->id, $groupid));
+            // Removed AND userid IS NULL
+            $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid = ?', array($ouwiki->id, $groupid));
             if ($subwiki) {
                 ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $othergroup);
                 return $subwiki;
@@ -257,11 +257,11 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
 
 // Create a new subwiki instance
 function ouwiki_create_subwiki($ouwiki, $cm, $course, $userid = null, $groupid = null) {
-    global $DB;
+    global $DB, $USER;
 
     $subwiki = new StdClass;
     $subwiki->wikiid = $ouwiki->id;
-    $subwiki->userid = $userid;
+    $subwiki->userid = $USER->id;
     $subwiki->groupid = $groupid;
     $subwiki->magic = ouwiki_generate_magic_number();
     try {
