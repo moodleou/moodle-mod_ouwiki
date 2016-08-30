@@ -257,13 +257,21 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
 
 // Create a new subwiki instance
 function ouwiki_create_subwiki($ouwiki, $cm, $course, $userid = null, $groupid = null) {
-    global $DB, $USER;
+    global $DB;
 
     $subwiki = new StdClass;
     $subwiki->wikiid = $ouwiki->id;
-    $subwiki->userid = $USER->id;
+    $subwiki->userid = $userid;
     $subwiki->groupid = $groupid;
     $subwiki->magic = ouwiki_generate_magic_number();
+    
+    // Is there already a wiki?
+    $conditions =  array('wikiid' => $ouwiki->id, 'userid' => $userid, 'groupid' => $groupid);
+    if($DB->record_exists('ouwiki_subwikis', $conditions)) {
+    	return $DB->get_record('ouwiki_subwikis', $conditions);
+    }
+    
+    // Create Wiki!
     try {
         $subwiki->id = $DB->insert_record('ouwiki_subwikis', $subwiki);
     } catch (Exception $e) {
