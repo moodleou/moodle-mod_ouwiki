@@ -590,3 +590,5 @@ $string['event:savefailed'] = 'Session fail on page save';
 $string['ouwikicrontask'] = 'OU wiki maintenance jobs';
 
 $string['adddraw'] = 'Add Draw';
+$string['print'] = 'Print';
+$string['printall'] = 'Print All';
