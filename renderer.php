@@ -701,7 +701,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
 
         $output .= html_writer::start_tag('hr', array('style' => "width:10%; margin:auto; margin-bottom: 1%; margin-top: 15px;"));
-        $output .= html_writer::start_tag('ul', array('style' => "list-style-type:none; margin : 0; text-align : right; margin-bottom:10px; margin-top:15px;"));
+        $output .= html_writer::start_tag('ul', array('style' => "list-style-type:none; margin : 0; margin-bottom:10px; margin-top:15px;"));
 
         //Loop which travel the result of the request and allows to show the navigation bar
         foreach ($sqlres as $value){
