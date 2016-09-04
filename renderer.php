@@ -51,8 +51,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         $output = '';
         $modcontext = context_module::instance($cm->id);
-        $title = $pageversion->title === '' ? get_string('startpage', 'ouwiki') :
-                htmlspecialchars($pageversion->title);
+        $title = $pageversion->title === '' ? get_string('startpage', 'ouwiki') : htmlspecialchars($pageversion->title);
 
         // Get annotations - only if using annotation system. Prevents unnecessary db access.
         if ($subwiki->annotation) {
@@ -62,15 +61,13 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         }
 
         // Setup annotations according to the page we are on.
-            if ($page == 'view') {
+        if ($page == 'view') {
             if ($subwiki->annotation && count($annotations)) {
-                $pageversion->xhtml =
-                        ouwiki_highlight_existing_annotations($pageversion->xhtml, $annotations, 'view');
+                $pageversion->xhtml = ouwiki_highlight_existing_annotations($pageversion->xhtml, $annotations, 'view');
             }
         } else if ($page == 'annotate') {
             $pageversion->xhtml = ouwiki_setup_annotation_markers($pageversion->xhtml);
-            $pageversion->xhtml =
-                    ouwiki_highlight_existing_annotations($pageversion->xhtml, $annotations, 'annotate');
+            $pageversion->xhtml = ouwiki_highlight_existing_annotations($pageversion->xhtml, $annotations, 'annotate');
         }
 
         // Must rewrite plugin urls AFTER doing annotations because they depend on byte position.
@@ -202,8 +199,8 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      * @return string
      */
     public function get_topheading_section($title, $gewgaws, $pageversion, $annotations, $files) {
-        $subwiki = $this->params->subwiki;
-        $cm = $this->params->cm;
+        $subwiki = (isset($this->params->subwiki)) ? $this->params->subwiki : null;
+        $cm = (isset($this->params->cm)) ? $this->params->cm : null;
         $output = html_writer::start_tag('div', array('class' => 'ouw_topheading'));
         $output .= html_writer::start_tag('div', array('class' => 'ouw_heading'));
         $output .= html_writer::tag('h2', format_string($title),
@@ -274,10 +271,10 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      */
     public function get_links_to($links) {
         global $CFG;
-        $output = html_writer::start_tag('div', array('class'=>'ouw_linkedfrom'));
+        $output = html_writer::start_tag('div', array('class' => 'ouw_linkedfrom'));
         $output .= html_writer::tag('h3', get_string(
                 count($links) == 1 ? 'linkedfromsingle' : 'linkedfrom', 'ouwiki'),
-                array('class'=>'ouw_topheading'));
+                array('class' => 'ouw_topheading'));
         $output .= html_writer::start_tag('ul');
         $first = true;
         foreach ($links as $link) {
@@ -287,8 +284,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             } else {
                 $output .= '&#8226; ';
             }
-            $linktitle = ($link->title) ? htmlspecialchars($link->title) :
-            get_string('startpage', 'ouwiki');
+            $linktitle = ($link->title) ? htmlspecialchars($link->title) : get_string('startpage', 'ouwiki');
             $output .= html_writer::tag('a', $linktitle,
                     array('href' => $CFG->wwwroot . '/mod/ouwiki/view.php?' .
                             ouwiki_display_wiki_parameters(
@@ -319,14 +315,14 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $output .= html_writer::start_tag('div', array('class' => 'ouw_byheading'));
 
         // Add edit link for page or section
-        if ($subwiki->canedit && !$locked) {
+        if (isset($subwiki->canedit) && !$locked) {
             $str = $xhtmlid ? 'editsection' : 'editpage';
 
             $output .= $this->ouwiki_get_edit_link($str, $pagename, $subwiki, $cm, $xhtmlid);
         }
 
         // output the annotate link if using annotation system, only for page not section
-        if (!$xhtmlid && $subwiki->annotation) {
+        if (!$xhtmlid && isset($subwiki->annotation)) {
             // Add annotate link
             if ($subwiki->canannotate) {
                 $output .= $this->ouwiki_get_annotate_link($pagename, $subwiki, $cm);
@@ -448,8 +444,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $output .= html_writer::start_tag('div', array('class' => 'ouw_preview'));
         $output .= $this->output->box_start("generalbox boxaligncenter");
         // Title & content of page.
-        $title = $page !== null && $page !== '' ? htmlspecialchars($page) :
-                get_string('startpage', 'ouwiki');
+        $title = $page !== null && $page !== '' ? htmlspecialchars($page) : get_string('startpage', 'ouwiki');
         $output .= html_writer::tag('h1', $title);
         $output .= $content;
         $output .= html_writer::end_tag('div');
@@ -866,7 +861,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      * @param string groupname
      */
     public function ouwiki_render_participation_list($cm, $course, $pagename, $groupid, $ouwiki,
-        $subwiki, $download, $page, $grading_info, $participation, $context, $viewfullnames,
+        $subwiki, $download, $page, $gradinginfo, $participation, $context, $viewfullnames,
         $groupname) {
         global $DB, $CFG, $OUTPUT;
 
@@ -880,7 +875,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         }
 
         $table = new ouwiki_participation_table($cm, $course, $ouwiki,
-            $pagename, $groupid, $groupname, $grading_info);
+            $pagename, $groupid, $groupname, $gradinginfo);
         $table->setup($download);
         $table->is_downloading($download, $filename, get_string('participation', 'ouwiki'));
 
@@ -947,13 +942,13 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                     }
 
                     // grades
-                    if ($grading_info) {
+                    if ($gradinginfo) {
                         if (!$table->is_downloading()) {
                             $attributes = array('userid' => $user->id);
-                            if (!isset($grading_info->items[0]->grades[$user->id]->grade)) {
+                            if (!isset($gradinginfo->items[0]->grades[$user->id]->grade)) {
                                 $user->grade = -1;
                             } else {
-                                $user->grade = $grading_info->items[0]->grades[$user->id]->grade;
+                                $user->grade = $gradinginfo->items[0]->grades[$user->id]->grade;
                                 $user->grade = abs($user->grade);
                             }
                             $menu = html_writer::select(make_grades_menu($ouwiki->grade),
@@ -961,10 +956,10 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                                 array(-1 => get_string('nograde')), $attributes);
                             $gradeitem = '<div id="gradeuser'.$user->id.'">'. $menu .'</div>';
                         } else {
-                            if (!isset($grading_info->items[0]->grades[$user->id]->grade)) {
+                            if (!isset($gradinginfo->items[0]->grades[$user->id]->grade)) {
                                 $gradeitem = get_string('nograde');
                             } else {
-                                $gradeitem = $grading_info->items[0]->grades[$user->id]->grade;
+                                $gradeitem = $gradinginfo->items[0]->grades[$user->id]->grade;
                             }
                         }
                     }
@@ -1021,7 +1016,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         $table->finish_output();
         // print the grade form footer if necessary
-        if (!$table->is_downloading() && $grading_info && !empty($participation)) {
+        if (!$table->is_downloading() && $gradinginfo && !empty($participation)) {
             echo $table->grade_form_footer();
         }
     }
@@ -1084,9 +1079,9 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 }
                 $now = time();
                 $edittime = $time;
-                if ($now - $edittime < 5*60) {
+                if ($now - $edittime < 5 * 60) {
                     $category = 'ouw_recenter';
-                } else if ($now - $edittime < 4*60*60) {
+                } else if ($now - $edittime < 4 * 60 * 60) {
                     $category = 'ouw_recent';
                 } else {
                     $category = 'ouw_recentnot';
@@ -1095,8 +1090,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $time .= $edittime;
                 $time .= html_writer::end_tag('span');
             }
-            $page = $change->title ? htmlspecialchars($change->title) :
-                get_string('startpage', 'ouwiki');
+            $page = $change->title ? htmlspecialchars($change->title) : get_string('startpage', 'ouwiki');
             $row = array($date, $time, $page);
 
             // word counts
@@ -1197,13 +1191,13 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         global $CFG;
 
         require_once($CFG->libdir.'/gradelib.php');
-        $grading_info = grade_get_grades($course->id, 'mod', 'ouwiki', $ouwiki->id, $user->id);
+        $gradinginfo = grade_get_grades($course->id, 'mod', 'ouwiki', $ouwiki->id, $user->id);
 
-        if ($grading_info) {
-            if (!isset($grading_info->items[0]->grades[$user->id]->grade)) {
+        if ($gradinginfo) {
+            if (!isset($gradinginfo->items[0]->grades[$user->id]->grade)) {
                 $user->grade = -1;
             } else {
-                $user->grade = abs($grading_info->items[0]->grades[$user->id]->grade);
+                $user->grade = abs($gradinginfo->items[0]->grades[$user->id]->grade);
             }
             $grademenu = make_grades_menu($ouwiki->grade);
             $grademenu[-1] = get_string('nograde');
