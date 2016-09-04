@@ -28,8 +28,8 @@ require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
 $id = required_param('id', PARAM_INT);
 $versionid = required_param('version', PARAM_INT);
-$confirmed = optional_param('confirm', null, PARAM_ALPHA);
-$cancelled = optional_param('cancel', null, PARAM_ALPHA);
+$confirmed = optional_param('confirm', null, PARAM_TEXT);
+$cancelled = optional_param('cancel', null, PARAM_TEXT);
 
 $url = new moodle_url('/mod/ouwiki/view.php', array('id' => $id, 'page' => $pagename));
 $PAGE->set_url($url);
