@@ -708,7 +708,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             $nocurrentpage = html_writer::start_tag('li', array('style' => "padding: 5px; display: inline-block;"));
             if($value->title==NULL){
                 $value = "Page de départ";
-                if($_GET['page']==NULL){
+                if(!isset($_GET['page'])){
                     $href =  "http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
                     $output .= html_writer::start_tag('li', array('style' => "padding: 5px; display: inline-block; border: 1px solid #ddd;  border-radius: 5px; "));
                 }else {
@@ -904,7 +904,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $output .= html_writer::end_tag('a');
         $output .= html_writer::end_tag('li');*/
 
-        $titles = $_SESSION['titre'];
+        $titles = isset($_SESSION['titre']) ? $_SESSION['titre'] : "";
 
         $output .= html_writer::start_tag('li');
         $output .= html_writer::start_tag('a', array('id' => "buttonPrintAll", 'onclick' => "printallcontent(\"$titles\")", 'style' => "cursor: pointer, , diplay: inline-block")).get_string('printall', 'ouwiki');
