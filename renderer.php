@@ -709,7 +709,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             if($value->title==NULL){
                 $value = "Page de départ";
                 if(!isset($_GET['page'])){
-                    $href =  "http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+                    $href =  "http://" . $_SERVER['HTTP_HOST'] . "/mod/ouwiki/view.php?id=" .$_GET['id'];
                     $output .= html_writer::start_tag('li', array('style' => "padding: 5px; display: inline-block; border: 1px solid #ddd;  border-radius: 5px; "));
                 }else {
                     $href = "http://" . $_SERVER['HTTP_HOST'] . "/mod/ouwiki/view.php?id=" .$_GET['id'];
@@ -719,14 +719,14 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             else{
                 $value = $value->title;
                 if(!isset($_GET['page'])) {
-                    $href = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . "&page=$value";
+                    $href = "http://" . $_SERVER['HTTP_HOST'] . "/mod/ouwiki/view.php?id=" . $_GET['id'] . "&page=$value";
                     $output .= $nocurrentpage;
 
                 }else if($_GET["page"]!=$value){
                     $href = "http://" . $_SERVER['HTTP_HOST'] . "/mod/ouwiki/view.php?id=" . $_GET['id'] . "&page=$value";
                     $output .= $nocurrentpage;
                 }else{
-                    $href = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+                    $href = "http://" . $_SERVER['HTTP_HOST'] . "/mod/ouwiki/view.php?id=" . $_GET['id'] . "&page=$value";
                     $output .= html_writer::start_tag('li', array('style' => "padding: 5px; display: inline-block; border: 1px solid #ddd;  border-radius: 5px; "));
 
                 }
