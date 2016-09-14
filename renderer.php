@@ -718,7 +718,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             }
             else{
                 $value = $value->title;
-                if($_GET["page"]==NULL ) {
+                if(!isset($_GET['page'])) {
                     $href = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . "&page=$value";
                     $output .= $nocurrentpage;
 
