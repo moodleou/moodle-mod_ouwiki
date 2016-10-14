@@ -707,7 +707,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         foreach ($sqlres as $value){
             $nocurrentpage = html_writer::start_tag('li', array('style' => "padding: 5px; display: inline-block;"));
             if($value->title==NULL){
-                $value = "Page de départ";
+                $value = get_string('homepage', 'ouwiki');
                 if(!isset($_GET['page'])){
                     $href =  "http://" . $_SERVER['HTTP_HOST'] . "/mod/ouwiki/view.php?id=" .$_GET['id'];
                     $output .= html_writer::start_tag('li', array('style' => "padding: 5px; display: inline-block; border: 1px solid #ddd;  border-radius: 5px; "));
@@ -718,7 +718,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             }
             else{
                 $value = $value->title;
-                if(!isset($_GET['page'])) {
+                if(!isset($_GET["page"])) {
                     $href = "http://" . $_SERVER['HTTP_HOST'] . "/mod/ouwiki/view.php?id=" . $_GET['id'] . "&page=$value";
                     $output .= $nocurrentpage;
 
@@ -907,7 +907,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $titles = isset($_SESSION['titre']) ? $_SESSION['titre'] : "";
 
         $output .= html_writer::start_tag('li');
-        $output .= html_writer::start_tag('a', array('id' => "buttonPrintAll", 'onclick' => "printallcontent(\"$titles\")", 'style' => "cursor: pointer, , diplay: inline-block")).get_string('printall', 'ouwiki');
+        $output .= html_writer::start_tag('a', array('id' => "buttonPrintAll", 'onclick' => "printallcontent(\"$titles\")", 'style' => "cursor: pointer; display: inline-block")).get_string('printall', 'ouwiki');
         $output .= html_writer::end_tag('a');
         $output .= html_writer::end_tag('li');
 

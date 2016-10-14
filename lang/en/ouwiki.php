@@ -592,3 +592,4 @@ $string['ouwikicrontask'] = 'OU wiki maintenance jobs';
 $string['adddraw'] = 'Add Draw';
 $string['print'] = 'Print';
 $string['printall'] = 'Print All';
+$string['homepage'] = 'Home page';
