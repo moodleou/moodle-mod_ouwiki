@@ -21,6 +21,7 @@ function printcontent() {
         success : function(e){
             page = e.match(/<div\s+class="ouwiki_content">([\S\s]*?)<\/div><div class="clearer">/gi);
             windows.document.write(page[0]);
+            windows.document.close();
         }
     });
 

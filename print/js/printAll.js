@@ -15,27 +15,24 @@ function printallcontent(arrayTitle) {
     var titleList = arrayTitle.split("splitword");
     var windows = window.open('');
     windows.document.write('<link rel = "stylesheet" type = "text/css" href = "./print/css/stylePrint.css"> ');
-    windows.document.write('<button href = "#" onclick="window.print();return false">Imprimer</button>');
-
+    windows.document.write('<button onclick="window.print();return false">Imprimer</button>');
 
     var page = "";
-    $.ajax({url : url,
-        success : function(e){
-            page = e.match(/<div\s+class="ouwiki_content">([\S\s]*?)<\/div><div class="clearer">/gi);
-            windows.document.write(page[0]);
-        }
-    });
 
-    setTimeout(function(){
-        for(var i = 1; i<titleList.length-1; i++){
-        var urlAjax = url + '&page=' + titleList[i];
-        $.ajax({url : urlAjax,
-            success : function(e){
-                page = e.match(/<div\s+class="ouwiki_content">([\S\s]*?)<\/div><div class="clearer">/gi);
-                windows.document.write(page[0]);
-            }
-        });
-    }},1000)
+        for(var i = 0; i<titleList.length-1; i++) {
+            var urlAjax = url + '&page=' + titleList[i];
+            $.ajax({
+                url: urlAjax,
+                success: function (e) {
+                    page = e.match(/<div\s+class="ouwiki_content">([\S\s]*?)<\/div><div class="clearer">/gi);
+                    windows.document.write(page[0]);
+                }
+            });
+        }
+
+    setTimeout(function() {
+        windows.document.close();
+    }, 2000);
 }
 
 
