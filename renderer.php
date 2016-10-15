@@ -687,6 +687,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         //Request to find pages bound to the page of departure
         global $DB;
+        global $CFG;
         $sql = "SELECT title
                 FROM {ouwiki_pages}
                 WHERE subwikiid = ?";
@@ -709,24 +710,24 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             if($value->title==NULL){
                 $value = get_string('homepage', 'ouwiki');
                 if(!isset($_GET['page'])){
-                    $href =  "http://" . $_SERVER['HTTP_HOST'] . "/mod/ouwiki/view.php?id=" .$_GET['id'];
+                    $href = $CFG->wwwroot . "/mod/ouwiki/view.php?id=" .$_GET['id'];
                     $output .= html_writer::start_tag('li', array('style' => "padding: 5px; display: inline-block; border: 1px solid #ddd;  border-radius: 5px; "));
                 }else {
-                    $href = "http://" . $_SERVER['HTTP_HOST'] . "/mod/ouwiki/view.php?id=" .$_GET['id'];
+                    $href = $CFG->wwwroot . "/mod/ouwiki/view.php?id=" .$_GET['id'];
                     $output .= $nocurrentpage;
                 }
             }
             else{
                 $value = $value->title;
                 if(!isset($_GET["page"])) {
-                    $href = "http://" . $_SERVER['HTTP_HOST'] . "/mod/ouwiki/view.php?id=" . $_GET['id'] . "&page=$value";
+                    $href = $CFG->wwwroot . "/mod/ouwiki/view.php?id=" . $_GET['id'] . "&page=$value";
                     $output .= $nocurrentpage;
 
                 }else if($_GET["page"]!=$value){
-                    $href = "http://" . $_SERVER['HTTP_HOST'] . "/mod/ouwiki/view.php?id=" . $_GET['id'] . "&page=$value";
+                    $href = $CFG->wwwroot . "/mod/ouwiki/view.php?id=" . $_GET['id'] . "&page=$value";
                     $output .= $nocurrentpage;
                 }else{
-                    $href = "http://" . $_SERVER['HTTP_HOST'] . "/mod/ouwiki/view.php?id=" . $_GET['id'] . "&page=$value";
+                    $href = $CFG->wwwroot . "/mod/ouwiki/view.php?id=" . $_GET['id'] . "&page=$value";
                     $output .= html_writer::start_tag('li', array('style' => "padding: 5px; display: inline-block; border: 1px solid #ddd;  border-radius: 5px; "));
 
                 }
