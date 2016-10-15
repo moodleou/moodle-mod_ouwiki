@@ -907,7 +907,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $titles = isset($_SESSION['titre']) ? $_SESSION['titre'] : "";
 
         $output .= html_writer::start_tag('li');
-        $output .= html_writer::start_tag('a', array('id' => "buttonPrintAll", 'onclick' => "printallcontent(\"$titles\")", 'style' => "cursor: pointer; display: inline-block")).get_string('printall', 'ouwiki');
+        $output .= html_writer::start_tag('a', array('id' => "buttonPrintAll", 'onclick' => "printallcontent(\"$titles\")", 'style' => "cursor: pointer")).get_string('printall', 'ouwiki');
         $output .= html_writer::end_tag('a');
         $output .= html_writer::end_tag('li');
 
