@@ -134,7 +134,7 @@ class ouwiki_participation_table extends flexible_table {
      * Overriding here to avoid downloading in unsupported formats
      */
     public function get_download_menu() {
-        $exportclasses = array('csv' => get_string('downloadcsv', 'table'));
+        $exportclasses = array('csv' => get_string('downloadcsv', 'ouwiki'));
         return $exportclasses;
     }
 
@@ -297,7 +297,7 @@ class ouwiki_user_participation_table extends flexible_table {
      * Overriding here to avoid downloading in unsupported formats
      */
     public function get_download_menu() {
-        $exportclasses = array('csv' => get_string('downloadcsv', 'table'));
+        $exportclasses = array('csv' => get_string('downloadcsv', 'ouwiki'));
         return $exportclasses;
     }
 
