@@ -308,6 +308,8 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki) {
         }
 
         $content = $xmlfile->get_content();
+        $content = preg_replace('/[\x00-\x1F\x7F]/', '', $content);
+        
         $xml =  new DOMDocument();
         $xml->loadXML($content);
         if (!$xml) {
