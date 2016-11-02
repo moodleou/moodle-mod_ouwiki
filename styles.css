@@ -436,14 +436,31 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
     padding:0px;
     line-height:150%;
 }
+
 .ouwiki_content h3,
 .ouwiki_content h4,
 .ouwiki_content h5 {
-    font-size:1.2em;
     display:block;
     padding:0px;
     line-height:150%;
+    font-weight:bold
 }
+
+.ouwiki_content h3 {
+    border-bottom:1px solid #888;
+    padding-bottom:2px;
+    font-size:1.5em;
+}
+
+.ouwiki_content h4 {
+    font-size:1.2em;
+}
+
+.ouwiki_content h5 {
+    font-size:1em;
+}
+
+
 .ouwiki_content h6 {
     font-size:1em;
     display:block;
@@ -484,15 +501,6 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
 }
 .ouwiki_content h6.ouw_fixedheading .ouw_headingtext {
     font-size:0.85em;
-}
-.ouwiki_content h3 {
-    border-bottom:1px solid #888;
-    padding-bottom:2px;
-}
-.ouwiki_content h5,
-.ouwiki_content h6 {
-    font-weight:normal;
-    font-style:italic;
 }
 
 #ouw_ac_formcontainer {
