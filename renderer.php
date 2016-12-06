@@ -1197,6 +1197,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         global $CFG;
 
         require_once($CFG->libdir.'/gradelib.php');
+        require_once($CFG->libdir . '/formslib.php');
         $grading_info = grade_get_grades($course->id, 'mod', 'ouwiki', $ouwiki->id, $user->id);
 
         if ($grading_info) {
