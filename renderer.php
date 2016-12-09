@@ -762,7 +762,9 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      */
     public function ouwiki_get_links_content() {
         global $USER;
+        
         $output = html_writer::start_tag('ul');
+        
         if ($this->params->page == 'wikiindex.php') {
             $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_index'));
             $output .= html_writer::start_tag('span');
@@ -839,6 +841,59 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $output .= html_writer::end_tag('li');
             }
         }
+        
+        
+        $params = $this->params;
+        
+        $wikiParams = function ($format, $isTypeTree = false) use ($params) {
+        	 
+        	$subwiki = $params->subwiki;
+        	$cm = $params->cm;
+        
+        	$url = 'entirewiki.php?';
+        	$url .= html_entity_decode(ouwiki_display_wiki_parameters('', $subwiki, $cm));
+        	$url .= sprintf('&format=%s', $format);
+        	 
+        	if($isTypeTree)
+        		$url .= '&type=tree';
+        		 
+        		return $url;
+        };
+        
+        
+        // Dropdown fuer Druckfunktion
+        $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_print'));
+        $output .= html_writer::start_tag('div', array('class' => 'btn-group'));
+         
+        $output .= html_writer::start_tag('button', array('class' => 'btn dropdown-toggle', 'data-toggle' => 'dropdown'));
+        $output .= 'Wiki drucken ';
+        $output .= html_writer::tag('span', '', array('class' => 'caret'));
+        $output .= html_writer::end_tag('button');
+         
+        $output .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
+        
+        $output .= html_writer::start_tag('li');
+        $output .= html_writer::tag('a', 'PDF (Alphabetisch)', array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_PDF)));
+        $output .= html_writer::end_tag('li');
+        
+        $output .= html_writer::start_tag('li');
+        $output .= html_writer::tag('a', 'PDF (Struktur)', array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_PDF, true)));
+        $output .= html_writer::end_tag('li');
+                
+        $output .= html_writer::start_tag('li');
+        $output .= html_writer::tag('a', 'HTML (Alphabetisch)', array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_HTML_PRINT)));
+        $output .= html_writer::end_tag('li');
+        
+        $output .= html_writer::start_tag('li');
+        $output .= html_writer::tag('a', 'HTML (Struktur)', array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_HTML_PRINT, true)));
+        $output .= html_writer::end_tag('li');
+        
+        $output .= html_writer::end_tag('ul');
+        
+        $output .= html_writer::end_tag('div');
+        $output .= html_writer::end_tag('li');
+        
+        
         $output .= html_writer::end_tag('ul');
         return array($output, $participationstr);
     }

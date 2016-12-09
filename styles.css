@@ -169,11 +169,12 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
     text-align: left;
 }
 
-#ouwiki_indexlinks ul {
+#ouwiki_indexlinks {
     margin:0;
     padding:0;
     display:inline;
 }
+
 #ouwiki_indexlinks form,
 #ouwiki_indexlinks form div {
     display:inline;
@@ -185,7 +186,7 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
     width:10em;
 }
 
-#ouwiki_indexlinks li {
+#ouwiki_nav_print, #ouwiki_nav_index, #ouwiki_nav_history, #ouwiki_nav_participation {
     margin:0 0.5em 0 0;
     padding:0;
     list-style-type:none;
@@ -195,11 +196,11 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
     height:1em;
 }
 
-#ouwiki_indexlinks a,
-#ouwiki_indexlinks a:visited,
-#ouwiki_indexlinks a:active,
-#ouwiki_indexlinks a:link,
-#ouwiki_indexlinks a:focus {
+#ouwiki_indexlinks > ul > li > a,
+#ouwiki_indexlinks > ul > li > a:visited,
+#ouwiki_indexlinks > ul > li > a:active,
+#ouwiki_indexlinks > ul > li > a:link,
+#ouwiki_indexlinks > ul > li > a:focus {
     padding:6px 12px;
     border:1px solid #ccc;
     margin-right:5px;
@@ -217,7 +218,7 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
     border:1px solid #bbb;
 }
 
-#ouwiki_indexlinks span {
+/* #ouwiki_indexlinks span {
     padding:6px 12px;
     margin-right:5px;
     border-radius: 4px;
@@ -228,7 +229,8 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
     background-color:#ddd;
     font-weight: bold;
 }
-
+ */
+ 
 #page-mod-ouwiki-wikiindex ul.ouw_index,
 #page-mod-ouwiki-wikiindex ul.ouw_index li,
 #page-mod-ouwiki-wikiindex ul.ouw_indextree,
