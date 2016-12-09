@@ -51,8 +51,9 @@ define('OUWIKI_PARAMS_URL', 2);
 define('OUWIKI_PARAMS_ARRAY', 3);
 
 define('OUWIKI_FORMAT_HTML', 'html');
-define('OUWIKI_FORMAT_RTF', 'rtf');
+define('OUWIKI_FORMAT_PDF', 'pdf');
 define('OUWIKI_FORMAT_TEMPLATE', 'template');
+define('OUWIKI_FORMAT_HTML_PRINT', 'print');
 
 // pages
 define('OUWIKI_GETPAGE_REQUIREVERSION', 0);
