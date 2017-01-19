@@ -1645,7 +1645,7 @@ function ouwiki_get_section_details($content, $sectionxhtmlid) {
     }
     $endpos = strlen($content);
     for ($count = 1; $count <= $h; $count++) {
-        $nextheading = strpos($content, '<h'.$count, $startpos + 1);
+        $nextheading = strpos($content, '<h'.$count.' id="ouw_s', $startpos + 1);
         if ($nextheading !== false && $nextheading < $endpos) {
             $endpos = $nextheading;
         }
