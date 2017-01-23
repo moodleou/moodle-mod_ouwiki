@@ -474,9 +474,9 @@ function ouwiki_shared_url_params($pagename, $subwiki, $cm) {
         if ($subwiki->groupid) {
             $params['group'] = $subwiki->groupid;
         }
-        if ($subwiki->userid) {
-            $params['user'] = $subwiki->userid;
-        }
+    }
+    if ($subwiki->userid) {
+        $params['user'] = $subwiki->userid;
     }
     if (strtolower(trim($pagename)) !== strtolower(get_string('startpage', 'ouwiki')) &&
             $pagename !== '') {
@@ -509,12 +509,12 @@ function ouwiki_display_wiki_parameters($page, $subwiki, $cm, $type = OUWIKI_PAR
                 $output .= ouwiki_get_parameter('group', $subwiki->groupid, $type);
             }
         }
-        if ($subwiki->userid) {
-            if ($type == OUWIKI_PARAMS_ARRAY) {
-                $output['user'] = $subwiki->userid;
-            } else {
-                $output .= ouwiki_get_parameter('user', $subwiki->userid, $type);
-            }
+    }
+    if ($subwiki->userid) {
+        if ($type == OUWIKI_PARAMS_ARRAY) {
+            $output['user'] = $subwiki->userid;
+        } else {
+            $output .= ouwiki_get_parameter('user', $subwiki->userid, $type);
         }
     }
     if ($page !== '') {
