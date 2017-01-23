@@ -1278,7 +1278,7 @@ function ouwiki_override_lock($pageid) {
     try {
         $DB->delete_records('ouwiki_locks', array('pageid' => $pageid));
     } catch (Exception $e) {
-        error("Unable to delete lock record.");
+        ouwiki_error("Unable to delete lock record.");
     }
 }
 
@@ -1634,14 +1634,14 @@ function ouwiki_get_section_details($content, $sectionxhtmlid) {
     // Check heading number
     $matches = array();
     if (!preg_match('|<h([0-9]) id="ouw_s'.$sectionxhtmlid.'">|s', $content, $matches)) {
-        error('Unable to find expected section');
+        ouwiki_error('Unable to find expected section');
     }
     $h = $matches[1];
 
     // Find position of heading and of next heading with equal or lower number
     $startpos = strpos($content, $stupid = '<h'.$h.' id="ouw_s'.$sectionxhtmlid.'">');
     if ($startpos === false) {
-        error('Unable to find expected section again');
+        ouwiki_error('Unable to find expected section again');
     }
     $endpos = strlen($content);
     for ($count = 1; $count <= $h; $count++) {
