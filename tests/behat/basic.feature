@@ -397,26 +397,26 @@ Feature: Test Post and Comment on OUwiki entry
     And "Student 1" "link" should not exist
     And "Student 2" "link" should not exist
     And "Teacher 2" "link" should not exist
-    And I should see "View" in the "//form[@name='ouw_history']//table//tr[1]//td[3]" "xpath_element"
-    And I should see "Delete" in the "//form[@name='ouw_history']//table//tr[1]//td[3]" "xpath_element"
-    And I should not see "Revert" in the "//form[@name='ouw_history']//table//tr[1]//td[3]" "xpath_element"
-    And I should see "changes" in the "//form[@name='ouw_history']//table//tr[1]//td[3]" "xpath_element"
-    And I should see "View" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
-    And I should see "Delete" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
-    And I should see "Revert" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
-    And I should see "changes" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
-    And I should see "View" in the "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element"
-    And I should see "Delete" in the "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element"
-    And I should see "Revert" in the "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element"
-    And I should not see "changes" in the "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element"
-    Given I click on "View" "link" in the "//form[@name='ouw_history']//table//tr[1]//td[3]" "xpath_element"
+    And I should see "View" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
+    And I should see "Delete" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
+    And I should not see "Revert" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
+    And I should see "changes" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
+    And I should see "View" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
+    And I should see "Delete" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
+    And I should see "Revert" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
+    And I should see "changes" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
+    And I should see "View" in the "//form[@name='ouw_history']//table//tbody//tr[3]//td[3]" "xpath_element"
+    And I should see "Delete" in the "//form[@name='ouw_history']//table//tbody//tr[3]//td[3]" "xpath_element"
+    And I should see "Revert" in the "//form[@name='ouw_history']//table//tbody//tr[3]//td[3]" "xpath_element"
+    And I should not see "changes" in the "//form[@name='ouw_history']//table//tbody//tr[3]//td[3]" "xpath_element"
+    Given I click on "View" "link" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
     Then I should see "C27 A C27 B C28 B"
     And I click on "History" "link"
-    Given I click on "View" "link" in the "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element"
+    Given I click on "View" "link" in the "//form[@name='ouw_history']//table//tbody//tr[3]//td[3]" "xpath_element"
     Then I should see "C23"
     # Page changes
     And I click on "History" "link"
-    Given I click on "changes" "link" in the "//form[@name='ouw_history']//table//tr[1]//td[3]" "xpath_element"
+    Given I click on "changes" "link" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
     Then I should see "C27 C" in the "//span[@class='ouw_deleted']" "xpath_element"
     And I should see "C28 B" in the "//span[@class='ouw_added']" "xpath_element"
     And I log out
@@ -536,8 +536,8 @@ Feature: Test Post and Comment on OUwiki entry
     And I should not see "Zombies"
     When I click on "History" "link"
     Then "Student 1" "link" should exist
-    And I should see "Revert" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
-    Given I click on "Revert" "link" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
+    And I should see "Revert" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
+    Given I click on "Revert" "link" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
     When I click on "Revert" "button"
     Then I should see "C24"
     And I should see "Zombies"
@@ -552,8 +552,8 @@ Feature: Test Post and Comment on OUwiki entry
     When I click on "Frogs" "link"
     Then I should see "PORNOGRAPHY"
     When I click on "History" "link"
-    And I should see "Delete" in the "//form[@name='ouw_history']//table//tr[1]//td[3]" "xpath_element"
-    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tr[1]//td[3]" "xpath_element"
+    And I should see "Delete" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
+    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
     Then I should see "Undelete" in the "//form[@name='ouw_history']//table//tr[contains(@class, 'ouw_deletedrow')]//td[3]" "xpath_element"
     And I should see "changes" in the "//form[@name='ouw_history']//table//tr[contains(@class, 'ouw_deletedrow')]//td[3]" "xpath_element"
     When I click on "W.WX" "link"
@@ -566,11 +566,11 @@ Feature: Test Post and Comment on OUwiki entry
     And I click on "Frogs" "link"
     Then I should see "PORNOGRAPHY"
     When I click on "History" "link"
-    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tr[1]//td[3]" "xpath_element"
-    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
-    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element"
-    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tr[4]//td[3]" "xpath_element"
-    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tr[5]//td[3]" "xpath_element"
+    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
+    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
+    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tbody//tr[3]//td[3]" "xpath_element"
+    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tbody//tr[4]//td[3]" "xpath_element"
+    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tbody//tr[5]//td[3]" "xpath_element"
     When I click on "W.WX" "link"
     And I click on "Frogs" "link"
     Then "Create page" "button" should exist
@@ -581,12 +581,12 @@ Feature: Test Post and Comment on OUwiki entry
     And I set the field "Content" to "SAFE"
     And I press "Save changes"
     When I click on "History" "link"
-    Then I should see "Delete" in the "//form[@name='ouw_history']//table//tr[1]//td[3]" "xpath_element"
-    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
-    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element"
-    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tr[4]//td[3]" "xpath_element"
-    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tr[5]//td[3]" "xpath_element"
-    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tr[6]//td[3]" "xpath_element"
+    Then I should see "Delete" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
+    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
+    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tbody//tr[3]//td[3]" "xpath_element"
+    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tbody//tr[4]//td[3]" "xpath_element"
+    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tbody//tr[5]//td[3]" "xpath_element"
+    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tbody//tr[6]//td[3]" "xpath_element"
     And I log out
     Given I log in as "student1"
     And I am on homepage
@@ -595,8 +595,8 @@ Feature: Test Post and Comment on OUwiki entry
     And I click on "Frogs" "link"
     Then I should see "SAFE"
     When I click on "History" "link"
-    Then "//form[@name='ouw_history']//table//tr[1]//td[3]" "xpath_element" should exist
-    And "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element" should not exist
+    Then "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element" should exist
+    And "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element" should not exist
     And I log out
 
   @javascript
