@@ -57,9 +57,9 @@ require_course_login($course, true, $cm);
 $mode = '';
 if (!empty($_POST['menu'])) {
     $mode = 'bulk';
-    $gradeinfo = $_POST['menu'];
+    $gradeinfo = optional_param_array('menu', null, PARAM_TEXT);
 } else if ($userid && !empty($_POST['grade'])) {
-    $gradeinfo[$userid] = $_POST['grade'];
+    $gradeinfo[$userid] = optional_param('grade', null, PARAM_TEXT);
 }
 // update grades
 if (!empty($gradeinfo)) {
