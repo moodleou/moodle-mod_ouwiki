@@ -81,7 +81,7 @@ function ouwiki_update_instance($data, $mform) {
         }
     }
     if (strlen(preg_replace('/(<.*?>)|(&.*?;)|\s/', '', $data->intro)) == 0) {
-        $formdata->intro = null;
+        $data->intro = null;
         $DB->set_field('ouwiki', 'intro', null, array('id' => $data->id));
     }
 
