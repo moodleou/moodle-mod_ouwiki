@@ -809,6 +809,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             }
             $output .= html_writer::end_tag('li');
         }
+        $participationstr = '';
         if ($this->params->canview == OUWIKI_USER_PARTICIPATION) {
             $participationstr = get_string('participationbyuser', 'ouwiki');
             $participationpage = 'participation.php?' .
@@ -1260,6 +1261,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         global $CFG;
 
         require_once($CFG->libdir.'/gradelib.php');
+        require_once($CFG->libdir . '/formslib.php');
         $grading_info = grade_get_grades($course->id, 'mod', 'ouwiki', $ouwiki->id, $user->id);
 
         if ($grading_info) {
@@ -1421,4 +1423,16 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
     public function set_export_button($type, $id, $courseid, $tree = 0) {
         return;
     }
+
+    /**
+     * Return a button-like link which takes the user back to the main page.
+     * @param $cm, course-module object.
+     */
+    public function get_link_back_to_wiki($cm) {
+        global $CFG;
+        $label = $cm->name;
+        $url = $CFG->wwwroot . '/mod/ouwiki/view.php?id=' . $cm->id;
+        return html_writer::tag('div', link_arrow_left($label, $url), array('id' => 'ouwiki-arrowback'));
+    }
+
 }

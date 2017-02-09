@@ -525,7 +525,7 @@ M.mod_ouwiki_edit = {
                 }
                 var cfg = {
                     method: 'POST',
-                    data: 'sesskey=' + M.cfg.sesskey,
+                    data: 'sesskey=' + M.cfg.sesskey + '&contextid=' + args,
                     on: {
                         success: checksave,
                         failure: savefail

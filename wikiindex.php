@@ -193,6 +193,7 @@ WHERE
 }
 
 $pageversion = ouwiki_get_current_page($subwiki, $pagename);
+echo $ouwikioutput->get_link_back_to_wiki($cm);
 echo $ouwikioutput->get_bottom_buttons($subwiki, $cm, $context, $pageversion, false);
 
 // Footer

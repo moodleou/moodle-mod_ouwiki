@@ -27,10 +27,7 @@
 
 require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 
-use Behat\Behat\Context\Step\Given as Given,
-Behat\Gherkin\Node\TableNode as TableNode;
-use Behat\Behat\Context\Step\Then;
-use Behat\Mink\Exception\ElementNotFoundException;
+use Behat\Gherkin\Node\TableNode;
 
 /**
  * wiki-related steps definitions.
@@ -49,21 +46,19 @@ class behat_mod_ouwiki extends behat_base {
      * @param TableNode $data
      */
     public function i_add_a_ouwiki_page_with_the_following_data(TableNode $data) {
-        $steps = array();
         $datahash = $data->getRowsHash();
         $i = 0;
         // The action depends on the field type.
         foreach ($datahash as $locator => $value) {
-            $steps[] = new Given('I set the field "'  .$locator . '" to "' . $value . '"');
+            $this->execute('behat_forms::i_set_the_field_to', array($locator, $value));
             if ($i == 0) {
-                $steps[] = new Given('I press "' . get_string('create', 'ouwiki') . '"');
+                $this->execute('behat_forms::press_button', array(get_string('create', 'ouwiki')));
             } else {
                 continue;
             }
             $i++;
         }
-        $steps[] = new Given('I press "' . get_string('savechanges') . '"');
-        return $steps;
+        $this->execute('behat_forms::press_button', array(get_string('savechanges')));
     }
 
     /**
@@ -73,12 +68,9 @@ class behat_mod_ouwiki extends behat_base {
      * @param TableNode $data
      */
     public function i_edit_a_ouwiki_page_with_the_following_data(TableNode $data) {
-        $steps = array(
-                new Given('I click on "Edit page" "link"'),
-                new Given('I set the following fields to these values:', $data),
-                new Given('I press "' .get_string('savechanges') . '"'),
-        );
-        return $steps;
+        $this->execute('behat_general::i_click_on', array('Edit page', 'link'));
+        $this->execute('behat_forms::i_set_the_following_fields_to_these_values', array($data));
+        $this->execute('behat_forms::press_button', array(get_string('savechanges')));
     }
 
 }

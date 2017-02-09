@@ -86,7 +86,7 @@ if ($rss) {
     <title>'.$feedtitle.'</title>
     <description>'.$feeddescription.'</description>
     <link>' . $pagelink . '</link>
-    <pubDate>'.date('r', reset($changes)->timecreated).'</pubDate>';
+    <pubDate>' . date('r', !empty($changes) ? reset($changes)->timecreated : time()). '</pubDate>';
 } else {
     print '
 <feed xmlns="http://www.w3.org/2005/Atom">
@@ -94,7 +94,7 @@ if ($rss) {
   <title>'.$feedtitle.'</title>
   <subtitle>'.$feeddescription.'</subtitle>
   <link href="' . $pagelink . '"/>
-  <updated>'.date('c', reset($changes)->timecreated).'</updated>
+  <updated>' . date('c', !empty($changes) ? reset($changes)->timecreated : time()) . '</updated>
   <author>
     <name>Wiki system</name>
   </author>

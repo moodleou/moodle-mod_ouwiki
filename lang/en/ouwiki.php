@@ -242,6 +242,7 @@ $string['format_html']='View online';
 $string['format_rtf']='Download in word processor format';
 $string['format_template']='Download as wiki template file';
 $string['savedat']='Saved at {$a}';
+$string['downloadcsv'] = 'Comma separated values text file';
 
 $string['feedtitle']='{$a->course} wiki: {$a->name} - {$a->subtitle}';
 $string['feeddescriptionchanges']='Lists all changes made to the wiki. Subscribe to this feed if you want to be updated whenever the wiki changes.';
