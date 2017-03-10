@@ -694,7 +694,6 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
             $jointype {ouwiki_versions} v ON p.currentversionid = v.id
             LEFT JOIN {user} u ON v.userid = u.id
             WHERE p.subwikiid = ? AND $pagename_s";
-
     $pageversion = $DB->get_record_sql($sql, $params);
     if (!$pageversion) {
         if ($option != OUWIKI_GETPAGE_CREATE) {
@@ -2703,7 +2702,8 @@ function ouwiki_display_lock_page_form($pageversion, $cmid, $pagename) {
     $genericformdetails ='<form method="get" action="lock.php">
     <div class="ouwiki_lock_div">
     <input type="hidden" name="ouw_pageid" value="'.$pageversion->pageid.'" />
-    <input type="hidden" name="id" value="'.$cmid.'" />';
+    <input type="hidden" name="id" value="'.$cmid.'" />
+    <input type="hidden" name="user" value="'.$pageversion->userid.'" />';
     if (!empty($pagename)) {
         $genericformdetails .= '<input type="hidden" name="page" value="' . $pagename . '" />';
     }
