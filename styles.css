@@ -999,3 +999,8 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
     font-size: 0.8em;
     margin-left: 5px;
 }
+
+div#ouwiki_indexlinks > ul > li {
+	display:inline
+}
+
