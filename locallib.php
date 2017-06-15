@@ -474,9 +474,9 @@ function ouwiki_shared_url_params($pagename, $subwiki, $cm) {
         if ($subwiki->groupid) {
             $params['group'] = $subwiki->groupid;
         }
-        if ($subwiki->userid) {
-            $params['user'] = $subwiki->userid;
-        }
+    }
+    if ($subwiki->userid) {
+        $params['user'] = $subwiki->userid;
     }
     if (strtolower(trim($pagename)) !== strtolower(get_string('startpage', 'ouwiki')) &&
             $pagename !== '') {
@@ -509,12 +509,12 @@ function ouwiki_display_wiki_parameters($page, $subwiki, $cm, $type = OUWIKI_PAR
                 $output .= ouwiki_get_parameter('group', $subwiki->groupid, $type);
             }
         }
-        if ($subwiki->userid) {
-            if ($type == OUWIKI_PARAMS_ARRAY) {
-                $output['user'] = $subwiki->userid;
-            } else {
-                $output .= ouwiki_get_parameter('user', $subwiki->userid, $type);
-            }
+    }
+    if ($subwiki->userid) {
+        if ($type == OUWIKI_PARAMS_ARRAY) {
+            $output['user'] = $subwiki->userid;
+        } else {
+            $output .= ouwiki_get_parameter('user', $subwiki->userid, $type);
         }
     }
     if ($page !== '') {
@@ -694,7 +694,6 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
             $jointype {ouwiki_versions} v ON p.currentversionid = v.id
             LEFT JOIN {user} u ON v.userid = u.id
             WHERE p.subwikiid = ? AND $pagename_s";
-
     $pageversion = $DB->get_record_sql($sql, $params);
     if (!$pageversion) {
         if ($option != OUWIKI_GETPAGE_CREATE) {
@@ -1278,7 +1277,7 @@ function ouwiki_override_lock($pageid) {
     try {
         $DB->delete_records('ouwiki_locks', array('pageid' => $pageid));
     } catch (Exception $e) {
-        error("Unable to delete lock record.");
+        ouwiki_error("Unable to delete lock record.");
     }
 }
 
@@ -1634,18 +1633,18 @@ function ouwiki_get_section_details($content, $sectionxhtmlid) {
     // Check heading number
     $matches = array();
     if (!preg_match('|<h([0-9]) id="ouw_s'.$sectionxhtmlid.'">|s', $content, $matches)) {
-        error('Unable to find expected section');
+        ouwiki_error('Unable to find expected section');
     }
     $h = $matches[1];
 
     // Find position of heading and of next heading with equal or lower number
     $startpos = strpos($content, $stupid = '<h'.$h.' id="ouw_s'.$sectionxhtmlid.'">');
     if ($startpos === false) {
-        error('Unable to find expected section again');
+        ouwiki_error('Unable to find expected section again');
     }
     $endpos = strlen($content);
     for ($count = 1; $count <= $h; $count++) {
-        $nextheading = strpos($content, '<h'.$count, $startpos + 1);
+        $nextheading = strpos($content, '<h'.$count.' id="ouw_s', $startpos + 1);
         if ($nextheading !== false && $nextheading < $endpos) {
             $endpos = $nextheading;
         }
@@ -2703,7 +2702,8 @@ function ouwiki_display_lock_page_form($pageversion, $cmid, $pagename) {
     $genericformdetails ='<form method="get" action="lock.php">
     <div class="ouwiki_lock_div">
     <input type="hidden" name="ouw_pageid" value="'.$pageversion->pageid.'" />
-    <input type="hidden" name="id" value="'.$cmid.'" />';
+    <input type="hidden" name="id" value="'.$cmid.'" />
+    <input type="hidden" name="user" value="'.$pageversion->userid.'" />';
     if (!empty($pagename)) {
         $genericformdetails .= '<input type="hidden" name="page" value="' . $pagename . '" />';
     }
