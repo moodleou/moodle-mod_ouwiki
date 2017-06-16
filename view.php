@@ -36,6 +36,10 @@ $context = context_module::instance($cm->id);
 $PAGE->set_pagelayout('incourse');
 require_course_login($course, true, $cm);
 
+if (!groups_is_member($subwiki->groupid) && !$subwiki->canedit && $cm->groupmode == SEPARATEGROUPS) {
+    $redirecturl = new \moodle_url('/mod/ouwiki/view.php', array('id' => $cm->id));
+    print_error(get_string('error_nopermission', 'ouwiki'), 'ouwiki', $redirecturl);
+}
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
 

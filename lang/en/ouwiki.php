@@ -156,6 +156,7 @@ $string['frompages']='from {$a}...';
 $string['nowikipages'] = 'This wiki does not have any pages.';
 
 $string['error_export'] = 'An error occurred while exporting wiki data.';
+$string['error_nopermission'] = 'You do not have permission to see the content of this page';
 
 $string['changesnav']='Changes';
 $string['advice_diff']='The older version is shown on the
