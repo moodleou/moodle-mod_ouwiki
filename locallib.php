@@ -706,6 +706,7 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
         $pageversion->title = $pagename ? $pagename : '';
         $pageversion->locked = 0;
         $pageversion->firstversionid = null; // new page
+        $pageversion->timemodified = time();
         try {
             $pageversion->pageid = $DB->insert_record('ouwiki_pages', $pageversion);
         } catch (Exception $e) {

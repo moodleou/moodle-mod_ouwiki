@@ -589,3 +589,5 @@ $string['event:ouwikipagecreated'] = 'ouwiki page created';
 $string['event:ouwikipageupdated'] = 'ouwiki page updated';
 $string['event:savefailed'] = 'Session fail on page save';
 $string['ouwikicrontask'] = 'OU wiki maintenance jobs';
+$string['search:activity'] = 'OUWiki - activity information';
+$string['search:page_version'] = 'OUWiki - page versions';
