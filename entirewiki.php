@@ -54,7 +54,8 @@ require_course_login($course, true, $cm);
 $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 
 $format = required_param('format', PARAM_ALPHA);
-if ($format !== OUWIKI_FORMAT_HTML && $format !== OUWIKI_FORMAT_RTF && $format !== OUWIKI_FORMAT_TEMPLATE) {
+if ($format !== OUWIKI_FORMAT_HTML && $format !== OUWIKI_FORMAT_PDF 
+	&& $format !== OUWIKI_FORMAT_TEMPLATE && $format !== OUWIKI_FORMAT_HTML_PRINT) {
     print_error('Unexpected format');
 }
 
@@ -71,9 +72,28 @@ switch ($format) {
         $files = array();
         $fs = get_file_storage();
         break;
-    case OUWIKI_FORMAT_RTF:
-        require_once($CFG->dirroot.'/local/rtf.php');
-        $markup = '<root><p>'.get_string('savedat', 'ouwiki', userdate(time())).'</p><hr />';
+    case OUWIKI_FORMAT_HTML_PRINT:
+    	
+    	$url_object_array = $PAGE->theme->css_urls($PAGE);
+    	$url_object = $url_object_array[0];
+    	$css_url = $url_object->out();
+    	 
+    	$markup = '<html>';
+    	$markup .= '<head>';
+    	$markup .= '<link rel="stylesheet" href="'.$css_url.'">';
+    	$markup .= '</head>';
+    	$markup .= '<body>';
+    	
+    	break;
+    case OUWIKI_FORMAT_PDF:
+
+    	$markup = '<html>';
+        $css = file_get_contents(dirname(__FILE__) .'/pdf.css');
+        $markup .= '<head>';
+        $markup .= '<style>' . $css . '</style>'; 
+        $markup .= '</head>';
+        $markup .= '<body>';
+                
         break;
     case OUWIKI_FORMAT_HTML:
         // Do header
@@ -98,27 +118,61 @@ foreach ($index as $indexitem) {
     }
 }
 
-// If tree view specified.
-if (($treemode) && ($format == OUWIKI_FORMAT_HTML) ) {
+// // Original
+// if (($treemode) && ($format == OUWIKI_FORMAT_HTML) ) {
+//     ouwiki_build_tree($index);
+//     // Print out in hierarchical form...
+//     print '<ul class="ouw_indextree">';
+//     $functionname = 'ouwiki_display_entirewiki_page_in_index';
+//     print ouwiki_tree_index($functionname, reset($index)->pageid, $index, $subwiki, $cm, $context);
+//     print '</ul>';
+
+//     if ($orphans) {
+//         print '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
+//         print '<ul class="ouw_indextree">';
+//         foreach ($index as $indexitem) {
+//             if (count($indexitem->linksfrom) == 0 && $indexitem->title !== '') {
+//                 $orphanindex = ouwiki_get_sub_tree_from_index($indexitem->pageid, $index);
+//                 ouwiki_build_tree($orphanindex);
+//                 print ouwiki_tree_index($functionname, $indexitem->pageid, $orphanindex, $subwiki, $cm, $context);
+//             }
+//         }
+//         print '</ul>';
+//     }
+// } else {
+
+
+//If tree view specified.
+if (($treemode) && ($format == OUWIKI_FORMAT_HTML || $format == OUWIKI_FORMAT_PDF || $format == OUWIKI_FORMAT_HTML_PRINT) ) {
+
     ouwiki_build_tree($index);
     // Print out in hierarchical form...
-    print '<ul class="ouw_indextree">';
+
+    $treeOutput = '<ul class="ouw_indextree">';
+
     $functionname = 'ouwiki_display_entirewiki_page_in_index';
-    print ouwiki_tree_index($functionname, reset($index)->pageid, $index, $subwiki, $cm, $context);
-    print '</ul>';
+    $treeOutput .= ouwiki_tree_index($functionname, reset($index)->pageid, $index, $subwiki, $cm, $context);
+    $treeOutput .= '</ul>';
 
     if ($orphans) {
-        print '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
-        print '<ul class="ouw_indextree">';
+        $treeOutput .= '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
+        $treeOutput .= '<ul class="ouw_indextree">';
         foreach ($index as $indexitem) {
             if (count($indexitem->linksfrom) == 0 && $indexitem->title !== '') {
                 $orphanindex = ouwiki_get_sub_tree_from_index($indexitem->pageid, $index);
                 ouwiki_build_tree($orphanindex);
-                print ouwiki_tree_index($functionname, $indexitem->pageid, $orphanindex, $subwiki, $cm, $context);
+                $treeOutput .= ouwiki_tree_index($functionname, $indexitem->pageid, $orphanindex, $subwiki, $cm, $context);
             }
         }
-        print '</ul>';
+        $treeOutput .= '</ul>';
     }
+
+    if($format == OUWIKI_FORMAT_HTML)
+        print $treeOutput;
+
+    if($format == OUWIKI_FORMAT_PDF || $format == OUWIKI_FORMAT_HTML_PRINT)
+        $markup .= $treeOutput;
+
 } else {
     foreach ($index as $pageinfo) {
         if (count($pageinfo->linksfrom)!= 0 || $pageinfo->title === '') {
@@ -129,8 +183,15 @@ if (($treemode) && ($format == OUWIKI_FORMAT_HTML) ) {
                 continue;
             }
 
-            $markup .= get_online_display_content($format, $pageversion, $context, $subwiki, $cm, $index, $fs, $files);
-
+            
+            $output = get_online_display_content($format, $pageversion, $context, $subwiki, $cm, $index, $fs, $files);
+			
+            if($format == OUWIKI_FORMAT_HTML)
+            	print $output;
+            
+           	if($format == OUWIKI_FORMAT_PDF || $format == OUWIKI_FORMAT_HTML_PRINT)
+           		$markup .= $output;
+            
             if ($first) {
                 $first = false;
             }
@@ -184,9 +245,26 @@ switch ($format) {
         exit;
         break;
 
-    case OUWIKI_FORMAT_RTF:
-        $markup .= '</root>';
-        rtf_from_html($filename.'.rtf', $markup);
+    case OUWIKI_FORMAT_HTML_PRINT:
+    	
+    	$markup .= '</body></html>';
+    	
+    	echo $markup;
+    	break;
+    	 
+    case OUWIKI_FORMAT_PDF:
+        $markup .= '</body></html>';
+        
+        require_once($CFG->libdir . '/pdflib.php');
+        
+        $doc = new pdf;
+        $doc->setFont('helvetica');
+        $doc->setPrintHeader(false);
+        $doc->setPrintFooter(false);
+        $doc->AddPage();
+        $doc->writeHTML($markup);
+        $doc->Output();
+        
         break;
 
     case OUWIKI_FORMAT_HTML:
@@ -245,10 +323,17 @@ function get_online_display_content($format, $pageversion, $context, $subwiki, $
             }
             $markup .= '</page>';
             break;
-        case OUWIKI_FORMAT_RTF:
-            $markup .= '<h1>' . htmlspecialchars($visibletitle) . '</h1>';
-            $markup .= trim($pageversion->xhtml);
-            $markup .= '<br /><br /><hr />';
+        case OUWIKI_FORMAT_PDF || OUWIKI_FORMAT_HTML_PRINT:
+            //$markup .= '<h1>' . htmlspecialchars($visibletitle) . '</h1>';
+            //$markup .= trim($pageversion->xhtml);
+            //$markup .= '<br /><br /><hr />';
+
+            $markup .= '<div class="ouw_entry"><a name="' . $pageversion->pageid . '"></a><h1 class="ouw_entry_heading">' .
+                    '<a href="view.php?' . ouwiki_display_wiki_parameters($pageversion->title, $subwiki, $cm) .
+                    '">' . htmlspecialchars($visibletitle) . '</a></h1>';
+            $markup .= ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, $index, $pageversion->xhtmlformat);
+            $markup .= '</div>';
+
             break;
         case OUWIKI_FORMAT_HTML:
             print '<div class="ouw_entry"><a name="' . $pageversion->pageid . '"></a><h1 class="ouw_entry_heading">' .
