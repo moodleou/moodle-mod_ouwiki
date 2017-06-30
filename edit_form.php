@@ -27,6 +27,8 @@ class mod_ouwiki_edit_page_form extends moodleform {
 
         $mform =& $this->_form;
 
+        $mform->addElement('button', 'dessin', get_string('adddraw', 'ouwiki'), array('onclick'=>"window.open(\"http://moodle-dev.dinf.cll.qc.ca/mod/ouwiki/canvas/index.php\");"));
+        
         // Editor.
         $mform->addElement('editor', 'content', get_string('content'), null, array('maxfiles' => EDITOR_UNLIMITED_FILES));
         $mform->addHelpButton('content', 'formathtml', 'wiki');
