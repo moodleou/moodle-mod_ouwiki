@@ -1,5 +1,5 @@
 @ou @ou_vle @mod @mod_ouwiki @lastmodified
-Feature: Show last updated information on activity link
+Feature: Show last updated information on OU Wiki activity link
   In know when a wiki was last updated
   As a user
   I need to see the last post date on the wiki link
