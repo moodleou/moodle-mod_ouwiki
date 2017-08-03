@@ -33,13 +33,13 @@ Feature: Test Post and Comment on OUwiki entry
   Scenario: No groups - basic access etc
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
     When I add a "OU wiki" to section "1" and I fill the form with:
         | Name | W.WC |
         | Description | wiki with no groups |
         | Group mode | No groups |
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.WC"
     And "Create page" "button" should exist
     And I press "Create page"
@@ -53,13 +53,13 @@ Feature: Test Post and Comment on OUwiki entry
     # Check edit and preview page (though we can not test to see whether altered content in preview mode can be seen by otherusers)
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.WC"
     Then I should see "C1 no groups wiki" in the ".ouwiki_content" "css_element"
     And I log out
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.WC"
     When I click on "Edit" "link"
     Then I should see "C1 no groups wiki"
@@ -70,7 +70,7 @@ Feature: Test Post and Comment on OUwiki entry
     And I log out
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.WC"
     And I should see "C7 no groups wiki" in the ".ouwiki_content" "css_element"
     And I log out
@@ -78,7 +78,7 @@ Feature: Test Post and Comment on OUwiki entry
   Scenario: Separate groups - basic access etc
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
     And I add a "OU wiki" to section "1"
     And I set the following fields to these values:
@@ -91,7 +91,7 @@ Feature: Test Post and Comment on OUwiki entry
     And I log out
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.SG"
     Then I should see "Viewing wiki for: G1" in the ".ouw_subwiki" "css_element"
     And "Create page" "button" should exist
@@ -103,7 +103,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Create start page for group 2
     Given I log in as "student2"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.SG"
     Then I should see "Viewing wiki for: G2" in the ".ouw_subwiki" "css_element"
     And "Create page" "button" should exist
@@ -119,7 +119,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Check for correct content and creator for each group
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.SG"
     And "div.singleselect" "css_element" should exist
     And the "Separate groups" select box should contain "G1"
@@ -139,7 +139,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Check adding wiki pages - by adding a link to start page
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.SG"
     When I click on "Edit" "link"
     Then I should see "C2 separate groups wiki"
@@ -161,7 +161,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Check adding wiki pages - by 'Create a new page' name in text field
     Given I log in as "student2"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.SG"
     Then I should see "C6 separate groups wiki"
     And I set the field "Create new page" to "frog"
@@ -194,7 +194,7 @@ Feature: Test Post and Comment on OUwiki entry
   Scenario: Visible groups - basic access etc
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
     When I add a "OU wiki" to section "1" and I fill the form with:
         | Name | W.VG |
@@ -204,7 +204,7 @@ Feature: Test Post and Comment on OUwiki entry
     And I log out
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.VG"
     # Check selected dropdown option is G1
     And "div.singleselect" "css_element" should exist
@@ -226,7 +226,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Check for correct content and creator for each group
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.VG"
     And "div.singleselect" "css_element" should exist
     And the "Visible groups" select box should contain "G1"
@@ -244,7 +244,7 @@ Feature: Test Post and Comment on OUwiki entry
   Scenario: Individual - basic access etc
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
     When I add a "OU wiki" to section "1" and I fill the form with:
         | Name | W.I |
@@ -255,7 +255,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Checking to set up individual wiki for student 1
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.I"
     Then "Viewing wiki for:" "text" should exist
     And "Student 1" "link" should exist
@@ -267,7 +267,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Checking to set up individual wiki for student 2
     Given I log in as "student2"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.I"
     Then "Viewing wiki for:" "text" should exist
     And "Student 2" "link" should exist
@@ -279,7 +279,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Check to see that a non-editing teacher can view individual wiki of students belonging to their group
     Given I log in as "teacher2"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.I"
     And "div.individualselector" "css_element" should exist
     And the field "Viewing wiki for:" matches value "Teacher 2"
@@ -293,7 +293,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Check that editing teacher can view and visit all individual wikis
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.I"
     And "div.individualselector" "css_element" should exist
     And the field "Viewing wiki for:" matches value "Teacher 1"
@@ -305,7 +305,7 @@ Feature: Test Post and Comment on OUwiki entry
     Then I should see "C4 individual wiki" in the ".ouwiki_content" "css_element"
     And "Student 1" "link" should exist
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.I"
     And "div.individualselector" "css_element" should exist
     Given I set the field "Viewing wiki for:" to "Student 2"
@@ -313,7 +313,7 @@ Feature: Test Post and Comment on OUwiki entry
     Then I should see "C5 individual wiki" in the ".ouwiki_content" "css_element"
     And "Student 2" "link" should exist
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.I"
     And "div.individualselector" "css_element" should exist
     Given I set the field "Viewing wiki for:" to "Teacher 2"
@@ -324,13 +324,13 @@ Feature: Test Post and Comment on OUwiki entry
   Scenario: Wiki history No groups -
     Given I log in as "teacher1"
     And I am on site homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
     When I add a "OU wiki" to section "1" and I fill the form with:
         | Name | W.WX |
         | Description | wiki with no groups |
         | Group mode | No groups |
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.WX"
     And "Create page" "button" should exist
     And I press "Create page"
@@ -423,7 +423,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Check against number of changes made - WIC07
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.WX"
     And "Frogs" "link" should exist
     When I click on "Frogs" "link"
@@ -547,7 +547,7 @@ Feature: Test Post and Comment on OUwiki entry
     And I log out
     Given I log in as "admin"
     And I am on site homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.WX"
     When I click on "Frogs" "link"
     Then I should see "PORNOGRAPHY"
@@ -590,7 +590,7 @@ Feature: Test Post and Comment on OUwiki entry
     And I log out
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.WX"
     And I click on "Frogs" "link"
     Then I should see "SAFE"
@@ -603,13 +603,13 @@ Feature: Test Post and Comment on OUwiki entry
   Scenario: Attachments No groups
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
     When I add a "OU wiki" to section "1" and I fill the form with:
         | Name | W.X |
         | Description | wiki with no groups |
         | Group mode | No groups |
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.X"
     And "Create page" "button" should exist
     And I press "Create page"

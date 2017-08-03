@@ -28,7 +28,7 @@ Feature: Show last updated information on OU Wiki activity link
   Scenario: No groups - basic test etc
     Given I log in as "admin"
     And I am on site homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
     When I add a "OU wiki" to section "1" and I fill the form with:
         | Name | W.WC |
@@ -41,13 +41,13 @@ Feature: Show last updated information on OU Wiki activity link
     And I press "Create page"
     And I set the field "Content" to "C1 no groups wiki"
     And I press "Save changes"
-    When I follow "Course 1"
+    When I am on "Course 1" course homepage
     Then ".lastmodtext.ouwikilmt" "css_element" should exist
 
   Scenario: Group wikis
     Given I log in as "admin"
     And I am on site homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
     And I add a "OU wiki" to section "1" and I fill the form with:
         | Name | W.SG |
@@ -63,33 +63,33 @@ Feature: Show last updated information on OU Wiki activity link
     # Test for student1 in group 1.
     Given I log in as "student1"
     And I am on site homepage
-    When I follow "Course 1"
+    When I am on "Course 1" course homepage
     Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should not exist
     And "/descendant::div[@class='activityinstance'][2]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should not exist
     Given I follow "W.SG"
     And I press "Create page"
     And I set the field "Content" to "C2 separate groups wiki"
     And I press "Save changes"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "W.VG"
     And I press "Create page"
     And I set the field "Content" to "C3 visible groups wiki"
     And I press "Save changes"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should exist
     And "/descendant::div[@class='activityinstance'][2]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should exist
     And I log out
     # Test for student 2 in group 2.
     Given I log in as "student2"
     And I am on site homepage
-    When I follow "Course 1"
+    When I am on "Course 1" course homepage
     Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should not exist
     And "/descendant::div[@class='activityinstance'][2]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should exist
 
   Scenario: Individual wikis
     Given I log in as "admin"
     And I am on site homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
     And I add a "OU wiki" to section "1" and I fill the form with:
         | Name | W.SI |
@@ -100,11 +100,11 @@ Feature: Show last updated information on OU Wiki activity link
     And I press "Create page"
     And I set the field "Content" to "C4 individual wiki"
     And I press "Save changes"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should exist
     And I log out
     # Checking individual wiki for student 1 (visible info only).
     Given I log in as "student1"
     And I am on site homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should not exist
