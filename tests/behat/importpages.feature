@@ -22,7 +22,6 @@ Feature: import pages into one wiki from another
   @javascript
   Scenario: Creating wikis and data, part one
     Given I log in as "student1"
-    And I am on site homepage
     And I am on "Wiki Import Pages Test 1" course homepage
     And I press "All weeks"
     And I press "oustudyplan-expandall"

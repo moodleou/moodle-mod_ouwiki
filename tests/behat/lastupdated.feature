@@ -27,7 +27,6 @@ Feature: Show last updated information on OU Wiki activity link
 
   Scenario: No groups - basic test etc
     Given I log in as "admin"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on
     When I add a "OU wiki" to section "1" and I fill the form with:
@@ -46,7 +45,6 @@ Feature: Show last updated information on OU Wiki activity link
 
   Scenario: Group wikis
     Given I log in as "admin"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on
     And I add a "OU wiki" to section "1" and I fill the form with:
@@ -88,7 +86,6 @@ Feature: Show last updated information on OU Wiki activity link
 
   Scenario: Individual wikis
     Given I log in as "admin"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on
     And I add a "OU wiki" to section "1" and I fill the form with:
@@ -105,6 +102,5 @@ Feature: Show last updated information on OU Wiki activity link
     And I log out
     # Checking individual wiki for student 1 (visible info only).
     Given I log in as "student1"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should not exist

@@ -323,7 +323,6 @@ Feature: Test Post and Comment on OUwiki entry
 
   Scenario: Wiki history No groups -
     Given I log in as "teacher1"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on
     When I add a "OU wiki" to section "1" and I fill the form with:
@@ -546,7 +545,6 @@ Feature: Test Post and Comment on OUwiki entry
       | Content | PORNOGRAPHY |
     And I log out
     Given I log in as "admin"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     And I follow "W.WX"
     When I click on "Frogs" "link"

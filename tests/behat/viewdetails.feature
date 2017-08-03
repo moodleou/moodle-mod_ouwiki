@@ -21,7 +21,6 @@ Feature: Test view details against a user
         | student2 | C1 | student |
         | teacher2 | C1 | teacher |
     And I log in as "admin"
-    And I am on site homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on
     When I add a "OU wiki" to section "1" and I fill the form with:
