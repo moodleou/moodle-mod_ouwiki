@@ -76,7 +76,7 @@ if (($pagename === '' || $pagename === null) && strlen(preg_replace('/\s|<br\s*\
 if ($pageversion) {
     // Print warning if page is large (more than 75KB)
     if (strlen($pageversion->xhtml) > 75 * 1024) {
-        print '<div class="ouwiki-sizewarning"><img src="' . $OUTPUT->pix_url('warning', 'ouwiki') .
+        print '<div class="ouwiki-sizewarning"><img src="' . $OUTPUT->image_url('warning', 'ouwiki') .
                 '" alt="" />' . get_string('sizewarning', 'ouwiki') .
                 '</div>';
     }

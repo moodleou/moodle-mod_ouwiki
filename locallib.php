@@ -2535,7 +2535,7 @@ function ouwiki_setup_annotation_markers($xhtmlcontent) {
 function ouwiki_get_annotation_marker($position) {
     global $OUTPUT;
 
-    $icon = '<img src="'.$OUTPUT->pix_url('annotation-marker', 'ouwiki').'" alt="'.
+    $icon = '<img src="'.$OUTPUT->image_url('annotation-marker', 'ouwiki').'" alt="'.
             get_string('annotationmarker', 'ouwiki').'" title="'.
             get_string('annotationmarker', 'ouwiki').'" />';
     return '<span class="ouwiki-annotation-marker" id="marker'.$position.'">'.$icon.'</span>';
@@ -2555,7 +2555,7 @@ function ouwiki_highlight_existing_annotations($xhtmlcontent, $annotations, $pag
 
     $content = $xhtmlcontent;
 
-    $icon = '<img src="'.$OUTPUT->pix_url('annotation', 'ouwiki').'" alt="'.
+    $icon = '<img src="'.$OUTPUT->image_url('annotation', 'ouwiki').'" alt="'.
             get_string('expandannotation', 'ouwiki').'" title="'.
             get_string('expandannotation', 'ouwiki').'" />';
 
@@ -2965,7 +2965,7 @@ function ouwiki_get_search_form($subwiki, $cmid) {
             'id' => 'ouwiki_searchquery', 'value' => $query));
     $out .= html_writer::empty_tag('input', array('type' => 'image',
             'id' => 'ousearch_searchbutton', 'alt' => get_string('search'),
-            'title' => get_string('search'), 'src' => $OUTPUT->pix_url('i/search')));
+            'title' => get_string('search'), 'src' => $OUTPUT->image_url('i/search')));
     $out .= html_writer::end_tag('div');
     $out .= html_writer::end_tag('form');
     return $out;

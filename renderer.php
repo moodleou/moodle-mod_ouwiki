@@ -252,7 +252,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $filename = $file->get_filename();
                 $mimetype = $file->get_mimetype();
                 $iconimage = html_writer::empty_tag('img',
-                        array('src' => $this->output->pix_url(file_mimetype_icon($mimetype)),
+                        array('src' => $this->output->image_url(file_mimetype_icon($mimetype)),
                                 'alt' => $mimetype, 'class' => 'icon'));
                 $path = file_encode_url($CFG->wwwroot . '/pluginfile.php', '/' . $modcontext->id .
                         '/mod_ouwiki/attachment/' . $pageversion->versionid . '/' . $filename);
@@ -517,17 +517,17 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $filename = $file->get_filename();
         $mimetype = $file->get_mimetype();
         $iconimage = html_writer::empty_tag('img',
-                array('src' => $OUTPUT->pix_url(file_mimetype_icon($mimetype)),
+                array('src' => $OUTPUT->image_url(file_mimetype_icon($mimetype)),
                 'alt' => $mimetype, 'class' => 'icon'));
 
         if ($action === 'add') {
             $addedstart = html_writer::empty_tag('img', array(
-                'src' => $OUTPUT->pix_url('diff_added_begins', 'ouwiki'),
+                'src' => $OUTPUT->image_url('diff_added_begins', 'ouwiki'),
                 'alt' => get_string('addedbegins', 'ouwiki'),
                 'class' => 'icon')
             );
             $addedend = html_writer::empty_tag('img', array(
-                'src' => $OUTPUT->pix_url('diff_added_ends', 'ouwiki'),
+                'src' => $OUTPUT->image_url('diff_added_ends', 'ouwiki'),
                 'alt' => get_string('addedends', 'ouwiki'),
                 'class' => 'icon')
             );
@@ -541,12 +541,12 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         } else if ($action === 'delete') {
             $deletedstart = html_writer::empty_tag('img' , array(
-                'src' => $OUTPUT->pix_url('diff_deleted_begins', 'ouwiki'),
+                'src' => $OUTPUT->image_url('diff_deleted_begins', 'ouwiki'),
                 'alt' => get_string('deletedbegins', 'ouwiki'),
                 'class' => 'icon')
             );
             $deletedend = html_writer::empty_tag('img', array(
-                'src' => $OUTPUT->pix_url('diff_deleted_ends', 'ouwiki'),
+                'src' => $OUTPUT->image_url('diff_deleted_ends', 'ouwiki'),
                 'alt' => get_string('deletedends', 'ouwiki'),
                 'class' => 'icon')
             );
@@ -1342,7 +1342,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $a->atom = $atomurl;
         $a->rss = $rssurl;
         $url = str_replace('&amp;', '&', $atomurl);
-        $rssicon = html_writer::img($this->output->pix_url('rss', 'ouwiki'), '');
+        $rssicon = html_writer::img($this->output->image_url('rss', 'ouwiki'), '');
         $rsslink = html_writer::link($url, $rssicon, array('title' => get_string('feedalt', 'ouwiki')));
         $content = html_writer::span(get_string('feedsubscribe', 'ouwiki', $a));
         return html_writer::tag('p', $rsslink . $content, array('class' => 'ouw_subscribe'));

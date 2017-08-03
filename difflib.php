@@ -744,11 +744,11 @@ function ouwiki_diff_html($html1, $html2) {
     list($deleted, $added) = ouwiki_diff_words($lines1, $lines2);
     $changes = count($deleted) + count($added);
     $result1 = ouwiki_diff_add_markers($html1, $deleted, 'ouw_deleted',
-        '<img src="'.$OUTPUT->pix_url('diff_deleted_begins', 'ouwiki').'" alt="'.get_string('deletedbegins', 'ouwiki').'" />',
-        '<img src="'.$OUTPUT->pix_url('diff_added_ends', 'ouwiki').'" alt="'.get_string('deletedends', 'ouwiki').'" />');
+        '<img src="'.$OUTPUT->image_url('diff_deleted_begins', 'ouwiki').'" alt="'.get_string('deletedbegins', 'ouwiki').'" />',
+        '<img src="'.$OUTPUT->image_url('diff_added_ends', 'ouwiki').'" alt="'.get_string('deletedends', 'ouwiki').'" />');
     $result2 = ouwiki_diff_add_markers($html2, $added, 'ouw_added',
-        '<img src="'.$OUTPUT->pix_url('diff_added_begins', 'ouwiki').'" alt="'.get_string('addedbegins', 'ouwiki').'" />',
-        '<img src="'.$OUTPUT->pix_url('diff_added_ends', 'ouwiki').'" alt="'.get_string('addedends', 'ouwiki').'" />');
+        '<img src="'.$OUTPUT->image_url('diff_added_begins', 'ouwiki').'" alt="'.get_string('addedbegins', 'ouwiki').'" />',
+        '<img src="'.$OUTPUT->image_url('diff_added_ends', 'ouwiki').'" alt="'.get_string('addedends', 'ouwiki').'" />');
     return array($result1, $result2, $changes);
 }
 
