@@ -22,6 +22,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+define('NO_OUTPUT_BUFFERING', true);
+
 require_once(dirname(__FILE__) . '/../../config.php');
 require($CFG->dirroot . '/mod/ouwiki/basicpage.php');
 require($CFG->dirroot . '/mod/ouwiki/import_form.php');
