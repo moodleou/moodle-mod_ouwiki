@@ -461,25 +461,25 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
 }
 #page-mod-ouwiki-wikihistory .ouw_paging_prev {
     float:left;
-    width:50%;
+    width:100%;
     text-align:right;
 }
 .dir-rtl#mod-ouwiki-wikihistory .ouw_paging_prev {
     float: right;
     text-align: left;
 }
-#page-mod-ouwiki-wikihistory .ouw_paging_prev a {
-    margin-right:2em;
+#page-mod-ouwiki-wikihistory .ouw_paging_prev a,
+#page-mod-ouwiki-wikihistory .ouw_paging_next a {
+    min-width: 110px;
 }
 #page-mod-ouwiki-wikihistory .ouw_paging_next {
     float:left;
-    width:50%;
+    width:100%;
+    margin-top: 10px;       
+    text-align:right;
 }
 .dir-rtl#page-mod-ouwiki-wikihistory .ouw_paging_next {
     float:right;
-}
-#page-mod-ouwiki-wikihistory .ouw_paging_next a {
-    margin-left:2em;
 }
 
 /* Hack because font-family:inherit doesn't work in IE */

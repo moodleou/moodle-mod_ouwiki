@@ -264,7 +264,7 @@ if ($count > OUWIKI_PAGESIZE || $from > 0) {
         print link_arrow_right(get_string('next', 'ouwiki'),
             'wikihistory.php?'.$tabparams. ($jump > 0 ? '&amp;from='.$jump : ''));
     }
-    print '&nbsp;</div></div>';
+    print '</div></div>';
 }
 
 echo $ouwikioutput->ouwiki_get_feeds($atomurl, $rssurl);
