@@ -184,6 +184,12 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
                 $groupid = reset($groups)->id;
             }
             $othergroup = !groups_is_member($groupid);
+            if ($othergroup && $cm->groupmode == SEPARATEGROUPS) {
+                if (!has_capability('moodle/site:accessallgroups', $context) &&
+                        !has_capability('mod/ouwiki:editothers', $context)) {
+                    ouwiki_error(get_string('error_nopermission', 'ouwiki'));
+                }
+            }
             $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid = ?
                     AND userid IS NULL', array($ouwiki->id, $groupid));
             if ($subwiki) {
