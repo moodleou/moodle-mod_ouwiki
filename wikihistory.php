@@ -56,8 +56,11 @@ require_course_login($course, true, $cm);
 $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 
 // Get basic wiki parameters
-$wikiparams = ouwiki_display_wiki_parameters('', $subwiki, $cm);
-$tabparams = $newpages ? $wikiparams.'&amp;type=pages' : $wikiparams;
+$wikiparams = ouwiki_display_wiki_parameters('', $subwiki, $cm, OUWIKI_PARAMS_ARRAY);
+$tabparams = $wikiparams;
+if ($newpages) {
+    $tabparams['type'] = 'pages';
+}
 
 // Get changes
 if ($newpages) {
@@ -76,10 +79,12 @@ foreach ($changes as $change) {
 }
 
 // Do header
-$atomurl = $CFG->wwwroot.'/mod/ouwiki/feed-wikihistory.php?'.$wikiparams.
-    ($newpages?'&amp;type=pages' : '').'&amp;magic='.$subwiki->magic;
-$rssurl = $CFG->wwwroot.'/mod/ouwiki/feed-wikihistory.php?'.$wikiparams.
-    ($newpages?'&amp;type=pages' : '').'&amp;magic='.$subwiki->magic.'&amp;format=rss';
+$atomurl = new moodle_url('/mod/ouwiki/feed-wikihistory.php', array_merge($wikiparams, ['magic' => $subwiki->magic]));
+if ($newpages) {
+    $atomurl->param('type', 'pages');
+}
+$rssurl = clone $atomurl;
+$rssurl->param('format', 'rss');
 $meta = '<link rel="alternate" type="application/atom+xml" title="Atom feed" '.
     'href="'.$atomurl.'" />';
 
@@ -94,10 +99,12 @@ echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki,
     $context, null, false, false, $meta, $title);
 
 // Print tabs for selecting all changes/new pages
+$changesurl = new moodle_url('/mod/ouwiki/wikihistory.php', $wikiparams);
+$pagesurl = new moodle_url('/mod/ouwiki/wikihistory.php', array_merge($wikiparams, ['type' => 'pages']));
 $tabrow = array();
-$tabrow[] = new tabobject('changes', 'wikihistory.php?'.$wikiparams,
+$tabrow[] = new tabobject('changes', $changesurl,
     get_string('tab_index_changes', 'ouwiki'));
-$tabrow[] = new tabobject('pages', 'wikihistory.php?'.$wikiparams.'&amp;type=pages',
+$tabrow[] = new tabobject('pages', $pagesurl,
     get_string('tab_index_pages', 'ouwiki'));
 $tabs = array();
 $tabs[] = $tabrow;
@@ -250,24 +257,25 @@ if (empty($changes)) {
 
 if ($count > OUWIKI_PAGESIZE || $from > 0) {
     print '<div class="ouw_paging"><div class="ouw_paging_prev">&nbsp;';
+    $url = new moodle_url('/mod/ouwiki/wikihistory.php', $tabparams);
     if ($from > 0) {
         $jump = $from - OUWIKI_PAGESIZE;
         if ($jump < 0) {
             $jump = 0;
         }
-        print link_arrow_left(get_string('previous', 'ouwiki'),
-            'wikihistory.php?'.$tabparams. ($jump > 0 ? '&amp;from='.$jump : ''));
+        $jump > 0 ? $url->param('from', $jump) : $url->remove_params(['from']);
+        print link_arrow_left(get_string('previous', 'ouwiki'), $url);
     }
     print '</div><div class="ouw_paging_next">';
     if ($count > OUWIKI_PAGESIZE) {
         $jump = $from + OUWIKI_PAGESIZE;
-        print link_arrow_right(get_string('next', 'ouwiki'),
-            'wikihistory.php?'.$tabparams. ($jump > 0 ? '&amp;from='.$jump : ''));
+        $jump > 0 ? $url->param('from', $jump) : $url->remove_params(['from']);
+        print link_arrow_right(get_string('next', 'ouwiki'), $url);
     }
     print '&nbsp;</div></div>';
 }
 
-echo $ouwikioutput->ouwiki_get_feeds($atomurl, $rssurl);
+echo $ouwikioutput->ouwiki_get_feeds($atomurl->out(), $rssurl->out());
 
 $pageversion = ouwiki_get_current_page($subwiki, $pagename);
 echo $ouwikioutput->get_link_back_to_wiki($cm);
