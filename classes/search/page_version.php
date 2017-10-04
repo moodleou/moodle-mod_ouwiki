@@ -114,7 +114,11 @@ class page_version extends \core_search\base_mod {
         $doc->set('modified', $record->versionmodified);
         $doc->set('itemid', $record->ouwikiversionid);
         $doc->set('owneruserid', \core_search\manager::NO_OWNER_ID);
-        $doc->set('userid', $record->userid);
+
+        // Sometimes userid is not set for pages that were system-generated.
+        if ($record->userid) {
+            $doc->set('userid', $record->userid);
+        }
 
         // Set optional 'new' flag.
         if (isset($options['lastindexedtime']) && ($options['lastindexedtime'] < $record->versionmodified)) {
