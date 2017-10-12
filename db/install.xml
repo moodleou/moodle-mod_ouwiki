@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/ouwiki/db" VERSION="20150630" COMMENT="OU wiki database tables."
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+<XMLDB PATH="mod/ouwiki/db" VERSION="20171012" COMMENT="OU wiki database tables."
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
     <TABLE NAME="ouwiki" COMMENT="Main table for OU wiki">
@@ -89,6 +89,9 @@
         <KEY NAME="ouwiki_versions_fk_pageid" TYPE="foreign" FIELDS="pageid" REFTABLE="ouwiki_pages" REFFIELDS="id"/>
         <KEY NAME="ouwiki_versions_fk_userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="timecreated" UNIQUE="false" FIELDS="timecreated"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="ouwiki_links" COMMENT="Keeps record of all wiki-links (links within the wiki that were specified using square brackets, in the topageid or tomissingpage fields) and standard URL links or images (in the tourl field).">
       <FIELDS>

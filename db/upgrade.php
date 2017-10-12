@@ -511,6 +511,19 @@ WHERE
         upgrade_mod_savepoint(true, 2017062000, 'ouwiki');
     }
 
+    if ($oldversion < 2017101200) {
+
+        // Add index on timecreated to make search indexing faster.
+        $table = new xmldb_table('ouwiki_versions');
+        $index = new xmldb_index('timecreated', XMLDB_INDEX_NOTUNIQUE, array('timecreated'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Ouwiki savepoint reached.
+        upgrade_mod_savepoint(true, 2017101200, 'ouwiki');
+    }
+
     // Must always return true from these functions
     return true;
 }
