@@ -82,18 +82,19 @@ class mod_ouwiki_search_page_version_testcase extends advanced_testcase {
 
         $wiki = $generator->create_instance(array('course' => $course->id, 'groupmode' => SEPARATEGROUPS,
                 'subwikis' => OUWIKI_SUBWIKIS_GROUPS, 'groupingid' => $grouping->id));
+        $context = context_module::instance($wiki->cmid);
 
         $this->setUser($suser1);
         $newpage1 = $generator->create_content($wiki);
         $this->setUser($suser2);
         $newpage2 = $generator->create_content($wiki);
 
+        self::fix_timemodified_order();
+
         // Now check we get results.
         $results = ouwiki_test_utils::recordset_to_array($page->get_recordset_by_timestamp());
 
         $this->assertCount(4, $results);
-        $cm = get_coursemodule_from_instance('ouwiki', $results[0]->id, $results[0]->course);
-        $context = \context_module::instance($cm->id);
         $out = $page->get_document($results[0], array('lastindexedtime' => 0));
         $this->assertEquals('OU Wiki Test Page1', $out->get('title'));
         $this->assertEquals('Test content', $out->get('content'));
@@ -113,7 +114,7 @@ class mod_ouwiki_search_page_version_testcase extends advanced_testcase {
 
         // Check search result url for first page.
         $discussionurl = $page->get_doc_url($out)->out(false);
-        $this->assertEquals($CFG->wwwroot . '/mod/ouwiki/view.php?id=' . $cm->id .
+        $this->assertEquals($CFG->wwwroot . '/mod/ouwiki/view.php?id=' . $wiki->cmid .
                 '&page=OU%20Wiki%20Test%20Page1', $discussionurl);
 
         // Edit first page then check search result again.
@@ -133,6 +134,8 @@ class mod_ouwiki_search_page_version_testcase extends advanced_testcase {
         $this->setUser($suser2);
         $newpage2wiki2 = $generator->create_content($wiki2);
         $this->setUser($suser1);
+
+        self::fix_timemodified_order();
 
         // For students, they just can access their own pages.
         $this->assertEquals(\core_search\manager::ACCESS_GRANTED, $page->check_access($newpage1wiki2->versionid));
@@ -191,6 +194,19 @@ class mod_ouwiki_search_page_version_testcase extends advanced_testcase {
                 default:
                     break;
             }
+        }
+    }
+
+    /**
+     * Ensures everything in ouwiki_versions has a unique timecreated in same order as
+     * the creation id.
+     */
+    public static function fix_timemodified_order() {
+        global $DB;
+
+        $index = 100;
+        foreach ($DB->get_fieldset_sql('SELECT id FROM {ouwiki_versions} ORDER BY id') as $id) {
+            $DB->set_field('ouwiki_versions', 'timecreated', $index++, ['id' => $id]);
         }
     }
 }

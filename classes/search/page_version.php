@@ -58,15 +58,18 @@ class page_version extends \core_search\base_mod {
      */
     public function get_recordset_by_timestamp($modifiedfrom = 0) {
         global $DB;
+        // Note: Ideally in this query we would also join with the ouwiki_subwikis and ouwiki tables
+        // to get the additional information from those tables (wiki name, course id, etc). However,
+        // doing this made the query infeasibly slow when run on OU acct data. I've moved this part
+        // out (along with the XHTML since that might be large) into an extra db query in
+        // get_document.
         $querystring = '
-            SELECT ow.course, ow.id, ow.name as ouwikiname,
-                   owv.xhtml, owv.timecreated as versionmodified, owv.id as ouwikiversionid, owv.userid,
-                   owp.title
+            SELECT owv.timecreated as versionmodified, owv.id as ouwikiversionid, owv.userid,
+                   owp.title, owp.subwikiid
               FROM {ouwiki_versions} owv
               JOIN {ouwiki_pages} owp ON owv.pageid = owp.id AND owp.currentversionid = owv.id
-              JOIN {ouwiki_subwikis} owsw ON owsw.id = owp.subwikiid
-              JOIN {ouwiki} ow ON ow.id = owsw.wikiid
-             WHERE owv.timecreated >= ?';
+             WHERE owv.timecreated >= ?
+          ORDER BY owv.timecreated';
 
         return $DB->get_recordset_sql($querystring, array($modifiedfrom));
     }
@@ -79,8 +82,18 @@ class page_version extends \core_search\base_mod {
      * @return bool|\core_search\document
      */
     public function get_document($record, $options = array()) {
+        global $DB;
+
         try {
-            $cm = get_coursemodule_from_instance($this->get_module_name(), $record->id, $record->course);
+            // Get additional data that used to be obtained in the main query (for performance).
+            $moredata = $DB->get_record_sql("
+                    SELECT ow.course, ow.id, ow.name as ouwikiname, owv.xhtml
+                      FROM {ouwiki_subwikis} owsw
+                      JOIN {ouwiki} ow ON ow.id = owsw.wikiid
+                      JOIN {ouwiki_versions} owv ON owv.id = ?
+                     WHERE owsw.id = ?", [$record->ouwikiversionid, $record->subwikiid], MUST_EXIST);
+
+            $cm = get_coursemodule_from_instance($this->get_module_name(), $moredata->id, $moredata->course);
             $context = \context_module::instance($cm->id);
         } catch (\dml_exception $ex) {
             // Don't throw an exception, apparently it might upset the search process.
@@ -97,12 +110,12 @@ class page_version extends \core_search\base_mod {
         // By default, document title will be page title.
         $title = $record->title;
         if (empty($title)) {
-            $title = $record->ouwikiname;
+            $title = $moredata->ouwikiname;
         }
         $doc->set('title', content_to_text($title, false));
 
         // Document content.
-        $content = $record->xhtml;
+        $content = $moredata->xhtml;
         $content = file_rewrite_pluginfile_urls($content, 'pluginfile.php', $context->id, $this->componentname,
             self::FILEAREA['CONTENT'], $record->ouwikiversionid);
         $doc->set('content', content_to_text($content, FORMAT_HTML));
@@ -110,7 +123,7 @@ class page_version extends \core_search\base_mod {
         // Set other search metadata.
         $doc->set('contextid', $context->id);
         $doc->set('type', \core_search\manager::TYPE_TEXT);
-        $doc->set('courseid', $record->course);
+        $doc->set('courseid', $moredata->course);
         $doc->set('modified', $record->versionmodified);
         $doc->set('itemid', $record->ouwikiversionid);
         $doc->set('owneruserid', \core_search\manager::NO_OWNER_ID);
