@@ -36,10 +36,12 @@ class mod_ouwiki_generator extends testing_module_generator {
 
     private $modcount = 0;
     private $pagecount = 0;
+    private $annotationcount = 0;
 
     public function reset() {
         $this->modcount = 0;
         $this->pagecount = 0;
+        $this->annotationcount = 0;
         parent::reset();
     }
 
@@ -124,4 +126,35 @@ class mod_ouwiki_generator extends testing_module_generator {
         }
     }
 
+    /**
+     * Create annotation record in ouwiki_annotations table only.
+     *
+     * @param int $pageid
+     * @param int $userid
+     * @param string $content
+     * @return bool|int
+     */
+    public function create_annotation($pageid, $userid = null, $content = null) {
+        global $DB;
+
+        if (empty($userid)) {
+            global $USER;
+            $userid = $USER->id;
+        }
+
+        $dataobject = new stdClass();
+        $dataobject->pageid = $pageid;
+        $dataobject->userid = $userid;
+        $dataobject->timemodified = time();
+
+        if (empty($content)) {
+            $this->annotationcount++;
+            $content = 'OU Wiki Test Annotation' . $this->annotationcount;
+        }
+
+        $dataobject->content = $content;
+        $newannoid = $DB->insert_record('ouwiki_annotations', $dataobject);
+
+        return $newannoid;
+    }
 }

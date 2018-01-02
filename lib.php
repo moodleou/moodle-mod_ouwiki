@@ -34,6 +34,9 @@ function ouwiki_add_instance($data, $mform) {
     $context = context_module::instance($cmid);
 
     if ($formdata = $data) {
+
+        $formdata->timemodified = time();
+
         // Set up null values
         $nullvalues = array('editbegin', 'editend', 'timeout');
         foreach ($nullvalues as $nullvalue) {
@@ -68,6 +71,7 @@ function ouwiki_update_instance($data, $mform) {
     global $CFG, $DB;
 
     $data->id = $data->instance;
+    $data->timemodified = time();
 
     // Update main record.
     $DB->update_record('ouwiki', $data);

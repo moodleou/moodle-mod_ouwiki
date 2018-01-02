@@ -15,15 +15,30 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version.
+ * This is a lib/helper class for ouwiki tests, containing useful setup functions
+ * Include + Extend this class in your test rather than advance_testcase
  *
  * @package mod_ouwiki
- * @copyright 2014 The Open University
+ * @copyright 2017 The Open University
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version  = 2017062000;
-$plugin->requires = 2014051200;
-$plugin->component = 'mod_ouwiki';
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '3.1 r1';
+defined('MOODLE_INTERNAL') || die();
+
+class ouwiki_test_utils {
+
+    /**
+     * Converts recordset to array, indexed numberically (0, 1, 2).
+     *
+     * @param moodle_recordset $rs Record set to convert
+     * @return \stdClass[] Array of converted records
+     */
+    public static function recordset_to_array(moodle_recordset $rs) {
+        $result = array();
+        foreach ($rs as $rec) {
+            $result[] = $rec;
+        }
+        $rs->close();
+        return $result;
+    }
+}

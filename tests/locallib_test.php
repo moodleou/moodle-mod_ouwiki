@@ -249,8 +249,14 @@ class ouwiki_locallib_test extends advanced_testcase {
         $this->assertNotEmpty($cm);
         $context = context_module::instance($cm->id);
         $this->setUser($user);
-        $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $group2->id, $user->id, true);
-        $this->check_subwiki($ouwiki, $subwiki, false, $group2->id);
+        try {
+            $exceptionoccured = false;
+            $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $group2->id, $user->id, true);
+        } catch (\moodle_exception $e) {
+            $this->assertContains('Wiki error: You do not have permission to see the content of this page', $e->getMessage());
+            $exceptionoccured = true;
+         }
+        $this->assertTrue($exceptionoccured);
     }
 
     public function test_ouwiki_init_individual_wiki_access() {

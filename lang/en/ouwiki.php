@@ -156,6 +156,7 @@ $string['frompages']='from {$a}...';
 $string['nowikipages'] = 'This wiki does not have any pages.';
 
 $string['error_export'] = 'An error occurred while exporting wiki data.';
+$string['error_nopermission'] = 'You do not have permission to see the content of this page';
 
 $string['changesnav']='Changes';
 $string['advice_diff']='The older version is shown on the
@@ -589,3 +590,5 @@ $string['event:ouwikipagecreated'] = 'ouwiki page created';
 $string['event:ouwikipageupdated'] = 'ouwiki page updated';
 $string['event:savefailed'] = 'Session fail on page save';
 $string['ouwikicrontask'] = 'OU wiki maintenance jobs';
+$string['search:activity'] = 'OUWiki - activity information';
+$string['search:page_version'] = 'OUWiki - page versions';
