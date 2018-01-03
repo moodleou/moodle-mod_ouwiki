@@ -371,7 +371,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         }
 
         // On main page, add export button
-        if (!$xhtmlid && $CFG->enableportfolios) {
+        if (!$xhtmlid && $CFG->enableportfolios && !isguestuser()) {
             $button = new portfolio_add_button();
             $button->set_callback_options('ouwiki_page_portfolio_caller',
                     array('pageid' => $pageid), 'mod_ouwiki');

@@ -60,7 +60,9 @@ $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 $wikiparams = ouwiki_display_wiki_parameters('', $subwiki, $cm);
 
 // Do header
-$ouwikioutput->set_export_button('subwiki', $subwiki->id, $course->id, !empty($treemode) ? 1 : 0);
+if (!isguestuser()) {
+    $ouwikioutput->set_export_button('subwiki', $subwiki->id, $course->id, !empty($treemode) ? 1 : 0);
+}
 echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, get_string('index', 'ouwiki'), $context, null, false);
 
 // Print tabs for selecting index type
