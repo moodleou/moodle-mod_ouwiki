@@ -51,27 +51,45 @@ class page_version extends \core_search\base_mod {
     protected static $levels = [CONTEXT_MODULE];
 
     /**
+     * Calls get_document_recordset which returns the required data for indexing ouwiki page versions.
+     *
+     * @param int $modifiedfrom
+     * @return \moodle_recordset|null
+     */
+    public function get_recordset_by_timestamp($modifiedfrom = 0) {
+        return $this->get_document_recordset($modifiedfrom);
+    }
+
+    /**
      * Returns recordset containing required data for indexing ouwiki page versions.
      *
      * @param int $modifiedfrom
-     * @return \moodle_recordset
+     * @param \context|null $context
+     * @return \moodle_recordset|null
      */
-    public function get_recordset_by_timestamp($modifiedfrom = 0) {
+    public function get_document_recordset($modifiedfrom = 0, \context $context = null) {
         global $DB;
+
+        list ($contextjoin, $contextparams) = $this->get_context_restriction_sql(
+                $context, 'ouwiki', 'ow');
+        if ($contextjoin === null) {
+            return null;
+        }
         // Note: Ideally in this query we would also join with the ouwiki_subwikis and ouwiki tables
         // to get the additional information from those tables (wiki name, course id, etc). However,
         // doing this made the query infeasibly slow when run on OU acct data. I've moved this part
         // out (along with the XHTML since that might be large) into an extra db query in
         // get_document.
-        $querystring = '
-            SELECT owv.timecreated as versionmodified, owv.id as ouwikiversionid, owv.userid,
-                   owp.title, owp.subwikiid
-              FROM {ouwiki_versions} owv
-              JOIN {ouwiki_pages} owp ON owv.pageid = owp.id AND owp.currentversionid = owv.id
-             WHERE owv.timecreated >= ?
-          ORDER BY owv.timecreated';
-
-        return $DB->get_recordset_sql($querystring, array($modifiedfrom));
+        $sql = "SELECT owv.timecreated as versionmodified, owv.id as ouwikiversionid, owv.userid,
+                       owp.title, owp.subwikiid
+                  FROM {ouwiki_versions} owv
+                  JOIN {ouwiki_pages} owp ON owv.pageid = owp.id AND owp.currentversionid = owv.id
+                  JOIN {ouwiki_subwikis} owsw ON owp.subwikiid = owsw.id
+                  JOIN {ouwiki} ow ON owsw.wikiid = ow.id
+          $contextjoin
+                 WHERE owv.timecreated >= ?
+              ORDER BY owv.timecreated";
+        return $DB->get_recordset_sql($sql, array_merge($contextparams, [$modifiedfrom]));
     }
 
     /**
