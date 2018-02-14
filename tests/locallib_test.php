@@ -295,7 +295,7 @@ class ouwiki_locallib_test extends advanced_testcase {
 
         // Check student viewing someone else's wiki throws exception (add nothing after this).
         $this->setUser($user);
-        $this->setExpectedException('moodle_exception');
+        $this->expectException('moodle_exception');
         $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $adminuserid, true);
         $this->fail('Expected exception on access to another users wiki');// Shouldn't get here.
     }
