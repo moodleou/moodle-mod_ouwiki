@@ -3011,9 +3011,8 @@ function ouwiki_count_words($content) {
     $pattern[1] = '/\s\s+/';
     $content = preg_replace($pattern, ' ', $content);
 
-    // trim again for extra spaces created
-    $content = trim($content);
-
+    // Trim again for extra spaces created and replace endline with space to correct count number.
+    $content = trim(preg_replace('/\s+/', ' ', $content));
     if (empty($content)) {
         return 0;
     } else {

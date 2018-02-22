@@ -60,7 +60,8 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         } else {
             $annotations = '';
         }
-
+        // Count words before convert content.
+        $totalcountnumber = ouwiki_count_words($pageversion->xhtml);
         // Setup annotations according to the page we are on.
             if ($page == 'view') {
             if ($subwiki->annotation && count($annotations)) {
@@ -152,7 +153,12 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         // Add wordcount.
         if ($showwordcount) {
-            $output .= $this->ouwiki_render_wordcount($pageversion->wordcount);
+            if ($totalcountnumber == $pageversion->wordcount) {
+                $output .= $this->ouwiki_render_wordcount($pageversion->wordcount);
+            } else {
+                // Apply for legacy data with total count number is wrong.
+                $output .= $this->ouwiki_render_wordcount($totalcountnumber);
+            }
         }
 
         $output .= html_writer::end_tag('div'); // End of ouwiki-content.
