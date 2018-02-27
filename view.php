@@ -31,6 +31,7 @@ require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 $url = new moodle_url('/mod/ouwiki/view.php', array('id' => $id, 'page' => $pagename));
 $PAGE->set_url($url);
 $PAGE->set_cm($cm);
+$PAGE->force_settings_menu();
 
 $context = context_module::instance($cm->id);
 $PAGE->set_pagelayout('incourse');
