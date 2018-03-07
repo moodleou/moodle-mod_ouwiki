@@ -3,6 +3,12 @@
     padding:10px;
     margin:1em;
 }
+#page-mod-ouwiki-edit .ouw_preview .box.generalbox.boxaligncenter::after {
+    content: "";
+    clear: both;
+    display: block;
+    visibility: hidden;
+}
 #page-mod-ouwiki-view .ouw_recentchanges {
     font-size:0.85em;
     color:#636363;
