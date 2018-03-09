@@ -76,10 +76,14 @@ echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagenam
         array('name' => get_string('oldversion', 'ouwiki'), 'link' => null)
     ), true, true);
 
+// Fix double htmlspecialchars for ampersand in "Older changes" and "Newer changes" links.
+if ($prevnext->prev || $prevnext->next) {
+    $wikiparams = str_replace('&amp;', '&', $wikiparams);
+}
 // Information box
 if ($prevnext->prev) {
     $date = ouwiki_nice_date($prevnext->prev->timecreated);
-    $prev = link_arrow_left(get_string('previousversion', 'ouwiki', $date), "viewold.php?$wikiparams&amp;version={$prevnext->prev->versionid}");
+    $prev = link_arrow_left(get_string('previousversion', 'ouwiki', $date), "viewold.php?$wikiparams&version={$prevnext->prev->versionid}");
 } else {
     $prev = '';
 }
@@ -89,7 +93,7 @@ if ($prevnext->next) {
         $next = link_arrow_right(get_string('nextversion', 'ouwiki', $date), "view.php?$wikiparams");
     } else {
         $date = ouwiki_nice_date($prevnext->next->timecreated);
-        $next = link_arrow_right(get_string('nextversion', 'ouwiki', $date), "viewold.php?$wikiparams&amp;version={$prevnext->next->versionid}");
+        $next = link_arrow_right(get_string('nextversion', 'ouwiki', $date), "viewold.php?$wikiparams&version={$prevnext->next->versionid}");
     }
 } else {
     $next = '';

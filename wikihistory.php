@@ -30,7 +30,7 @@ require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
 
 $id = required_param('id', PARAM_INT); // Course Module ID
 $newpages = optional_param('type', '', PARAM_ALPHA) == 'pages';
-$from = optional_param('from', '', PARAM_INT);
+$from = optional_param('from', 0, PARAM_INT);
 
 $url = new moodle_url('/mod/ouwiki/wikihistory.php', array('id' => $id));
 $PAGE->set_url($url);
@@ -249,6 +249,10 @@ if (empty($changes)) {
 }
 
 if ($count > OUWIKI_PAGESIZE || $from > 0) {
+
+    // Fix double htmlspecialchars for ampersand in "Older changes" and "Newer changes" links.
+    $tabparams = str_replace('&amp;', '&', $tabparams);
+
     print '<div class="ouw_paging"><div class="ouw_paging_prev">&nbsp;';
     if ($from > 0) {
         $jump = $from - OUWIKI_PAGESIZE;
@@ -256,13 +260,13 @@ if ($count > OUWIKI_PAGESIZE || $from > 0) {
             $jump = 0;
         }
         print link_arrow_left(get_string('previous', 'ouwiki'),
-            'wikihistory.php?'.$tabparams. ($jump > 0 ? '&amp;from='.$jump : ''));
+            'wikihistory.php?'.$tabparams. ($jump > 0 ? '&from='.$jump : ''));
     }
     print '</div><div class="ouw_paging_next">';
     if ($count > OUWIKI_PAGESIZE) {
         $jump = $from + OUWIKI_PAGESIZE;
         print link_arrow_right(get_string('next', 'ouwiki'),
-            'wikihistory.php?'.$tabparams. ($jump > 0 ? '&amp;from='.$jump : ''));
+            'wikihistory.php?'.$tabparams. ($jump > 0 ? '&from='.$jump : ''));
     }
     print '</div></div>';
 }
