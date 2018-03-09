@@ -440,8 +440,8 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $content = ouwiki_convert_content($content, $subwiki, $cm, null, $contentformat);
         // Need to replace brokenfile.php with draftfile.php since switching off filters
         // will switch off all filter.
-        $content = str_replace("\"$CFG->httpswwwroot/brokenfile.php#",
-            "\"$CFG->httpswwwroot/draftfile.php", $content);
+        $content = str_replace("\"$CFG->wwwroot/brokenfile.php#",
+            "\"$CFG->wwwroot/draftfile.php", $content);
         // Create output to be returned for printing.
         $output = html_writer::tag('p', get_string('previewwarning', 'ouwiki'),
                 array('class' => 'ouw_warning'));
