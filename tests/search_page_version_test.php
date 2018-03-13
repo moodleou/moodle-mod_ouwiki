@@ -236,4 +236,77 @@ class mod_ouwiki_search_page_version_testcase extends advanced_testcase {
             $DB->set_field('ouwiki_versions', 'timecreated', $index++, ['id' => $id]);
         }
     }
+
+    public function test_ouwiki_posts_group_support() {
+        $this->resetAfterTest(true);
+        set_config('enableglobalsearch', true);
+        $search = testable_core_search::instance();
+
+        // Get the search area and test generators.
+        $ouwikipageareaid = \core_search\manager::generate_areaid('mod_ouwiki', 'page_version');
+        $searcharea = \core_search\manager::get_search_area($ouwikipageareaid);
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_ouwiki');
+        $page = new \mod_ouwiki\search\page_version();
+
+        // Set up data.
+        $course = $this->getDataGenerator()->create_course();
+
+        $etuser = $this->getDataGenerator()->create_user();
+        $suser1 = $this->getDataGenerator()->create_user();
+        $suser2 = $this->getDataGenerator()->create_user();
+
+        $this->getDataGenerator()->enrol_user($etuser->id, $course->id, 'editingteacher');
+        $this->getDataGenerator()->enrol_user($suser1->id, $course->id, 'student');
+        $this->getDataGenerator()->enrol_user($suser2->id, $course->id, 'student');
+
+        $group1 = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+        $group2 = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+
+        $this->getDataGenerator()->create_group_member(['groupid' => $group1->id, 'userid' => $suser1->id]);
+        $this->getDataGenerator()->create_group_member(['groupid' => $group2->id, 'userid' => $suser2->id]);
+
+        $wiki = $generator->create_instance(['course' => $course->id, 'groupmode' => SEPARATEGROUPS,
+                'subwikis' => OUWIKI_SUBWIKIS_GROUPS]);
+
+        $this->setUser($suser1);
+        $newpage1 = $generator->create_content($wiki);
+        $this->setUser($suser2);
+        $newpage2 = $generator->create_content($wiki);
+
+        // Create a second wiki.
+        $otherwiki = $generator->create_instance(['course' => $course->id,
+                'groupmode' => NOGROUPS, 'subwikis' => OUWIKI_SUBWIKIS_SINGLE]);
+        $generator->create_content($otherwiki);
+        self::fix_timemodified_order();
+        $results = self::recordset_to_array($page->get_document_recordset(0));
+        $this->assertCount(6, $results);
+
+        $out1 = $page->get_document($results[0]);
+        $this->assertTrue($out1->is_set('groupid'));
+        $this->assertEquals($group1->id, $out1->get('groupid'));
+        $out2 = $page->get_document($results[1]);
+        $this->assertTrue($out2->is_set('groupid'));
+        $this->assertEquals($group1->id, $out2->get('groupid'));
+
+        $out3 = $page->get_document($results[2]);
+        $this->assertTrue($out3->is_set('groupid'));
+        $this->assertEquals($group2->id, $out3->get('groupid'));
+        $out4 = $page->get_document($results[3]);
+        $this->assertTrue($out4->is_set('groupid'));
+        $this->assertEquals($group2->id, $out4->get('groupid'));
+
+        $out5 = $page->get_document($results[4]);
+        $this->assertFalse($out5->is_set('groupid'));
+        $out6 = $page->get_document($results[5]);
+        $this->assertFalse($out6->is_set('groupid'));
+
+        // While we're here, also test that the search area requests restriction by group.
+        $modinfo = get_fast_modinfo($course);
+        $this->assertTrue($searcharea->restrict_cm_access_by_group($modinfo->get_cm($wiki->cmid)));
+
+        // In visible groups mode, it won't request restriction by group.
+        set_coursemodule_groupmode($wiki->cmid, VISIBLEGROUPS);
+        $modinfo = get_fast_modinfo($course);
+        $this->assertFalse($searcharea->restrict_cm_access_by_group($modinfo->get_cm($wiki->cmid)));
+    }
 }

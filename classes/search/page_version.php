@@ -81,7 +81,7 @@ class page_version extends \core_search\base_mod {
         // out (along with the XHTML since that might be large) into an extra db query in
         // get_document.
         $sql = "SELECT owv.timecreated as versionmodified, owv.id as ouwikiversionid, owv.userid,
-                       owp.title, owp.subwikiid
+                       owp.title, owp.subwikiid, owsw.groupid AS groupid
                   FROM {ouwiki_versions} owv
                   JOIN {ouwiki_pages} owp ON owv.pageid = owp.id AND owp.currentversionid = owv.id
                   JOIN {ouwiki_subwikis} owsw ON owp.subwikiid = owsw.id
@@ -149,6 +149,11 @@ class page_version extends \core_search\base_mod {
         // Sometimes userid is not set for pages that were system-generated.
         if ($record->userid) {
             $doc->set('userid', $record->userid);
+        }
+
+        // Store groupid if there is one.
+        if ($record->groupid > 0) {
+            $doc->set('groupid', $record->groupid);
         }
 
         // Set optional 'new' flag.
@@ -333,5 +338,14 @@ class page_version extends \core_search\base_mod {
         foreach ($files as $file) {
             $document->add_stored_file($file);
         }
+    }
+
+    /**
+     * Indicates that this search area may restrict access by group.
+     *
+     * @return bool True
+     */
+    public function supports_group_restriction() {
+        return true;
     }
 }
