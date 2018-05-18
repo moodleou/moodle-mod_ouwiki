@@ -357,6 +357,22 @@ class ouwiki_locallib_test extends advanced_testcase {
         $test['count'] = 3;
         $testcount = ouwiki_count_words($test['string']);
         $this->assertEquals($test['count'], $testcount);
+
+        $test['string'] = 'Three' . '<p>word</p>' . "\n" .'test';
+        $test['count'] = 3;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEquals($test['count'], $testcount);
+
+        $test['string'] = 'Four test' . '<p>word</p>' . "\n" .'test';
+        $test['count'] = 4;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEquals($test['count'], $testcount);
+
+        $test['string'] = 'Five test' . '<ol>ol</ol>' . "\n" .'test<ul>ul</ul>';
+        $test['count'] = 5;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEquals($test['count'], $testcount);
+
     }
 
     /*

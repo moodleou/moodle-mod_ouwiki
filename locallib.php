@@ -2985,9 +2985,16 @@ function ouwiki_get_search_form($subwiki, $cmid) {
  */
 function ouwiki_count_words($content) {
 
+    // Put a space before open tag will break line like p,ol,ul to count correctly.
+    $tags = ['p', 'ol', 'ul'];
+    $content = preg_replace_callback('/(\<([a-zA-Z]*)[^>]*\>)/', function($a) use ($tags) {
+        if (!empty($a[2]) && in_array($a[2], $tags)) {
+            return ' ' . $a[1];
+        }
+        return $a[0];
+    }, $content);
     // Strip tags and convert entities to text
     $content = html_entity_decode(strip_tags($content), ENT_QUOTES, 'UTF-8');
-
     // combine to a single word
     // hyphen
     // apostrophe
