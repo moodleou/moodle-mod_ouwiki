@@ -24,7 +24,6 @@ Feature: import pages into one wiki from another
     Given I log in as "student1"
     And I am on "Wiki Import Pages Test 1" course homepage
     And I press "All weeks"
-    And I press "oustudyplan-expandall"
     And I follow "WIP.coursewiki"
     And I press "Create page"
     And I set the field "Content" to "WIP.coursewiki start page, [[WIPcoursewiki1]]"
