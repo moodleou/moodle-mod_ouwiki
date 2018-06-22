@@ -195,6 +195,33 @@ class mod_ouwiki_search_page_version_testcase extends advanced_testcase {
                     break;
             }
         }
+
+        // Create a second wiki.
+        $otherwiki = $generator->create_instance(['course' => $course->id,
+                'groupmode' => NOGROUPS, 'subwikis' => OUWIKI_SUBWIKIS_SINGLE]);
+        $generator->create_content($otherwiki);
+        $othercontext = context_module::instance($otherwiki->cmid);
+
+        // Test get_document_recordset with and without context.
+        $results = self::recordset_to_array($page->get_document_recordset(0));
+        $this->assertCount(10, $results);
+        $results = self::recordset_to_array($page->get_document_recordset(0, $othercontext));
+        $this->assertCount(2, $results);
+    }
+
+    /**
+     * Converts recordset to array, indexed numberically (0, 1, 2).
+     *
+     * @param moodle_recordset $rs Record set to convert
+     * @return \stdClass[] Array of converted records
+     */
+    protected static function recordset_to_array(moodle_recordset $rs) {
+        $result = array();
+        foreach ($rs as $rec) {
+            $result[] = $rec;
+        }
+        $rs->close();
+        return $result;
     }
 
     /**

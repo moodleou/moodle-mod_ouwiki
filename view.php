@@ -44,7 +44,7 @@ $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 // Get the current page version
 $pageversion = ouwiki_get_current_page($subwiki, $pagename);
 
-if ($pageversion) {
+if ($pageversion && !isguestuser()) {
     $ouwikioutput->set_export_button('page', $pageversion->pageid, $course->id);
 }
 echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagename, $context);

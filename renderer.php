@@ -371,7 +371,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         }
 
         // On main page, add export button
-        if (!$xhtmlid && $CFG->enableportfolios) {
+        if (!$xhtmlid && $CFG->enableportfolios && !isguestuser()) {
             $button = new portfolio_add_button();
             $button->set_callback_options('ouwiki_page_portfolio_caller',
                     array('pageid' => $pageid), 'mod_ouwiki');
@@ -441,7 +441,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         // Need to replace brokenfile.php with draftfile.php since switching off filters
         // will switch off all filter.
         $content = str_replace("\"$CFG->httpswwwroot/brokenfile.php#",
-                "\"$CFG->httpswwwroot/draftfile.php", $content);
+            "\"$CFG->httpswwwroot/draftfile.php", $content);
         // Create output to be returned for printing.
         $output = html_writer::tag('p', get_string('previewwarning', 'ouwiki'),
                 array('class' => 'ouw_warning'));
@@ -1083,7 +1083,8 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                     $lastdate = $date;
                 }
                 $now = time();
-                $edittime = $time;
+                $edittime = strtotime($time);
+                $edittimedisplay = $time;
                 if ($now - $edittime < 5*60) {
                     $category = 'ouw_recenter';
                 } else if ($now - $edittime < 4*60*60) {
@@ -1092,7 +1093,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                     $category = 'ouw_recentnot';
                 }
                 $time = html_writer::start_tag('span', array('class' => $category));
-                $time .= $edittime;
+                $time .= $edittimedisplay;
                 $time .= html_writer::end_tag('span');
             }
             $page = $change->title ? htmlspecialchars($change->title) :
@@ -1146,7 +1147,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
             if (!$table->is_downloading()) {
                 $pageparams = ouwiki_display_wiki_parameters($change->title, $subwiki, $cm);
-                $pagestr = $page . ' ' . $lastdate . ' ' . $edittime;
+                $pagestr = $page . ' ' . $lastdate . ' ' . $edittimedisplay;
                 if ($change->id != $change->firstversionid) {
                     $accesshidetext = get_string('viewwikichanges', 'ouwiki', $pagestr);
                     $changeurl = new moodle_url("/mod/ouwiki/diff.php?$pageparams" .
