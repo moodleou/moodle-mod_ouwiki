@@ -26,4 +26,4 @@ $plugin->version  = 2017101200;
 $plugin->requires = 2014051200;
 $plugin->component = 'mod_ouwiki';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '3.1 r1';
+$plugin->release = '3.4 r1';
