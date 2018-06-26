@@ -467,18 +467,9 @@ WHERE
 
         // Define index ouwiki_subwikis_unique_group (unique) to be added to ouwiki_subwikis.
         $table = new xmldb_table('ouwiki_subwikis');
-        $index = new xmldb_index('ouwiki_subwikis_unique_group', XMLDB_INDEX_UNIQUE, array('wikiid', 'groupid'));
+        $index = new xmldb_index('ouwiki_subwikis_unique_group', XMLDB_INDEX_UNIQUE, array('wikiid', 'groupid', 'userid'));
 
         // Conditionally launch add index ouwiki_subwikis_unique_group.
-        if (!$dbman->index_exists($table, $index)) {
-            $dbman->add_index($table, $index);
-        }
-
-        // Define index ouwiki_subwikis_unique_user (unique) to be added to ouwiki_subwikis.
-        $table = new xmldb_table('ouwiki_subwikis');
-        $index = new xmldb_index('ouwiki_subwikis_unique_user', XMLDB_INDEX_UNIQUE, array('wikiid', 'userid'));
-
-        // Conditionally launch add index ouwiki_subwikis_unique_user.
         if (!$dbman->index_exists($table, $index)) {
             $dbman->add_index($table, $index);
         }
