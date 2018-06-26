@@ -36,7 +36,7 @@ if ($pagename === '') {
     debugging('Please try to make code omit page parameter when it is null', DEBUG_DEVELOPER);
 }
 if (is_null($pagename)) {
-    $pagename = '';
+    $pagename = $pagename = $DB->sql_empty();
 }
 
 // Restrict page name
@@ -45,7 +45,7 @@ if (core_text::strlen($pagename) > 200) {
 }
 // Convert nbsp to space
 $pagename = str_replace(html_entity_decode('&nbsp;', ENT_QUOTES, 'UTF-8'), ' ', $pagename);
-$pagename = trim($pagename);
+$pagename = ($DB->sql_empty() === $pagename) ? $pagename : trim($pagename);
 if (strtolower($pagename) == strtolower(get_string('startpage', 'ouwiki'))) {
     print_error('pagenameisstartpage', 'ouwiki');
 }
