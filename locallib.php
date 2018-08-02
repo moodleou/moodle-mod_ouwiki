@@ -691,7 +691,7 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
 
     $jointype = $option == OUWIKI_GETPAGE_REQUIREVERSION ? 'JOIN' : 'LEFT JOIN';
 
-    $userfields = user_picture::fields('u', null, 'userid');
+    $userfields = user_picture::fields('u', null, 'userid1');
 
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
                 p.locked, v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
@@ -774,7 +774,7 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
 function ouwiki_get_subwiki_allpages($subwiki) {
     global $DB;
 
-    $userfields = user_picture::fields('u', null, 'userid');
+    $userfields = user_picture::fields('u', null, 'userid1');
 
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
                 p.locked, v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
@@ -800,7 +800,7 @@ function ouwiki_get_subwiki_allpages($subwiki) {
 function ouwiki_get_page_version($subwiki, $pagename, $versionid) {
     global $DB;
 
-    $userfields = user_picture::fields('u', null, 'userid');
+    $userfields = user_picture::fields('u', null, 'userid1');
 
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
                 v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
@@ -1398,7 +1398,7 @@ function ouwiki_get_subwiki_index($subwikiid, $limitfrom = '', $limitnum = '') {
 function ouwiki_get_subwiki_allpages_index($subwiki) {
     global $DB;
 
-    $userfields = user_picture::fields('u', null, 'userid');
+    $userfields = user_picture::fields('u', null, 'userid1');
 
     // Get all the pages...
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
@@ -1453,7 +1453,7 @@ function ouwiki_get_subwiki_allpages_index($subwiki) {
 function ouwiki_get_subwiki_recentchanges($subwikiid, $limitfrom = '', $limitnum = 51) {
     global $DB;
 
-    $userfields = user_picture::fields('u', null, 'userid');
+    $userfields = user_picture::fields('u', null, 'userid1');
 
     $sql = "SELECT v.id AS versionid, v.timecreated, v.userid,
         p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
@@ -1531,7 +1531,7 @@ function ouwiki_get_subwiki_recentpages($subwikiid, $limitfrom = '', $limitnum =
     if ($subwikis) {
         list($usql, $params) = $DB->get_in_or_equal(array_keys($subwikis));
 
-        $userfields = user_picture::fields('u', null, 'userid');
+        $userfields = user_picture::fields('u', null, 'userid1');
 
         $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
                 v.id AS versionid, v.timecreated, v.userid, $userfields,
@@ -2384,7 +2384,7 @@ function ouwiki_get_annotations($pageversion) {
 
     $annotations = array();
 
-    $userfields = user_picture::fields('u', null, 'userid');
+    $userfields = user_picture::fields('u', null, 'userid1');
 
     $rs = $DB->get_records_sql("SELECT a.id, a.pageid, a.userid, a.timemodified,
                                     a.content, $userfields
