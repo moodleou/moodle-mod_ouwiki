@@ -626,3 +626,5 @@ $string['privacy_you'] = 'You';
 $string['privacy_somebodyelse'] = 'Somebody else';
 $string['privacy:annotationdeleted'] = '[Annotation deleted at user request]';
 $string['privacy:xhtmlcontentdeleted'] = '[Contributor information deleted at user request]';
+//Mobile app section
+$string['wikisections'] = 'Wiki Sections';
