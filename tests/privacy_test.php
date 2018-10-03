@@ -228,18 +228,13 @@ class mod_ouwiki_privacy_testcase extends provider_testcase {
     public function test_get_contexts_for_userid() {
         // Get contexts for the first user.
         $contextids = provider::get_contexts_for_userid($this->users[1]->id)->get_contextids();
-        $this->assertEquals([
-                $this->contexts[1]->id,
-                $this->contexts[2]->id
-        ], $contextids);
+        $this->assertContains($this->contexts[1]->id, $contextids);
+        $this->assertContains($this->contexts[2]->id, $contextids);
         // Get contexts for the second user.
         $contextids = provider::get_contexts_for_userid($this->users[2]->id)->get_contextids();
-        $this->assertEquals([
-                $this->contexts[1]->id,
-                $this->contexts[2]->id,
-                $this->contexts[3]->id
-        ], $contextids);
-
+        $this->assertContains($this->contexts[1]->id, $contextids);
+        $this->assertContains($this->contexts[2]->id, $contextids);
+        $this->assertContains($this->contexts[3]->id, $contextids);
     }
 
     /**
