@@ -110,6 +110,10 @@ class mod_ouwiki_privacy_testcase extends provider_testcase {
         $pagedata->newpagename = 'Test page 3 - User 1';
         $pagedata->content = 'Test content 3 - User 1';
         $this->pages[1][3] = $this->create_new_page($ouwiki2, $pagedata);
+        // Create Page 4 belong to context 1 with long subject contain special character.
+        $pagedata->newpagename = 'Lorem/ipsum/dolor/sit/amet/conse/selit/content';
+        $pagedata->content = 'Test content 4 - User 1';
+        $this->pages[1][4] = $this->create_new_page($ouwiki1, $pagedata);
 
         // User2.
         $this->setUser($this->users[2]);
@@ -241,7 +245,6 @@ class mod_ouwiki_privacy_testcase extends provider_testcase {
      * Test export data for first user.
      *
      * @throws coding_exception
-     * @throws dml_exception
      */
     public function test_export_user_data1() {
         // Export all contexts for the first user.
@@ -250,53 +253,87 @@ class mod_ouwiki_privacy_testcase extends provider_testcase {
         }, $this->contexts));
         $appctx = new approved_contextlist($this->users[1], 'mod_ouwiki', $contextids);
         provider::export_user_data($appctx);
-        // First wiki has two pages ever touched by this user.
-        $data1 = writer::with_context($this->contexts[1])->get_related_data($this->get_param_for_test_export_user_data(1, 1));
-        $data2 = writer::with_context($this->contexts[1])->get_related_data($this->get_param_for_test_export_user_data(1, 2));
-        // Second wiki has one page ever touched by this user.
-        $data3 = writer::with_context($this->contexts[2])->get_related_data($this->get_param_for_test_export_user_data(1, 3));
-        $this->assertEquals($this->pagepaths[1][1], array_keys($data1)[0]);
-        $this->assertEquals($this->pagepaths[1][2], array_keys($data2)[0]);
-        $this->assertEquals($this->pagepaths[1][3], array_keys($data3)[0]);
-        // First page was initially created by this user and all its information is returned to this user.
-        $data11 = $data1[$this->pagepaths[1][1]];
-        $this->assertEquals(1, count($data11['revisions']));
-        $lastrevision = array_pop($data11['revisions']);
-        $this->assertEquals($this->pages[1][1]->xhtml, $lastrevision['content']);
-        $this->assertNotEmpty($lastrevision['timecreated']);
+
+        // Check only pages belong to first user returned.
+        $data11 = writer::with_context($this->contexts[1])->get_data($this->get_param_for_test_export_user_data(1, 1));
+        $data12 = writer::with_context($this->contexts[1])->get_data($this->get_param_for_test_export_user_data(1, 2));
+        $data13 = writer::with_context($this->contexts[2])->get_data($this->get_param_for_test_export_user_data(1, 3));
+        $data21 = writer::with_context($this->contexts[1])->get_data($this->get_param_for_test_export_user_data(2, 1));
+        $data22 = writer::with_context($this->contexts[2])->get_data($this->get_param_for_test_export_user_data(2, 2));
+        $data23 = writer::with_context($this->contexts[3])->get_data($this->get_param_for_test_export_user_data(2, 3));
+
+        $this->assert_page_data($this->pages[1][1], $data11);
+        $this->assert_page_data($this->pages[1][2], $data12);
+        $this->assert_page_data($this->pages[1][3], $data13);
+        $this->assertEmpty($data21);
+        $this->assertEmpty($data22);
+        $this->assertEmpty($data23);
+
         // Second page has a attachment upload by this user.
         $files = writer::with_context($this->contexts[1])->get_files($this->get_param_for_test_export_user_data(1, 2));
         $this->assertEquals(['Dog.jpg'], array_keys($files));
+        // Try to get attachment belong to second user.
+        $files = writer::with_context($this->contexts[2])->get_files($this->get_param_for_test_export_user_data(2, 2));
+        $this->assertEmpty($files);
     }
 
     /**
      * Test export data for second user.
      *
      * @throws coding_exception
-     * @throws dml_exception
      */
     public function test_export_user_data2() {
-        // Export all contexts for the first user.
+        // Export all contexts for the second user.
         $contextids = array_values(array_map(function($c) {
             return $c->id;
         }, $this->contexts));
         $appctx = new approved_contextlist($this->users[2], 'mod_ouwiki', $contextids);
         provider::export_user_data($appctx);
-        $data1 = writer::with_context($this->contexts[1])->get_related_data($this->get_param_for_test_export_user_data(2, 1));
-        $data2 = writer::with_context($this->contexts[2])->get_related_data($this->get_param_for_test_export_user_data(2, 2));
-        $data3 = writer::with_context($this->contexts[3])->get_related_data($this->get_param_for_test_export_user_data(2, 3));
-        $this->assertEquals($this->pagepaths[2][1], array_keys($data1)[0]);
-        $this->assertEquals($this->pagepaths[2][2], array_keys($data2)[0]);
-        $this->assertEquals($this->pagepaths[2][3], array_keys($data3)[0]);
-        // First page was initially created by this user and all its information is returned to this user.
-        $data11 = $data1[$this->pagepaths[2][1]];
-        $this->assertEquals(1, count($data11['revisions']));
-        $lastrevision = array_pop($data11['revisions']);
-        $this->assertEquals($this->pages[2][1]->xhtml, $lastrevision['content']);
-        $this->assertNotEmpty($lastrevision['timecreated']);
+
+        // Check only pages belong to second user returned.
+        $data11 = writer::with_context($this->contexts[1])->get_data($this->get_param_for_test_export_user_data(1, 1));
+        $data12 = writer::with_context($this->contexts[1])->get_data($this->get_param_for_test_export_user_data(1, 2));
+        $data13 = writer::with_context($this->contexts[2])->get_data($this->get_param_for_test_export_user_data(1, 3));
+        $data21 = writer::with_context($this->contexts[1])->get_data($this->get_param_for_test_export_user_data(2, 1));
+        $data22 = writer::with_context($this->contexts[2])->get_data($this->get_param_for_test_export_user_data(2, 2));
+        $data23 = writer::with_context($this->contexts[3])->get_data($this->get_param_for_test_export_user_data(2, 3));
+
+        $this->assertEmpty($data11);
+        $this->assertEmpty($data12);
+        $this->assertEmpty($data13);
+        $this->assert_page_data($this->pages[2][1], $data21);
+        $this->assert_page_data($this->pages[2][2], $data22);
+        $this->assert_page_data($this->pages[2][3], $data23);
+
         // Second page has a attachment upload by this user.
         $files = writer::with_context($this->contexts[2])->get_files($this->get_param_for_test_export_user_data(2, 2));
         $this->assertEquals(['Cat.jpg'], array_keys($files));
+        // Try to get attachment belong to second user.
+        $files = writer::with_context($this->contexts[1])->get_files($this->get_param_for_test_export_user_data(1, 2));
+        $this->assertEmpty($files);
+    }
+
+    /**
+     * Test to check the export file is shortened and character "/" replace by "_".
+     *
+     * @throws coding_exception
+     */
+    public function test_export_user_data_subject_length() {
+        $contextids = array_values(array_map(function($c) {
+            return $c->id;
+        }, $this->contexts));
+        $appctx = new approved_contextlist($this->users[1], 'mod_ouwiki', $contextids);
+        provider::export_user_data($appctx);
+
+        // Try to get data by using sub-context contains long and special character.
+        $subcontext = $this->get_param_for_test_export_user_data(1, 4);
+        $data = writer::with_context($this->contexts[1])->get_data($subcontext);
+        $this->assertEmpty($data);
+
+        // Try to get data using shortened and replaced special character sub-context.
+        $subcontext[1] = $this->pages[1][4]->pageid . ' Lorem_ipsum_dolor_sit_amet_conse';
+        $data = writer::with_context($this->contexts[1])->get_data($subcontext);
+        $this->assert_page_data($this->pages[1][4], $data);
     }
 
     /**
@@ -399,8 +436,8 @@ class mod_ouwiki_privacy_testcase extends provider_testcase {
     /**
      * Get praram to test export user data
      *
-     * @param $idxuser Index user
-     * @param $idxpage Index context
+     * @param $idxuser integer user
+     * @param $idxpage integer context
      * @return array param fo writer::with_context($context)->get_related_data()
      * @throws coding_exception
      */
@@ -411,5 +448,38 @@ class mod_ouwiki_privacy_testcase extends provider_testcase {
         return [
                 $pathouwiki, $pathpage
         ];
+    }
+
+    /**
+     * Assert the expected page with the actual exported data, this
+     * function exist to prevent code duplication.
+     *
+     * @param $page stdClass Object create from the setup function.
+     * @param $exportdata stdClass Object created from privacy provider.
+     */
+    private function assert_page_data($page, $exportdata) {
+        $revisionid = array_keys($page->recentversions)[0];
+        $revision = $page->recentversions[$revisionid];
+
+        $this->assertEquals((object)[
+            'page' => [
+                'id' => $page->pageid,
+                'title' => $page->title
+            ],
+            'revisions' => [
+                $revisionid => [
+                    'content' => $page->xhtml,
+                    'versionid' => $revision->id,
+                    'timecreated' => \core_privacy\local\request\transform::datetime($revision->timecreated),
+                    'changestart' => '',
+                    'changesize' => '',
+                    'changeprevsize' => '',
+                    'deletedat' => '',
+                    'wordcount' => $page->wordcount,
+                    'previousversionid' => '',
+                    'importversionid' => ''
+                ]
+            ]
+        ], $exportdata);
     }
 }

@@ -48,6 +48,9 @@ class provider implements
         \core_privacy\local\request\plugin\provider,
         \core_privacy\local\request\user_preference_provider {
 
+    /** Subject of the wiki are limited to 32 characters. */
+    const LENGTH_LIMIT = 32;
+
     /**
      * Returns metadata.
      *
@@ -155,7 +158,7 @@ class provider implements
         unset($subwiki[$subwikiid]['pages']);
         writer::with_context($context)->export_related_data([$subwikititle], $subwikititle, $subwiki[$subwikiid]);
         foreach ($pages as $page => $entry) {
-            writer::with_context($context)->export_related_data([$subwikititle, $page], $page, $entry);
+            writer::with_context($context)->export_data([$subwikititle, $page], (object)$entry);
             if (!empty($entry['revisions'])) {
                 foreach ($entry['revisions'] as $revision) {
                     writer::with_context($context)->export_area_files([$subwikititle, $page], 'mod_ouwiki',
@@ -224,7 +227,7 @@ class provider implements
                 if (empty($pagetitle)) {
                     $pagetitle = get_string('startpage', 'mod_ouwiki');
                 }
-                $page = $record->pageid . ' ' . $pagetitle;
+                $page = $record->pageid . ' ' . str_replace('/', '_', substr($pagetitle, 0, self::LENGTH_LIMIT));
 
                 if (!isset($subwiki[$record->subwikiid]['pages'][$page])) {
                     // Export basic details about the page.
