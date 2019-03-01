@@ -642,11 +642,11 @@ Feature: Test Post and Comment on OUwiki entry
     And "span.ouwiki-annotation-marker" "css_element" should exist
     When I click on "#marker0" "css_element"
     Then I set the field "Add annotation:" to "web"
-    And I press "Add"
+    And I click on "Add" "button" in the "annotationdialog" "region"
     And I should see "web"
     When I click on "#marker3" "css_element"
     Then I set the field "Add annotation:" to "spider"
-    And I press "Add"
+    And I click on "Add" "button" in the "annotationdialog" "region"
     And I should see "spider"
     When I press "Save changes"
     Then "Hide annotations" "link" should be visible
