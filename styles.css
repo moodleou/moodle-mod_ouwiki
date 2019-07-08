@@ -1004,3 +1004,18 @@ div#ouwiki_indexlinks > ul > li {
 	display:inline
 }
 
+/* this version seems better */
+ol.toc {
+    counter-reset: item;
+    padding: 5px;
+}
+li.toc_element >  ol {
+    counter-reset: item;
+}
+li.toc_element {
+    display: block;
+}
+li.toc_element::before {
+    content: counters(item, ".") " ";
+    counter-increment: item;
+}

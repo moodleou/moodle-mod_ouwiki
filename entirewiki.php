@@ -54,7 +54,7 @@ require_course_login($course, true, $cm);
 $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 
 $format = required_param('format', PARAM_ALPHA);
-if ($format !== OUWIKI_FORMAT_HTML && $format !== OUWIKI_FORMAT_PDF 
+if ($format !== OUWIKI_FORMAT_HTML && $format !== OUWIKI_FORMAT_PDF
 	&& $format !== OUWIKI_FORMAT_TEMPLATE && $format !== OUWIKI_FORMAT_HTML_PRINT) {
     print_error('Unexpected format');
 }
@@ -73,27 +73,27 @@ switch ($format) {
         $fs = get_file_storage();
         break;
     case OUWIKI_FORMAT_HTML_PRINT:
-    	
+
     	$url_object_array = $PAGE->theme->css_urls($PAGE);
     	$url_object = $url_object_array[0];
     	$css_url = $url_object->out();
-    	 
+
     	$markup = '<html>';
     	$markup .= '<head>';
     	$markup .= '<link rel="stylesheet" href="'.$css_url.'">';
     	$markup .= '</head>';
     	$markup .= '<body>';
-    	
+
     	break;
     case OUWIKI_FORMAT_PDF:
 
     	$markup = '<html>';
         $css = file_get_contents(dirname(__FILE__) .'/pdf.css');
         $markup .= '<head>';
-        $markup .= '<style>' . $css . '</style>'; 
+        $markup .= '<style>' . $css . '</style>';
         $markup .= '</head>';
         $markup .= '<body>';
-                
+
         break;
     case OUWIKI_FORMAT_HTML:
         // Do header
@@ -117,29 +117,6 @@ foreach ($index as $indexitem) {
         break;
     }
 }
-
-// // Original
-// if (($treemode) && ($format == OUWIKI_FORMAT_HTML) ) {
-//     ouwiki_build_tree($index);
-//     // Print out in hierarchical form...
-//     print '<ul class="ouw_indextree">';
-//     $functionname = 'ouwiki_display_entirewiki_page_in_index';
-//     print ouwiki_tree_index($functionname, reset($index)->pageid, $index, $subwiki, $cm, $context);
-//     print '</ul>';
-
-//     if ($orphans) {
-//         print '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
-//         print '<ul class="ouw_indextree">';
-//         foreach ($index as $indexitem) {
-//             if (count($indexitem->linksfrom) == 0 && $indexitem->title !== '') {
-//                 $orphanindex = ouwiki_get_sub_tree_from_index($indexitem->pageid, $index);
-//                 ouwiki_build_tree($orphanindex);
-//                 print ouwiki_tree_index($functionname, $indexitem->pageid, $orphanindex, $subwiki, $cm, $context);
-//             }
-//         }
-//         print '</ul>';
-//     }
-// } else {
 
 
 //If tree view specified.
@@ -170,8 +147,13 @@ if (($treemode) && ($format == OUWIKI_FORMAT_HTML || $format == OUWIKI_FORMAT_PD
     if($format == OUWIKI_FORMAT_HTML)
         print $treeOutput;
 
-    if($format == OUWIKI_FORMAT_PDF || $format == OUWIKI_FORMAT_HTML_PRINT)
+    if($format == OUWIKI_FORMAT_PDF || $format == OUWIKI_FORMAT_HTML_PRINT) {
+        // begin fix
+        if($format == OUWIKI_FORMAT_PDF)
+            $treeOutput = replace_image_urls($context, $treeOutput, 0, true);
+        // end fix
         $markup .= $treeOutput;
+    }
 
 } else {
     foreach ($index as $pageinfo) {
@@ -183,15 +165,15 @@ if (($treemode) && ($format == OUWIKI_FORMAT_HTML || $format == OUWIKI_FORMAT_PD
                 continue;
             }
 
-            
+
             $output = get_online_display_content($format, $pageversion, $context, $subwiki, $cm, $index, $fs, $files);
-			
+
             if($format == OUWIKI_FORMAT_HTML)
             	print $output;
-            
+
            	if($format == OUWIKI_FORMAT_PDF || $format == OUWIKI_FORMAT_HTML_PRINT)
            		$markup .= $output;
-            
+
             if ($first) {
                 $first = false;
             }
@@ -246,25 +228,27 @@ switch ($format) {
         break;
 
     case OUWIKI_FORMAT_HTML_PRINT:
-    	
+
     	$markup .= '</body></html>';
-    	
+
     	echo $markup;
     	break;
-    	 
+
     case OUWIKI_FORMAT_PDF:
         $markup .= '</body></html>';
-        
+
         require_once($CFG->libdir . '/pdflib.php');
-        
+
         $doc = new pdf;
         $doc->setFont('helvetica');
         $doc->setPrintHeader(false);
         $doc->setPrintFooter(false);
         $doc->AddPage();
         $doc->writeHTML($markup);
-        $doc->Output();
-        
+        $doc->Output(explode('.',$filename)[1].'.pdf'); //change string for different name
+
+        clean_up($markup);
+
         break;
 
     case OUWIKI_FORMAT_HTML:
@@ -324,15 +308,18 @@ function get_online_display_content($format, $pageversion, $context, $subwiki, $
             $markup .= '</page>';
             break;
         case OUWIKI_FORMAT_PDF || OUWIKI_FORMAT_HTML_PRINT:
-            //$markup .= '<h1>' . htmlspecialchars($visibletitle) . '</h1>';
-            //$markup .= trim($pageversion->xhtml);
-            //$markup .= '<br /><br /><hr />';
+
 
             $markup .= '<div class="ouw_entry"><a name="' . $pageversion->pageid . '"></a><h1 class="ouw_entry_heading">' .
                     '<a href="view.php?' . ouwiki_display_wiki_parameters($pageversion->title, $subwiki, $cm) .
                     '">' . htmlspecialchars($visibletitle) . '</a></h1>';
             $markup .= ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, $index, $pageversion->xhtmlformat);
             $markup .= '</div>';
+
+            // begin fix
+            if($format === OUWIKI_FORMAT_PDF)
+                $markup = replace_image_urls($context, $markup, $pageversion->versionid);
+            // end fix
 
             break;
         case OUWIKI_FORMAT_HTML:
@@ -346,4 +333,59 @@ function get_online_display_content($format, $pageversion, $context, $subwiki, $
 
     return $markup;
 
+}
+
+
+/**
+ * @param $context
+ * @param $xhtml
+ * @param $itemId
+ * @param bool $treemode
+ * @return mixed
+ */
+function replace_image_urls($context, $xhtml, $itemId, $treemode = false) {
+    $content = $xhtml;
+    /*preg_match_all('#<img.*?src="(.*?)".*?>#', $content, $matches);*/
+    preg_match_all('#<img.+?src="(.+?)".+?>#', $content, $matches);
+
+    $fs = get_file_storage();
+    $tmpdir = make_temp_directory('moodle_pdf_files');
+
+    if (! empty($matches)) {
+        // Extract the file names from the matches.
+
+        foreach ($matches[1] as $key => $match) {
+            $urlinfo = pathinfo($match);
+            $image = urldecode($urlinfo['basename']);
+
+            if($treemode){
+                $tmp = explode('/', $urlinfo['dirname']);
+                $itemId = $tmp[sizeof($tmp) -1];
+            }
+
+            if (!$file = $fs->get_file($context->id, 'mod_ouwiki', 'content', $itemId, '/', $image))
+                continue;
+
+            $filename = $file->get_filename();
+            $filepath = "$tmpdir/$filename";
+            if (file_exists($filepath) || $file->copy_content_to($filepath)) {
+                $content = str_replace($match, $filepath, $content);
+            }
+
+        }
+    }
+    return $content;
+}
+
+/**
+ * Removes the temporary local image files used for creating the pdf
+ * @param $html
+ */
+function clean_up($html){
+    preg_match_all('#<img.+?src="(.+?)".+?>#', $html, $matches);
+    if (!empty($matches)) {
+        foreach ($matches[1] as $key => $filepath) {
+            unlink($filepath);
+        }
+    }
 }

@@ -214,7 +214,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         global $CFG;
         require_once($CFG->dirroot.'/mod/ouwiki/tableofcontents.php');
         $toc = new TableOfContents($pageversion->xhtml);
-        $output .= $toc->toHtml();
+        $output .= $toc->to_html();
 
         
         if ($gewgaws) {
@@ -860,33 +860,32 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         		 
         		return $url;
         };
-        
-        
-        // Dropdown fuer Druckfunktion
+
+        // Dropdown for print functions
         $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_print'));
         $output .= html_writer::start_tag('div', array('class' => 'btn-group'));
          
         $output .= html_writer::start_tag('button', array('class' => 'btn dropdown-toggle', 'data-toggle' => 'dropdown'));
-        $output .= 'Wiki drucken ';
+        $output .= get_string('printwiki', 'ouwiki');
         $output .= html_writer::tag('span', '', array('class' => 'caret'));
         $output .= html_writer::end_tag('button');
          
         $output .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
         
         $output .= html_writer::start_tag('li');
-        $output .= html_writer::tag('a', 'PDF (Alphabetisch)', array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_PDF)));
+        $output .= html_writer::tag('a', get_string('print_pdf_alphabetic', 'ouwiki'), array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_PDF)));
         $output .= html_writer::end_tag('li');
         
         $output .= html_writer::start_tag('li');
-        $output .= html_writer::tag('a', 'PDF (Struktur)', array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_PDF, true)));
+        $output .= html_writer::tag('a', get_string('print_pdf_tree_structure', 'ouwiki'), array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_PDF, true)));
         $output .= html_writer::end_tag('li');
                 
         $output .= html_writer::start_tag('li');
-        $output .= html_writer::tag('a', 'HTML (Alphabetisch)', array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_HTML_PRINT)));
+        $output .= html_writer::tag('a', get_string('print_html_alphabetic', 'ouwiki'), array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_HTML_PRINT)));
         $output .= html_writer::end_tag('li');
         
         $output .= html_writer::start_tag('li');
-        $output .= html_writer::tag('a', 'HTML (Struktur)', array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_HTML_PRINT, true)));
+        $output .= html_writer::tag('a', get_string('print_html_tree_structure', 'ouwiki'), array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_HTML_PRINT, true)));
         $output .= html_writer::end_tag('li');
         
         $output .= html_writer::end_tag('ul');

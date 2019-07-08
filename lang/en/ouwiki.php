@@ -591,3 +591,8 @@ $string['event:savefailed'] = 'Session fail on page save';
 $string['ouwikicrontask'] = 'OU wiki maintenance jobs';
 
 $string['tableofcontents'] = 'Table of contents';
+$string['printwiki'] = 'Print Wiki ';
+$string['print_pdf_alphabetic'] = 'PDF (Alphabetic)';
+$string['print_pdf_tree_structure'] = 'PDF (Tree)';
+$string['print_html_alphabetic'] = 'HTML (Alphabetic)';
+$string['print_html_tree_structure'] = 'HTML (Tree)';
