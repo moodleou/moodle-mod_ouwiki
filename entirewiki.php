@@ -88,7 +88,7 @@ switch ($format) {
     case OUWIKI_FORMAT_PDF:
 
     	$markup = '<html>';
-        $css = file_get_contents(dirname(__FILE__) .'/pdf.css');
+        $css = file_get_contents(dirname(__FILE__) .'/style/pdf.css');
         $markup .= '<head>';
         $markup .= '<style>' . $css . '</style>';
         $markup .= '</head>';
