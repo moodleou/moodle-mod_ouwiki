@@ -35,7 +35,7 @@ class TableOfContents
     }
 
     /**
-     * returns the table of contents as printable html
+     * returns the table of contents as printable html.
      */
     public function to_html() {
         // No headings => no reason for a table of contents.
@@ -65,9 +65,8 @@ class TableOfContents
     }
 
     /**
-     * Sets the minimum level of headings
+     * Sets the minimum level of headings.
      *
-     * If there are only <h3> and <h4> headings the minlvl is 2
      */
     private function set_min_lvl() {
         $lvls = array();
@@ -81,9 +80,9 @@ class TableOfContents
     }
 
     /**
-     * Parses the html-Code and generates the table of contents
+     * Parses the html-Code and generates the table of contents.
      *
-     * @param String $html The html-snippet to parse
+     * @param String $html The html-snippet to parse.
      */
     private function parse_html($html) {
         $dom = new DOMDocument();

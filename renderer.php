@@ -210,7 +210,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $output .= html_writer::tag('h2', format_string($title),
                 array('class' => 'ouw_topheading'));
 
-        // Add table of contents
+        // Add table of contents.
         global $CFG;
         require_once($CFG->dirroot.'/mod/ouwiki/tableofcontents.php');
         $toc = new TableOfContents($pageversion->xhtml);
@@ -861,7 +861,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         		return $url;
         };
 
-        // Dropdown for print functions
+        // Dropdown for print functions.
         $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_print'));
         $output .= html_writer::start_tag('div', array('class' => 'btn-group'));
          
