@@ -381,8 +381,8 @@ function replace_image_urls($context, $xhtml, $itemId, $treemode = false)
 
 function create_dir($path)
 {
-    if (!file_exists(dirname(__FILE__) . '/pdf_images')) {
-        mkdir(dirname(__FILE__) . '/pdf_images', 0777, true);
+    if (!file_exists($path)) {
+        mkdir($path, 0777, true);
     }
     return $path;
 }
