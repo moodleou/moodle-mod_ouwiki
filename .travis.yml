@@ -37,7 +37,7 @@ env:
     - MOODLE_BRANCH=MOODLE_36_STABLE
     - MOODLE_BRANCH=MOODLE_37_STABLE
     # Ignoring sadly does not work for grunt tasks according to https://docs.moodle.org/dev/Travis_integration#Ignoring_files ...
-    - IGNORE_PATHS= ^(?!entirewiki\.php|tableofcontents\.php|renderer\.php)(.*)
+    - IGNORE_PATHS=backup,classes,db,internaldoc,lang,pix,style,tests,yui,annotate.php,annotate_form.php,basicpage.phpconfirmlock.php,confirmloggedin.php,csv_writer,delete.php,diff.php,difflib.php,edit.php,edit_form.php,feed-history.php,feed-wikihistory.php,hideannotations.php,history.php,import.php,import_form.php,index.php,locallib.php,lock.php,mod_form.php,module.js,nojslock.php,override.php,participation_table.php,revert.php,savegrades.php,search.php,style.css,userparticipation.php,version.php,view.php,viewold.php,wkihistory.php,wikiindex.php
   # This matrix is used for testing against multiple databases.  So for
   # each version of PHP being tested, one build will be created for each
   # database listed here.
