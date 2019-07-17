@@ -105,7 +105,7 @@ class TableOfContents
                 $element->name = $heading->nodeValue;
                 $element->id = $id;
                 // Set the lvl to 3 if lvl < 3, as all headings <= 3 are treated as section headings.
-                $element->lvl = $lvl < 3 ? 3: $lvl;
+                $element->lvl = $lvl < 3 ? 3 : $lvl;
                 $this->headings[] = $element;
             }
         }

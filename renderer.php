@@ -216,7 +216,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $toc = new TableOfContents($pageversion->xhtml);
         $output .= $toc->to_html();
 
-        
+
         if ($gewgaws) {
             $output .= $this->render_heading_bit(1, $pageversion->title, $subwiki,
                     $cm, null, $annotations, $pageversion->locked, $files,
@@ -762,9 +762,9 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      */
     public function ouwiki_get_links_content() {
         global $USER;
-        
+
         $output = html_writer::start_tag('ul');
-        
+
         if ($this->params->page == 'wikiindex.php') {
             $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_index'));
             $output .= html_writer::start_tag('span');
@@ -842,58 +842,56 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $output .= html_writer::end_tag('li');
             }
         }
-        
-        
+
         $params = $this->params;
-        
-        $wikiParams = function ($format, $isTypeTree = false) use ($params) {
-        	 
+
+        $wikiparams = function ($format, $istree = false) use ($params) {
+
         	$subwiki = $params->subwiki;
         	$cm = $params->cm;
-        
+
         	$url = 'entirewiki.php?';
         	$url .= html_entity_decode(ouwiki_display_wiki_parameters('', $subwiki, $cm));
         	$url .= sprintf('&format=%s', $format);
-        	 
-        	if($isTypeTree)
-        		$url .= '&type=tree';
-        		 
-        		return $url;
+
+        	if ($istree) {
+                $url .= '&type=tree';
+            }
+        	return $url;
         };
 
         // Dropdown for print functions.
         $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_print'));
         $output .= html_writer::start_tag('div', array('class' => 'btn-group'));
-         
+
         $output .= html_writer::start_tag('button', array('class' => 'btn dropdown-toggle', 'data-toggle' => 'dropdown'));
         $output .= get_string('printwiki', 'ouwiki');
         $output .= html_writer::tag('span', '', array('class' => 'caret'));
         $output .= html_writer::end_tag('button');
-         
+
         $output .= html_writer::start_tag('ul', array('class' => 'dropdown-menu'));
-        
+
         $output .= html_writer::start_tag('li');
-        $output .= html_writer::tag('a', get_string('print_pdf_alphabetic', 'ouwiki'), array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_PDF)));
+        $output .= html_writer::tag('a', get_string('print_pdf_alphabetic', 'ouwiki'), array('target' => '_blank', 'href' => $wikiparams(OUWIKI_FORMAT_PDF)));
         $output .= html_writer::end_tag('li');
-        
+
         $output .= html_writer::start_tag('li');
-        $output .= html_writer::tag('a', get_string('print_pdf_tree_structure', 'ouwiki'), array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_PDF, true)));
+        $output .= html_writer::tag('a', get_string('print_pdf_tree_structure', 'ouwiki'), array('target' => '_blank', 'href' => $wikiparams(OUWIKI_FORMAT_PDF, true)));
         $output .= html_writer::end_tag('li');
-                
+
         $output .= html_writer::start_tag('li');
-        $output .= html_writer::tag('a', get_string('print_html_alphabetic', 'ouwiki'), array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_HTML_PRINT)));
+        $output .= html_writer::tag('a', get_string('print_html_alphabetic', 'ouwiki'), array('target' => '_blank', 'href' => $wikiparams(OUWIKI_FORMAT_HTML_PRINT)));
         $output .= html_writer::end_tag('li');
-        
+
         $output .= html_writer::start_tag('li');
-        $output .= html_writer::tag('a', get_string('print_html_tree_structure', 'ouwiki'), array('target' => '_blank', 'href' => $wikiParams(OUWIKI_FORMAT_HTML_PRINT, true)));
+        $output .= html_writer::tag('a', get_string('print_html_tree_structure', 'ouwiki'), array('target' => '_blank', 'href' => $wikiparams(OUWIKI_FORMAT_HTML_PRINT, true)));
         $output .= html_writer::end_tag('li');
-        
+
         $output .= html_writer::end_tag('ul');
-        
+
         $output .= html_writer::end_tag('div');
         $output .= html_writer::end_tag('li');
-        
-        
+
         $output .= html_writer::end_tag('ul');
         return array($output, $participationstr);
     }
