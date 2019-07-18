@@ -185,7 +185,7 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
                 $groupid = reset($groups)->id;
             }
             $othergroup = !groups_is_member($groupid);
-            // Removed AND userid IS NULL
+            // Removed AND userid IS NULL.
             $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid = ?', array($ouwiki->id, $groupid));
             if ($subwiki) {
                 ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $othergroup);
@@ -234,8 +234,8 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
                     }
                 }
             }
-            // OK now find wiki
-			// Removed AND groupid IS NULL
+            // OK now find wiki.
+			// Removed AND groupid IS NULL.
             $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND userid = ?', array($ouwiki->id, $userid));
             if ($subwiki) {
                 ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $otheruser, !$otheruser);

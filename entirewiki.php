@@ -355,7 +355,7 @@ function replace_image_urls($context, $xhtml, $itemid, $treemode = false) {
     if (!empty($matches)) {
         // Extract the file names from the matches.
 
-        foreach ($matches[1] as $key => $match) {
+        foreach ($matches[1] as $match) {
             $urlinfo = pathinfo($match);
             $image = urldecode($urlinfo['basename']);
 
@@ -393,7 +393,7 @@ function create_dir($path) {
 function clean_up($html) {
     preg_match_all('#<img.+?src="(.+?)".+?>#', $html, $matches);
     if (!empty($matches)) {
-        foreach ($matches[1] as $key => $filepath) {
+        foreach ($matches[1] as $filepath) {
             unlink($filepath);
         }
     }

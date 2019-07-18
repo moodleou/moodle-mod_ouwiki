@@ -847,12 +847,12 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         $wikiparams = function ($format, $istree = false) use ($params) {
 
-        	$subwiki = $params->subwiki;
-        	$cm = $params->cm;
+            $subwiki = $params->subwiki;
+            $cm = $params->cm;
 
-        	$url = 'entirewiki.php?';
-        	$url .= html_entity_decode(ouwiki_display_wiki_parameters('', $subwiki, $cm));
-        	$url .= sprintf('&format=%s', $format);
+            $url = 'entirewiki.php?';
+            $url .= html_entity_decode(ouwiki_display_wiki_parameters('', $subwiki, $cm));
+            $url .= sprintf('&format=%s', $format);
 
         	if ($istree) {
                 $url .= '&type=tree';
