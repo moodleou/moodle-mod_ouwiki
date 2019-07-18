@@ -337,8 +337,9 @@ function get_online_display_content($format, $pageversion, $context, $subwiki, $
 
 }
 
-
 /**
+ * Replace the image url in <img src="" .. > with the path of the local file.
+ *
  * @param $context
  * @param $xhtml
  * @param $itemid
@@ -350,6 +351,7 @@ function replace_image_urls($context, $xhtml, $itemid, $treemode = false) {
     preg_match_all('#<img.+?src="(.+?)".+?>#', $content, $matches);
 
     $fs = get_file_storage();
+    // Create local folder for the temporary images used in the pdf.
     $tmpdir = create_dir(dirname(__FILE__) . '/pdf_images');
 
     if (!empty($matches)) {
