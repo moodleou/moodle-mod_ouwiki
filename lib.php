@@ -196,6 +196,10 @@ function ouwiki_get_extra_capabilities() {
  */
 function ouwiki_ousearch_update_all($feedback = null, $courseid = 0) {
     global $CFG, $DB;
+    if (get_config('local_ousearch', 'ousearchindexingdisabled')) {
+        // Do nothing if the OU Search system is turned off.
+        return;
+    }
     require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
     // Get list of all wikis. We need the coursemodule data plus
     // the type of subwikis
