@@ -91,3 +91,39 @@ Feature: Test view details against a user
     And I should see "User grade"
     And I should see "+3"
     And I should see "+2"
+
+  Scenario: Check User participation and downloads
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Test 1"
+    And I press "Create page"
+    And I set the field "Content" to "Test content 1"
+    And I press "Save changes"
+    And I log out
+    # Add extra content as student.
+    Given I log in as "student2"
+    And I am on "Course 1" course homepage
+    And I follow "Test 1"
+    When I click on "Edit" "link"
+    And I set the field "Content" to "Test content 1 some other stuff"
+    And I press "Save changes"
+    And I log out
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Test 1"
+    And I follow "Participation by user"
+    # Very imprecise, would be good to check column value without xpath
+    Then I should see "1" in the "Student 2" "table_row"
+    And I should see "1" in the "Teacher 1" "table_row"
+    And I should see "3" in the "Student 2" "table_row"
+    And I should see "3" in the "Teacher 1" "table_row"
+    Given I set the field "Download table data as" to "Microsoft Excel (.xlsx)"
+    And I press "Download"
+    # Only seems to be a behat step to check download from link not form.
+    And I am on "Course 1" course homepage
+    And I follow "Test 1"
+    And I follow "Participation by user"
+    And I click on "detail" "link" in the "Student 2" "table_row"
+    Then I should see "+3"
+    Given I set the field "Download table data as" to "Microsoft Excel (.xlsx)"
+    And I press "Download"
