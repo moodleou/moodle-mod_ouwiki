@@ -60,7 +60,7 @@ class ouwiki_participation_table extends flexible_table {
         global $CFG;
 
         // extra headers for export only
-        if (!empty($download) && !in_array($download, ['ods', 'excel'])) {
+        if (!empty($download)) {
             $this->extraheaders = array(
                 format_string($this->course->shortname, true),
                 format_string($this->ouwiki->name, true),
@@ -183,9 +183,7 @@ class ouwiki_participation_table extends flexible_table {
         $this->started_output = true;
         if ($this->exportclass !== null) {
             $this->exportclass->start_table($this->sheettitle);
-            if ($this->extraheaders) {
-                $this->exportclass->output_headers($this->extraheaders);
-            }
+            $this->exportclass->output_headers($this->extraheaders);
             $this->exportclass->output_headers($this->headers);
         } else {
             $this->start_html();
@@ -226,7 +224,7 @@ class ouwiki_user_participation_table extends flexible_table {
         global $CFG;
 
         // extra headers for export only
-        if (!empty($download) && !in_array($download, ['ods', 'excel'])) {
+        if (!empty($download)) {
             $this->extraheaders = array(
                 format_string($this->course->shortname, true),
                 format_string($this->ouwiki->name, true),
@@ -313,9 +311,7 @@ class ouwiki_user_participation_table extends flexible_table {
         $this->started_output = true;
         if ($this->exportclass !== null) {
             $this->exportclass->start_table($this->sheettitle);
-            if ($this->extraheaders) {
-                $this->exportclass->output_headers($this->extraheaders);
-            }
+            $this->exportclass->output_headers($this->extraheaders);
             $this->exportclass->output_headers($this->headers);
         } else {
             $this->start_html();

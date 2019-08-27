@@ -61,8 +61,7 @@ class mod_ouwiki_annotate_form extends moodleform {
         }
 
         if ($canlock) {
-            $mform->addElement('checkbox', 'lockediting', get_string('lockediting', 'ouwiki'), '', [
-                'class' => 'lockediting']);
+            $mform->addElement('checkbox', 'lockediting', get_string('lockediting', 'ouwiki'));
             if (ouwiki_is_page_editing_locked($pageid)) {
                 $mform->setDefault('lockediting', true);
             } else {
