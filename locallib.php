@@ -658,6 +658,9 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
             $output = $OUTPUT->render($select);
             $out .= '<div class="individualselector">'.$output.'</div>';
         } else if ($choicefield == 'group') {
+            // If group mode set the format to HTML
+            $actionurl = '/mod/ouwiki/'. $actionurl .'?id=' . $cm->id . $actionquery . '&format=html'; 
+            $urlroot = new moodle_url($actionurl); 
             // Group mode.
             $out .= groups_print_activity_menu($cm, $urlroot, true, true);
         }
