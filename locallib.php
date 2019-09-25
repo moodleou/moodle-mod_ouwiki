@@ -640,6 +640,11 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
     }
 
     $out = '<div class="ouw_subwiki">';
+
+    if(!empty($choicefield) && $choicefield == 'group') {
+        $baseactionurl = $actionurl; //Needed for groups
+    } 
+
     if ($choicefield && count($choices) > 1) {
         $actionquery = '';
         if (!empty($querytext)) {
@@ -659,7 +664,7 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
             $out .= '<div class="individualselector">'.$output.'</div>';
         } else if ($choicefield == 'group') {
             // If group mode set the format to HTML
-            $actionurl = '/mod/ouwiki/'. $actionurl .'?id=' . $cm->id . $actionquery . '&format=html'; 
+            $actionurl = '/mod/ouwiki/'. $baseactionurl .'?id=' . $cm->id . $actionquery . '&format=html'; 
             $urlroot = new moodle_url($actionurl); 
             // Group mode.
             $out .= groups_print_activity_menu($cm, $urlroot, true, true);
