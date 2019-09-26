@@ -1373,7 +1373,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      */
     public function get_link_back_to_wiki($cm) {
         global $CFG;
-        $label = $cm->name;
+        $label = 'Back to wiki';
         $url = $CFG->wwwroot . '/mod/ouwiki/view.php?id=' . $cm->id;
         return html_writer::tag('div', link_arrow_left($label, $url), array('id' => 'ouwiki-arrowback'));
     }
