@@ -435,7 +435,6 @@ if ($content) {
 $annotations = ouwiki_get_annotations($pageversion);
 ouwiki_highlight_existing_annotations($existing, $annotations, 'edit');
 
-print get_string('advice_edit', 'ouwiki', $OUTPUT->help_icon('createlinkedwiki', 'ouwiki'));
 if ($ouwiki->timeout) {
     $countdowntext = get_string('countdowntext', 'ouwiki', $ouwiki->timeout/60);
     print "<script type='text/javascript'>
