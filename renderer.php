@@ -93,27 +93,23 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         // List of recent changes.
         if ($gewgaws && $pageversion->recentversions) {
             $output .= html_writer::start_tag('div', array('class' => 'ouw_recentchanges'));
-            $output .= get_string('recentchanges', 'ouwiki').': ';
+            $output .= get_string('recentchange', 'ouwiki').': ';
             $output .= html_writer::start_tag('span', array('class' => 'ouw_recentchanges_list'));
-
-            $first = true;
-            foreach ($pageversion->recentversions as $recentversion) {
-                if ($first) {
-                    $first = false;
-                } else {
-                    $output .= '; ';
-                }
-
-                $output .= ouwiki_recent_span($recentversion->timecreated);
-                $output .= ouwiki_nice_date($recentversion->timecreated);
+            // Only display the most recent edit. 
+            // Get most recent edit using array_pop array_reverse.
+            $mostrecenteditsarray = array_reverse($pageversion->recentversions);
+            $mostrecentedit = array_pop($mostrecenteditsarray);
+            // Only build if we have data
+            if(!empty($mostrecentedit)) {
+                $output .= ouwiki_recent_span($mostrecentedit->timecreated);
+                $output .= ouwiki_nice_date($mostrecentedit->timecreated);
                 $output .= html_writer::end_tag('span');
                 $output .= ' (';
-                $recentversion->id = $recentversion->userid; // So it looks like a user object.
-                $output .= ouwiki_display_user($recentversion, $cm->course, false);
+                $output .= ouwiki_display_user($mostrecentedit, $cm->course, false);
                 $output .= ')';
+                $output .= '; ';
             }
-
-            $output .= '; ';
+            
             $pagestr = '';
             if (strtolower(trim($title)) !== strtolower(get_string('startpage', 'ouwiki'))) {
                 $pagestr = '&page='.$title;

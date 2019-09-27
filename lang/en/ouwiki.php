@@ -48,6 +48,7 @@ $string['startpagedoesnotexist']='This wiki\'s start page has not yet been creat
 $string['createpage']='Create page';
 
 $string['recentchanges']='Latest edits';
+$string['recentchange']='Latest edit';
 $string['seedetails']='full history';
 $string['startpage']='Start page';
 
@@ -66,7 +67,6 @@ $string['wikifor']='Viewing wiki for: ';
 $string['changebutton']='Change';
 
 $string['advice_edit']='
-<p>Edit the page below.</p>
 <ul>
 <li>Make a link to another page by typing the page name in double square brackets: [[page name]]. The link will become active once you save changes.</li>
 <li>To create a new page, first make a link to it in the same way. {$a}</li>
