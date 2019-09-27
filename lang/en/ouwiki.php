@@ -48,6 +48,7 @@ $string['startpagedoesnotexist']='This wiki\'s start page has not yet been creat
 $string['createpage']='Create page';
 
 $string['recentchanges']='Latest edits';
+$string['recentchange']='Latest edit';
 $string['seedetails']='full history';
 $string['startpage']='Start page';
 
