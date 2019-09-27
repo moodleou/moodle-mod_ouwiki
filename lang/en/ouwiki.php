@@ -66,7 +66,6 @@ $string['wikifor']='Viewing wiki for: ';
 $string['changebutton']='Change';
 
 $string['advice_edit']='
-<p>Edit the page below.</p>
 <ul>
 <li>Make a link to another page by typing the page name in double square brackets: [[page name]]. The link will become active once you save changes.</li>
 <li>To create a new page, first make a link to it in the same way. {$a}</li>
