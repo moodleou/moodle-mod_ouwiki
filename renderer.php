@@ -97,14 +97,14 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             $output .= html_writer::start_tag('span', array('class' => 'ouw_recentchanges_list'));
             // Only display the most recent edit. 
             // Get most recent edit using array_pop array_reverse.
-            $mostrecentedit = array_pop(array_reverse($pageversion->recentversions));
+            $mostrecenteditsarray = array_reverse($pageversion->recentversions);
+            $mostrecentedit = array_pop($mostrecenteditsarray);
             // Only build if we have data
             if(!empty($mostrecentedit)) {
                 $output .= ouwiki_recent_span($mostrecentedit->timecreated);
                 $output .= ouwiki_nice_date($mostrecentedit->timecreated);
                 $output .= html_writer::end_tag('span');
                 $output .= ' (';
-                $recentversion->id = $mostrecentedit->userid; // So it looks like a user object.
                 $output .= ouwiki_display_user($mostrecentedit, $cm->course, false);
                 $output .= ')';
                 $output .= '; ';
