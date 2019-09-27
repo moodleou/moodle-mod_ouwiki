@@ -157,7 +157,6 @@ if (!empty($treemode)) {
 }
 
 if (count($index) != 0) {
-    print '<div class="ouw_entirewiki"><h2>'.get_string('entirewiki', 'ouwiki').'</h2>';
     print '<p>'.get_string('onepageview', 'ouwiki').'</p><ul>';
     print '<li id="ouwiki_down_html"><a href="entirewiki.php?'.$wikiparams.'&amp;format=html">'.
         get_string('format_html', 'ouwiki').'</a></li>';
