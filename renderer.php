@@ -286,8 +286,6 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             $output .= html_writer::start_tag('li');
             if ($first) {
                 $first = false;
-            } else {
-                $output .= '&#8226; ';
             }
             $linktitle = ($link->title) ? htmlspecialchars($link->title) :
             get_string('startpage', 'ouwiki');
