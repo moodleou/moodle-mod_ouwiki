@@ -47,16 +47,5 @@ $foundsomething = $query->display_results('search.php?'.ouwiki_display_wiki_para
 
 echo $foundsomething;
 
-// Add link to search the rest of this website if service available.
-if (!empty($CFG->block_resources_search_baseurl)) {
-    $params = array('course' => $course->id, 'query' => $querytext);
-    $restofwebsiteurl = new moodle_url('/blocks/resources_search/search.php', $params);
-    $strrestofwebsite = get_string('restofwebsite', 'local_ousearch');
-    $altlink = html_writer::start_tag('div', array('class' => 'advanced-search-link'));
-    $altlink .= html_writer::link($restofwebsiteurl, $strrestofwebsite);
-    $altlink .= html_writer::end_tag('div');
-    print $altlink;
-}
-
 // Footer
 ouwiki_print_footer($course, $cm, $subwiki, null, 'search.php?query='.urlencode($querytext), $foundsomething ? null : 'searchfailure', $querytext);
