@@ -634,6 +634,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      */
     public function ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagename, $context,
             $afterpage = null, $hideindex = null, $notabs = null, $head = '', $title='', $querytext = '') {
+        global $PAGE;
 
         $output = '';
 
@@ -644,7 +645,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         ouwiki_print_header($ouwiki, $cm, $subwiki, $pagename, $afterpage, $head, $title);
 
         $canview = ouwiki_can_view_participation($course, $ouwiki, $subwiki, $cm);
-        $page = basename($_SERVER['PHP_SELF']);
+        $page = basename($PAGE->url);
 
         // Gather params for later use - saves passing as attributes within the renderer.
         $this->params = new StdClass();
