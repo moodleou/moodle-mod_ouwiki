@@ -254,12 +254,11 @@ $string['feednewpage']='Created by {$a->name}';
 $string['feeditemdescriptiondate']='{$a->main} on {$a->date}.';
 $string['feeditemdescriptionnodate']='{$a->main}.';
 $string['feedsubscribe']='You can subscribe to a feed containing this information: <a href=\'{$a->atom}\'>Atom</a> or <a href=\'{$a->rss}\'>RSS</a>.';
-$string['feedalt']='Subscribe to Atom feed';
-
+$string['feedalt'] = 'Subscribe to Atom feed';
+$string['rssfeedalt'] = 'Subscribe to RSS feed';
 
 $string['olderversion']='Older version';
 $string['newerversion']='Newer version';
-
 
 $string['completionpagesgroup']='Require new pages';
 $string['completionpages']='User must create new pages:';
