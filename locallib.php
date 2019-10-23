@@ -184,14 +184,22 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
                 $groupid = reset($groups)->id;
             }
             $othergroup = !groups_is_member($groupid);
-            if ($othergroup && $cm->groupmode == SEPARATEGROUPS) {
-                if (!has_capability('moodle/site:accessallgroups', $context) &&
-                        !has_capability('mod/ouwiki:editothers', $context)) {
-                    ouwiki_error(get_string('error_nopermission', 'ouwiki'));
-                }
-            }
+
+            // Place get subwiki here to facilitate checking agaimst magic number below.
             $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid = ?
                     AND userid IS NULL', array($ouwiki->id, $groupid));
+
+            if ($othergroup && $cm->groupmode == SEPARATEGROUPS) {
+                // Ignore if in feed,
+                // get magic has optional_param check against subwiki->magic - to deal with separate groups problem.
+                $magic = optional_param('magic', 0, PARAM_RAW);
+                if (!$subwiki || $magic != $subwiki->magic) {
+                    if (!has_capability('moodle/site:accessallgroups', $context) &&
+                        !has_capability('mod/ouwiki:editothers', $context)) {
+                           ouwiki_error(get_string('error_nopermission', 'ouwiki'));
+                    }
+                }
+            }
             if ($subwiki) {
                 ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $othergroup);
                 return $subwiki;
