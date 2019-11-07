@@ -584,7 +584,9 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
     switch($ouwiki->subwikis) {
         case OUWIKI_SUBWIKIS_GROUPS:
             $groups = groups_get_activity_allowed_groups($cm);
-            uasort($groups, create_function('$a,$b', 'return strcasecmp($a->name,$b->name);'));
+            uasort($groups, function($a, $b) {
+                return strcasecmp($a->name,$b->name);
+            });
             $wikifor = htmlspecialchars($groups[$subwiki->groupid]->name);
 
             // Do they have more than one?
