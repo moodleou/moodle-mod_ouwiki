@@ -2776,7 +2776,9 @@ function ouwiki_print_editlock($lock, $ouwiki) {
                     var timeleft=ouw_countdownto-(new Date().getTime());
                     if (timeleft < 0) {
                         clearInterval(ouw_countdowninterval);
-                        document.forms['mform1'].elements['save'].click();
+                        var mform=document.getElementsByClassName('mform');
+                        var mformid=mform[0].getAttribute('id');
+                        document.forms[mformid].elements['save'].click();
                         return;
                     }
                     if(timeleft<2*60*1000) {
