@@ -104,8 +104,12 @@ Feature: Test Post and Comment on OUwiki entry
     And I follow "Edit"
    # Make your changes and click Save or Cancel before the remaining time (to right) reaches zero.
     Then I set the field "Content" to "C11"
-    And I wait "181" seconds
+    And I wait "100" seconds
     Then I should see "Please finish or cancel your edit now. If you do not save before time runs out, your changes will be saved automatically."
+    # Check automatic submit back to previous page.
+    Given I wait "90" seconds
+    Then I should see "C11"
+    And I should not see "C10"
 
   Scenario: Verify Allow editing for Past,Future and together
     Given I log in as "admin"
