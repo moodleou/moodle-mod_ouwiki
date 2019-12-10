@@ -1,0 +1,41 @@
+{{=<% %>=}}
+<div>
+    <ion-card>
+<!-- Header card -->
+        <ion-card>
+            <ion-card-header [innerHTML]=CONTENT_OTHERDATA.headercontent></ion-card-header>
+            <ion-card-content>
+                <div [innerHTML]=CONTENT_OTHERDATA.ouwiki.intro></div>
+                <div [innerHTML]=CONTENT_OTHERDATA.recentchangescontent ng-if=(CONTENT_OTHERDATA.recentchangescontent).length></div>
+            </ion-card-content>
+            <!-- Conditional edit/create button -->
+            <%#pagetitle%>
+                <button ion-button clear small core-site-plugins-new-content component="mod_ouwiki" method="mobile_edit_wikipage" [args]="{fullpagecontent: CONTENT_OTHERDATA.fullpagecontent}">{{ 'plugin.mod_ouwiki.editpage' | translate }}</button>
+            <%/pagetitle%>
+
+            <%^pagetitle%>
+                <div style="padding: 1.5rem;">
+                    <p>This wiki's start page has not yet been created.</p>
+                    <p>Would you like to create it?</p>
+                </div>
+                <button ion-button clear small>{{ 'plugin.mod_ouwiki.createpage' | translate}}</button>
+            <%/pagetitle%>
+            <!-- End Conditional edit/create button -->
+        </ion-card>
+
+<!-- Wicki section cards -->
+    <%#knownsectionscount%>
+        <ion-card-header>
+                <h2 style="padding-left:0.9rem;">{{ 'plugin.mod_ouwiki.wikisections' | translate}}</h2>
+                <hr>
+        </ion-card-header>
+
+        <ion-card *ngFor="let wikisection of CONTENT_OTHERDATA.wikisections">
+            <ion-card-content [innerHTML]=wikisection.content></ion-card-content>
+            <button ion-button clear small core-site-plugins-new-content component="mod_ouwiki" method="mobile_edit_section" [args]="{sectioncontent: wikisection.content}">
+                {{ 'plugin.mod_ouwiki.editsection' | translate }}
+            </button>
+        </ion-card>
+    <%/knownsectionscount%>
+    </ion-card>
+</div>

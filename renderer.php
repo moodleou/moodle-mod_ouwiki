@@ -93,27 +93,23 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         // List of recent changes.
         if ($gewgaws && $pageversion->recentversions) {
             $output .= html_writer::start_tag('div', array('class' => 'ouw_recentchanges'));
-            $output .= get_string('recentchanges', 'ouwiki').': ';
+            $output .= get_string('recentchange', 'ouwiki').': ';
             $output .= html_writer::start_tag('span', array('class' => 'ouw_recentchanges_list'));
-
-            $first = true;
-            foreach ($pageversion->recentversions as $recentversion) {
-                if ($first) {
-                    $first = false;
-                } else {
-                    $output .= '; ';
-                }
-
-                $output .= ouwiki_recent_span($recentversion->timecreated);
-                $output .= ouwiki_nice_date($recentversion->timecreated);
+            // Only display the most recent edit. 
+            // Get most recent edit using array_pop array_reverse.
+            $mostrecenteditsarray = array_reverse($pageversion->recentversions);
+            $mostrecentedit = array_pop($mostrecenteditsarray);
+            // Only build if we have data
+            if(!empty($mostrecentedit)) {
+                $output .= ouwiki_recent_span($mostrecentedit->timecreated);
+                $output .= ouwiki_nice_date($mostrecentedit->timecreated);
                 $output .= html_writer::end_tag('span');
                 $output .= ' (';
-                $recentversion->id = $recentversion->userid; // So it looks like a user object.
-                $output .= ouwiki_display_user($recentversion, $cm->course, false);
+                $output .= ouwiki_display_user($mostrecentedit, $cm->course, false);
                 $output .= ')';
+                $output .= '; ';
             }
-
-            $output .= '; ';
+            
             $pagestr = '';
             if (strtolower(trim($title)) !== strtolower(get_string('startpage', 'ouwiki'))) {
                 $pagestr = '&page='.$title;
@@ -290,8 +286,6 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
             $output .= html_writer::start_tag('li');
             if ($first) {
                 $first = false;
-            } else {
-                $output .= '&#8226; ';
             }
             $linktitle = ($link->title) ? htmlspecialchars($link->title) :
             get_string('startpage', 'ouwiki');
@@ -640,6 +634,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      */
     public function ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagename, $context,
             $afterpage = null, $hideindex = null, $notabs = null, $head = '', $title='', $querytext = '') {
+        global $PAGE;
 
         $output = '';
 
@@ -650,7 +645,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         ouwiki_print_header($ouwiki, $cm, $subwiki, $pagename, $afterpage, $head, $title);
 
         $canview = ouwiki_can_view_participation($course, $ouwiki, $subwiki, $cm);
-        $page = basename($_SERVER['PHP_SELF']);
+        $page = basename($PAGE->url);
 
         // Gather params for later use - saves passing as attributes within the renderer.
         $this->params = new StdClass();
@@ -1373,7 +1368,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      */
     public function get_link_back_to_wiki($cm) {
         global $CFG;
-        $label = $cm->name;
+        $label = 'Back to wiki';
         $url = $CFG->wwwroot . '/mod/ouwiki/view.php?id=' . $cm->id;
         return html_writer::tag('div', link_arrow_left($label, $url), array('id' => 'ouwiki-arrowback'));
     }
