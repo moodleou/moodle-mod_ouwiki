@@ -24,6 +24,7 @@
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 
+use core_privacy\local\request\approved_userlist;
 use core_privacy\tests\provider_testcase;
 use mod_ouwiki\privacy\provider;
 use core_privacy\local\request\approved_contextlist;
@@ -482,4 +483,150 @@ class mod_ouwiki_privacy_testcase extends provider_testcase {
             ]
         ], $exportdata);
     }
+
+    /**
+     * Test for provider::get_users_in_context().
+     */
+    public function test_get_users_in_context() {
+        $userlist = new \core_privacy\local\request\userlist($this->contexts[1], 'mod_ouwiki');
+        provider::get_users_in_context($userlist);
+
+        $user = $userlist->get_userids();
+        $this->assertCount(2, $userlist);
+        $this->assertContains($this->users[1]->id, $user);
+        $this->assertContains($this->users[2]->id, $user);
+
+        $userlist = new \core_privacy\local\request\userlist($this->contexts[2], 'mod_ouwiki');
+        provider::get_users_in_context($userlist);
+
+        $user = $userlist->get_userids();
+        $this->assertCount(2, $userlist);
+        $this->assertContains($this->users[1]->id, $user);
+        $this->assertContains($this->users[2]->id, $user);
+
+        $userlist = new \core_privacy\local\request\userlist($this->contexts[3], 'mod_ouwiki');
+        provider::get_users_in_context($userlist);
+
+        $user = $userlist->get_userids();
+        $this->assertCount(1, $userlist);
+        $this->assertNotContains($this->users[1]->id, $user);
+        $this->assertContains($this->users[2]->id, $user);
+    }
+
+    /**
+     * Unit test for provider::delete_data_for_users().
+     *
+     * @throws \coding_exception
+     * @throws \dml_exception
+     * @throws \file_exception
+     * @throws \stored_file_creation_exception
+     */
+    public function test_delete_data_for_users() {
+        global $DB;
+
+        $this->assertCount(1, $DB->get_records('ouwiki_versions', ['pageid' => $this->pages[1][1]->pageid]));
+        $this->assertCount(0, $DB->get_records('ouwiki_annotations', ['pageid' => $this->pages[1][1]->pageid]));
+        $this->assertCount(0, $DB->get_records('ouwiki_locks', ['pageid' => $this->pages[1][1]->pageid]));
+        $this->assertCount(2, $DB->get_records('files', ['itemid' => $this->pages[1][2]->currentversionid,
+            'userid' => $this->users[1]->id, 'filearea' => 'attachment', 'component' => 'mod_ouwiki']));
+        $this->assertCount(2, $DB->get_records('files', ['itemid' => $this->pages[1][2]->currentversionid,
+            'userid' => $this->users[1]->id, 'filearea' => 'content', 'component' => 'mod_ouwiki']));
+        $this->assertCount(1, $DB->get_records('ouwiki_pages', ['id' => $this->pages[1][1]->pageid]));
+        $this->assertCount(1, $DB->get_records('ouwiki_pages', ['id' => $this->pages[1][2]->pageid]));
+        $this->assertCount(1, $DB->get_records('ouwiki_subwikis', ['userid' => $this->users[1]->id]));
+        // Other datas not related with this user should remain.
+        $this->assertCount(1, $DB->get_records('ouwiki_versions', ['pageid' => $this->pages[2][1]->pageid]));
+        $this->assertCount(1, $DB->get_records('ouwiki_versions', ['pageid' => $this->pages[2][2]->pageid]));
+        $this->assertCount(1, $DB->get_records('ouwiki_versions', ['pageid' => $this->pages[2][3]->pageid]));
+        $this->assertCount(1, $DB->get_records('ouwiki_subwikis', ['id' => $this->pages[1][3]->subwikiid]));
+        $this->assertCount(1, $DB->get_records('ouwiki_subwikis', ['id' => $this->pages[2][1]->subwikiid]));
+        $this->assertCount(1, $DB->get_records('ouwiki_pages', ['id' => $this->pages[2][1]->pageid]));
+
+        $approveduserids = [
+            $this->users[1]->id,
+            $this->users[2]->id,
+            $this->users[3]->id
+        ];
+        $approvedlist = new \core_privacy\local\request\approved_userlist($this->contexts[1], 'mod_ouwiki', $approveduserids);
+        provider::delete_data_for_users($approvedlist);
+
+        $this->assertCount(0, $DB->get_records('ouwiki_versions', ['pageid' => $this->pages[1][1]->pageid]));
+        $this->assertCount(0, $DB->get_records('ouwiki_annotations', ['pageid' => $this->pages[1][1]->pageid]));
+        $this->assertCount(0, $DB->get_records('ouwiki_locks', ['pageid' => $this->pages[1][1]->pageid]));
+        $this->assertCount(0, $DB->get_records('files', ['itemid' => $this->pages[1][2]->currentversionid,
+            'userid' => $this->users[1]->id, 'filearea' => 'attachment', 'component' => 'mod_ouwiki']));
+        $this->assertCount(0, $DB->get_records('files', ['itemid' => $this->pages[1][2]->currentversionid,
+            'userid' => $this->users[1]->id, 'filearea' => 'content', 'component' => 'mod_ouwiki']));
+        $this->assertCount(0, $DB->get_records('ouwiki_pages', ['id' => $this->pages[1][1]->pageid]));
+        $this->assertCount(0, $DB->get_records('ouwiki_pages', ['id' => $this->pages[1][2]->pageid]));
+        $this->assertCount(0, $DB->get_records('ouwiki_subwikis', ['userid' => $this->users[1]->id]));
+        // Other datas not related with this user should remain.
+        $this->assertCount(0, $DB->get_records('ouwiki_versions', ['pageid' => $this->pages[2][1]->pageid]));
+        $this->assertCount(1, $DB->get_records('ouwiki_versions', ['pageid' => $this->pages[2][2]->pageid]));
+        $this->assertCount(1, $DB->get_records('ouwiki_versions', ['pageid' => $this->pages[2][3]->pageid]));
+        $this->assertCount(1, $DB->get_records('ouwiki_subwikis', ['id' => $this->pages[1][3]->subwikiid]));
+        $this->assertCount(0, $DB->get_records('ouwiki_subwikis', ['id' => $this->pages[2][1]->subwikiid]));
+        $this->assertCount(0, $DB->get_records('ouwiki_pages', ['id' => $this->pages[2][1]->pageid]));
+
+        $approvedlist = new \core_privacy\local\request\approved_userlist($this->contexts[2], 'mod_ouwiki', $approveduserids);
+        provider::delete_data_for_users($approvedlist);
+
+        $this->assertCount(1, $DB->get_records('ouwiki_subwikis', ['id' => $this->pages[1][3]->subwikiid]));
+    }
+
+    /**
+     * Test for delete population users data
+     *
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public function test_process_population_users_data() {
+        global $DB;
+        // User 2
+        // Create annotation.
+        $this->generator->create_annotation($this->pages[2][2]->pageid, $this->users[2]->id, 'Annotaion content');
+        $this->generator->create_annotation($this->pages[2][2]->pageid, $this->users[1]->id, 'Annotaion content');
+        // Before process.
+        $this->assertCount(2, $DB->get_records('files', ['itemid' => $this->pages[2][2]->currentversionid,
+                'userid' => $this->users[2]->id, 'filearea' => 'attachment', 'component' => 'mod_ouwiki']));
+        $this->assertCount(2, $DB->get_records('files', ['itemid' => $this->pages[2][2]->currentversionid,
+                'userid' => $this->users[2]->id, 'filearea' => 'content', 'component' => 'mod_ouwiki']));
+        $appuser = new approved_userlist($this->contexts[2], 'mod_ouwiki', [$this->users[2]->id, $this->users[1]->id]);
+        $adminid = get_admin()->id;
+        provider::process_population_user_data_for_users($appuser);
+        $this->assertCount(0, $DB->get_records('ouwiki_locks', ['pageid' => $this->pages[2][2]->pageid, 'userid' => $adminid]));
+        $this->assertCount(1, $DB->get_records('ouwiki_versions', ['pageid' => $this->pages[2][1]->pageid, 'userid' => $adminid]));
+        $this->assertCount(1, $DB->get_records('ouwiki_versions', ['pageid' => $this->pages[2][2]->pageid, 'userid' => $adminid]));
+        $this->assertCount(0, $DB->get_records('ouwiki_versions', ['pageid' => $this->pages[2][3]->pageid, 'userid' => $adminid]));
+        $this->assertCount(1, $DB->get_records('ouwiki_subwikis', ['id' => $this->pages[2][1]->subwikiid, 'userid' => $adminid]));
+        $this->assertCount(1, $DB->get_records('ouwiki_pages', ['id' => $this->pages[2][1]->pageid]));
+        $this->assertCount(2, $DB->get_records('files', ['itemid' => $this->pages[2][2]->currentversionid, 'userid' => $adminid,
+                'filearea' => 'attachment', 'component' => 'mod_ouwiki']));
+        $this->assertCount(2, $DB->get_records('files', ['itemid' => $this->pages[2][2]->currentversionid, 'userid' => $adminid,
+                'filearea' => 'content', 'component' => 'mod_ouwiki']));
+        // Test annotations after replace content.
+        $annotation = $DB->get_records('ouwiki_annotations', ['pageid' => $this->pages[2][2]->pageid, 'userid' => $adminid]);
+        foreach ($annotation as $a) {
+            $this->assertContains(get_string('privacy:annotationdeleted', 'mod_ouwiki'), $a->content);
+        }
+        $annotation = $DB->get_record('ouwiki_annotations', [
+                'pageid' => $this->pages[2][2]->pageid, 'userid' => $this->users[1]->id]);
+        $this->assertEmpty($annotation);
+        // Test versions after replace content.
+        $version = $DB->get_records('ouwiki_versions', ['pageid' => $this->pages[2][2]->pageid, 'userid' => $adminid]);
+        foreach ($version as $v) {
+            $matches = [];
+            preg_match('/<a href="(.*)">(.*)<\/a>/U', $v->xhtml, $matches);
+            $this->assertCount(0, $matches);
+            $this->assertContains(get_string('privacy:xhtmlcontentdeleted', 'mod_ouwiki'), $v->xhtml);
+
+            // Check xhtml is valid.
+            $html = '<p>' . ($v->xhtml) . '</p>';
+            libxml_use_internal_errors(true);
+            libxml_clear_errors();
+            $xml = simplexml_load_string($html);
+            $this->assertEquals(0, count(libxml_get_errors()));
+        }
+    }
+
 }
