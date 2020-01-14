@@ -19,7 +19,7 @@ Feature: import pages into one wiki from another
       | ouwiki   | WIP.coursewiki       | This wiki contains info      | WIP1   | ouwiki1  | 0           | Yes               |
       | ouwiki   | WIP.importwiki       | Imports go here              | WIP1   | ouwiki2  | 1           | Yes               |
 
-  @javascript
+  @javascript @_file_upload
   Scenario: Creating wikis and data, part one
     Given I log in as "student1"
     And I am on "Wiki Import Pages Test 1" course homepage

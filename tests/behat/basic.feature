@@ -597,7 +597,7 @@ Feature: Test Post and Comment on OUwiki entry
     And "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element" should not exist
     And I log out
 
-  @javascript
+  @javascript @_file_upload
   Scenario: Attachments No groups
     Given I log in as "teacher1"
     And I am on homepage
