@@ -1,0 +1,9 @@
+steps:
+  - label: ':github: Run submodule build'
+    branches: master
+    agents:
+      Environment: production
+    plugins:
+      - ssh://git@github.com/getsmarter/submodule-buildkite-plugin.git#master:
+          parent_repo: online-campus
+          submodule_path: mod/ouwiki
