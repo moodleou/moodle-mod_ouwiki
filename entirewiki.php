@@ -212,7 +212,7 @@ function get_online_display_content($format, $pageversion, $context, $subwiki, $
             }
             $markup .= '<versionid>' . $pageversion->versionid . '</versionid>';
             // Copy images found in content.
-            preg_match_all('#<img.*?src="@@PLUGINFILE@@/(.*?)".*?/>#', $pageversion->xhtml, $matches);
+            preg_match_all('#<img.*?src="@@PLUGINFILE@@/(.*?)".*?/?>#', $pageversion->xhtml, $matches);
             if (! empty($matches)) {
                 // Extract the file names from the matches.
                 foreach ($matches[1] as $key => $match) {
