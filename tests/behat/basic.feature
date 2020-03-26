@@ -628,9 +628,9 @@ Feature: Test Post and Comment on OUwiki entry
     And I wait to be redirected
     Then "empty.txt" "link" should exist
     # Check for annotations (and test edit settings at the same time) - note we can not test for locking
-    And I click on "Topic 1" "link" in the ".breadcrumb-nav" "css_element"
-    When I click on "Edit" "link" in the "li.modtype_ouwiki div.menubar" "css_element"
-    And I click on "Edit settings" "link" in the "li.modtype_ouwiki div.menu" "css_element"
+    And I click on "Topic 1" "link" in the ".breadcrumb" "css_element"
+    When I open the action menu in "W.X" "list_item"
+    And I click on "Edit settings" "link" in the "W.X" "list_item"
     And I expand all fieldsets
     And I set the field "Annotation system" to "Yes"
     When I press "Save and display"
