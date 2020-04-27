@@ -90,6 +90,10 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         $mform->addElement('filepicker', 'template_file', get_string('template', 'ouwiki'), null, $filepickeroptions);
         $mform->addHelpButton('template_file', 'template', 'ouwiki');
 
+        $lockstartpagesoptions = array('0' => get_string('no'), '1' => get_string('yes'));
+        $mform->addElement('select', 'lockstartpages', get_string('lockstartpages', 'ouwiki'), $lockstartpagesoptions);
+        $mform->addHelpButton('lockstartpages', 'lockstartpages', 'ouwiki');
+
         // Wordcount
         $wordcountoptions = array('0' => get_string('no'), '1' => get_string('yes'));
         $mform->addElement('select', 'enablewordcount', get_string('showwordcounts', 'ouwiki'), $wordcountoptions);

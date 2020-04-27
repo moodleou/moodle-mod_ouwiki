@@ -31,6 +31,9 @@ $string['subwikis_single'] = 'Single wiki for course';
 $string['subwikis_groups'] = 'One wiki per group';
 $string['subwikis_individual'] = 'Separate wiki for every user';
 
+$string['lockstartpages'] = 'Lock start pages';
+$string['lockstartpages_help'] = 'Will lock all existing start pages and any start pages created after this point when a template is used to populate content.';
+
 $string['note'] = 'Note:';
 $string['subwikiexist'] = 'Sub-wiki\'s have already been created. Adding a template file only affects
 newly created and empty sub-wiki\'s, existing content will remain as at present.';

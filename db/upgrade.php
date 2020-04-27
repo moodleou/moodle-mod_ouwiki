@@ -524,6 +524,21 @@ WHERE
         upgrade_mod_savepoint(true, 2017101200, 'ouwiki');
     }
 
+    if ($oldversion < 2020050500) {
+
+        // Define field lockstartpages to be added to ouwiki.
+        $table = new xmldb_table('ouwiki');
+        $field = new xmldb_field('lockstartpages', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', null);
+
+        // Conditionally launch add field lockstartpages.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Ouwiki savepoint reached.
+        upgrade_mod_savepoint(true, 2020050500, 'ouwiki');
+    }
+
     // Must always return true from these functions
     return true;
 }

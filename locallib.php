@@ -409,6 +409,12 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki) {
                 }
             }
         }
+        // lock start page if setting enabled
+        if ($ouwiki->lockstartpages) {
+            // get start page
+            $startpage = ouwiki_get_current_page($subwiki, null);
+            ouwiki_lock_editing($startpage->pageid, true);
+        }
     } else {
         ouwiki_error('Failed to load wiki template - file missing.');
     }

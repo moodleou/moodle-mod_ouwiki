@@ -73,8 +73,25 @@ function ouwiki_update_instance($data, $mform) {
     $data->id = $data->instance;
     $data->timemodified = time();
 
+
+    if ($data->lockstartpages) {
+        // Find current value of 'lock start pages' setting
+        $lockstartpages = $DB->get_field('ouwiki', 'lockstartpages', array('id' => $data->id));
+    }
+
     // Update main record.
     $DB->update_record('ouwiki', $data);
+
+    // Lock all start pages if the 'lock start pages' setting has been activated
+    if ($data->lockstartpages && isset($lockstartpages) && !$lockstartpages) {
+        $sql = "UPDATE {ouwiki_pages}
+            SET locked = 1
+            WHERE locked = 0
+            AND title = ''
+            AND subwikiid IN (SELECT id FROM {ouwiki_subwikis} WHERE wikiid = ?)";
+
+        $DB->execute($sql, array($data->id));
+    }
 
     // Set up null values
     $nullvalues = array('editbegin', 'editend', 'timeout');
