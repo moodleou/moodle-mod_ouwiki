@@ -619,6 +619,19 @@ class ouwiki_locallib_test extends advanced_testcase {
     }
 
     /**
+     * Test no infinite loop on building sub index
+     */
+    public function test_ouwiki_build_up_sub_index() {
+        $index = [
+            1 => (object) ['linksto' => [2]],
+            2 => (object) ['linksto' => [1]]
+        ];
+        $subtree = [];
+        ouwiki_build_up_sub_index(1, $index,$subtree);
+        $this->assertEquals($index, $subtree);
+    }
+
+    /**
      * Simple test of last modified time returning
      */
     public function test_ouwiki_get_last_modified() {

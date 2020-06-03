@@ -1,5 +1,5 @@
 @ou @ou_vle @mod @mod_ouwiki @wiki_basic
-Feature: Test Post and Comment on OUwiki entry
+Feature: Test OUwiki regressions
   In order to use ouwiki features
   As a user
   I need to be able to complete basic operations
@@ -57,7 +57,7 @@ Feature: Test Post and Comment on OUwiki entry
     Then I should see "Changed by Admin"
     And I should see "W.X - Start page"
 
-  @javascript
+  @javascript @_file_upload
   Scenario: Verify Template
     Given I log in as "admin"
     And I am on homepage

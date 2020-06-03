@@ -3392,12 +3392,14 @@ function ouwiki_display_portfolio_page_in_index($pageversion) {
 
 function ouwiki_build_up_sub_index($pageid, $index, &$subtree) {
     $thispage = $index[$pageid];
+    $subtree[$pageid] = $thispage;
     if (count($thispage->linksto) > 0) {
         foreach ($thispage->linksto as $childid) {
-            ouwiki_build_up_sub_index($childid, $index, $subtree);
+            if (empty($subtree[$childid]) && $childid != $pageid) {
+                ouwiki_build_up_sub_index($childid, $index, $subtree);
+            }
         }
     }
-    $subtree[$pageid] = $thispage;
 }
 
 function ouwiki_get_sub_tree_from_index($pageid, $index) {

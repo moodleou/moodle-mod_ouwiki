@@ -30,6 +30,8 @@ use context;
 use core_privacy\local\request\helper;
 use core_privacy\local\request\transform;
 use core_privacy\local\request\writer;
+use core_privacy\local\request\approved_userlist;
+use core_privacy\local\request\userlist;
 
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
@@ -46,7 +48,8 @@ require_once($CFG->dirroot . '/mod/ouwiki/locallib.php');
 class provider implements
         \core_privacy\local\metadata\provider,
         \core_privacy\local\request\plugin\provider,
-        \core_privacy\local\request\user_preference_provider {
+        \core_privacy\local\request\user_preference_provider,
+        \core_privacy\local\request\core_userlist_provider {
 
     /** Subject of the wiki are limited to 32 characters. */
     const LENGTH_LIMIT = 32;
@@ -502,4 +505,241 @@ class provider implements
             $DB->update_record('ouwiki_versions', $version);
         }
     }
+
+    /**
+     * Update content version xhtml for users related to request delete.
+     *
+     * @param $user
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public static function update_xhmtl_content_users_request_delete($users) {
+        global $DB, $CFG;
+        foreach ($users as $u) {
+            $url = $CFG->wwwroot . '/user/view.php?id=' . $u . '&';
+            $sql = 'SELECT id, xhtml
+                  FROM {ouwiki_versions}
+                 WHERE xhtml LIKE :url';
+            $versions = $DB->get_records_sql($sql, ['url' => "%{$url}%"]);
+            if (! $versions) {
+                return;
+            }
+            $patern = '/<a href="' . str_replace(['/', '?', '.'], ['\/', '\?', '\.'], $url) . '(.*)>(.*)<\/a>/U';
+            foreach ($versions as $version) {
+                $version->xhtml = preg_replace($patern, get_string('privacy:xhtmlcontentdeleted', 'mod_ouwiki'), $version->xhtml);
+                $DB->update_record('ouwiki_versions', $version);
+            }
+        }
+
+    }
+
+    /**
+     * Get the list of users who have data within a context.
+     *
+     * @param   userlist $userlist The userlist containing the list of users who have data in this context/plugin combination.
+     */
+    public static function get_users_in_context(userlist $userlist) {
+        global $DB;
+        $context = $userlist->get_context();
+        if ($context->contextlevel != CONTEXT_MODULE) {
+            return;
+        }
+        $params = [
+            'instanceid' => $context->instanceid,
+            'modulename' => 'ouwiki'
+        ];
+        $sql = 'SELECT s.id
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.name = :modulename AND cm.module = m.id
+                  JOIN {ouwiki_subwikis} s ON s.wikiid = cm.instance
+                 WHERE cm.id = :instanceid';
+        $subwikis = $DB->get_fieldset_sql($sql, $params);
+        if (!$subwikis) {
+            return;
+        }
+
+        list($sqlwhere, $sqlparams) = $DB->get_in_or_equal($subwikis);
+        $sql = 'SELECT DISTINCT userid
+                  FROM {ouwiki_locks}
+                 WHERE pageid IN (
+                        SELECT id
+                          FROM {ouwiki_pages}
+                         WHERE subwikiid ' . $sqlwhere . ')';
+        $userlist->add_from_sql('userid', $sql, $sqlparams);
+
+        $sql = 'SELECT DISTINCT userid
+                  FROM {ouwiki_versions}
+                 WHERE pageid IN (
+                        SELECT id
+                          FROM {ouwiki_pages}
+                         WHERE subwikiid ' . $sqlwhere . ')';
+        $userlist->add_from_sql('userid', $sql, $sqlparams);
+
+        $sql = 'SELECT DISTINCT userid
+                  FROM {ouwiki_annotations}
+                 WHERE pageid IN (
+                        SELECT id
+                          FROM {ouwiki_pages}
+                         WHERE subwikiid ' . $sqlwhere . ')';
+        $userlist->add_from_sql('userid', $sql, $sqlparams);
+
+        $sql = 'SELECT DISTINCT s.userid
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.name = :modulename AND cm.module = m.id
+                  JOIN {ouwiki_subwikis} s ON s.wikiid = cm.instance
+                 WHERE cm.id = :instanceid';
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        $params = [
+            'contextid' => $context->id,
+            'contextlevel' => CONTEXT_MODULE,
+        ];
+        $sql = 'SELECT f.userid
+                  FROM {context} c
+                  JOIN {files} f ON f.contextid = c.id
+                 WHERE c.contextlevel = :contextlevel
+                   AND f.component = \'mod_ouwiki\'
+                   AND c.id = :contextid
+                   AND (f.filearea = \'attachment\' OR f.filearea = \'content\')';
+        $userlist->add_from_sql('userid', $sql, $params);
+    }
+
+    /**
+     * Delete multiple users within a single context.
+     *
+     * @param approved_userlist $userlist The approved context and user information to delete information for.
+     */
+    public static function delete_data_for_users(approved_userlist $userlist) {
+        $context = $userlist->get_context();
+        if ($context->contextlevel != CONTEXT_MODULE) {
+            return;
+        }
+
+        self::delete_individual_data_for_users($userlist);
+        self::process_population_user_data_for_users($userlist);
+    }
+
+    /**
+     * Delete multiple users within a single context with subwikis is Individual
+     *
+     * @param approved_userlist $userlist The approved context and user information to delete information for.
+     * @param \moodle_database $DB The database
+     */
+    public static function delete_individual_data_for_users(approved_userlist $userlist) {
+        global $DB;
+        $context = $userlist->get_context();
+
+        list($userinsql, $userinparams) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+        list($userinsql2, $userinparams2) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+
+        $sql = "SELECT v.id AS versionid, p.id AS pageid,  ctx.id AS ctxid, s.id AS subwikid
+                  FROM {context} ctx
+                  JOIN {course_modules} cm ON cm.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  JOIN {modules} m ON m.name = :modname AND cm.module = m.id
+                  JOIN {ouwiki} w ON w.id = cm.instance AND w.subwikis = :subwikis
+                  JOIN {ouwiki_subwikis} s ON s.wikiid = cm.instance
+             LEFT JOIN {ouwiki_pages} p ON p.subwikiid = s.id
+             LEFT JOIN {ouwiki_versions} v ON v.pageid = p.id AND v.userid {$userinsql}
+                 WHERE s.userid {$userinsql2} OR (v.id IS NOT NULL AND ctx.id = :contextid)";
+
+        $ouwikis = $DB->get_records_sql($sql, [
+                        'contextid' => $context->id,
+                        'modname' => 'ouwiki',
+                        'contextlevel' => CONTEXT_MODULE,
+                        'subwikis' => OUWIKI_SUBWIKIS_INDIVIDUAL] + $userinparams + $userinparams2);
+
+        if ($ouwikis) {
+            $fs = get_file_storage();
+            foreach ($ouwikis as $ouwiki) {
+                if ($ouwiki->versionid && $ouwiki->versionid !== 0) {
+                    $fs->delete_area_files($ouwiki->ctxid, 'mod_ouwiki', 'attachment', $ouwiki->versionid);
+                    $fs->delete_area_files($ouwiki->ctxid, 'mod_ouwiki', 'content', $ouwiki->versionid);
+                }
+            }
+
+            list($pagesql, $paramspageid) = $DB->get_in_or_equal(array_column($ouwikis, 'pageid'), SQL_PARAMS_NAMED);
+            // Delete all related data.
+            $DB->delete_records_select('ouwiki_locks', 'pageid ' . $pagesql, $paramspageid);
+            $DB->delete_records_select('ouwiki_versions', 'pageid ' . $pagesql, $paramspageid);
+            $DB->delete_records_select('ouwiki_annotations', 'pageid ' . $pagesql, $paramspageid);
+            $DB->delete_records_select('ouwiki_sections', 'pageid ' . $pagesql, $paramspageid);
+            $DB->delete_records_select('ouwiki_links', 'topageid ' . $pagesql, $paramspageid);
+            // Delete individual subwikis from this context..
+            list($subwikisql, $paramssubwiki) = $DB->get_in_or_equal(array_column($ouwikis, 'subwikid'), SQL_PARAMS_NAMED);
+            $paramssubwiki = array_merge($paramssubwiki, $userinparams);
+            $DB->delete_records_select('ouwiki_pages',
+                    "subwikiid IN (SELECT id FROM {ouwiki_subwikis} WHERE userid {$userinsql} AND id " . $subwikisql . ')',
+                    $paramssubwiki);
+            $DB->delete_records_select('ouwiki_subwikis', "userid {$userinsql} AND id " . $subwikisql, $paramssubwiki);
+        }
+    }
+
+    /**
+     * Process population data for multiple users.
+     *
+     * @param approved_userlist $userlist
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public static function process_population_user_data_for_users(approved_userlist $userlist) {
+        global $DB;
+        $context = $userlist->get_context();
+        list($userinsql, $userinparams) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+        list($userinsql2, $userinparams2) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+        list($subwikissql, $subwikisparams) = $DB->get_in_or_equal([OUWIKI_SUBWIKIS_SINGLE,
+                OUWIKI_SUBWIKIS_GROUPS], SQL_PARAMS_NAMED);
+
+        $sql = "SELECT v.id AS versionid, v.xhtml, p.id AS pageid,  ctx.id AS ctxid, s.id AS subwikid, w.course as courseid
+                  FROM {context} ctx
+                  JOIN {course_modules} cm ON cm.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  JOIN {modules} m ON m.name = :modname AND cm.module = m.id
+                  JOIN {ouwiki} w ON w.id = cm.instance
+                  JOIN {ouwiki_subwikis} s ON s.wikiid = cm.instance
+             LEFT JOIN {ouwiki_pages} p ON p.subwikiid = s.id
+             LEFT JOIN {ouwiki_versions} v ON v.pageid = p.id AND v.userid {$userinsql}
+                 WHERE s.userid {$userinsql2} OR (v.id IS NOT NULL AND ctx.id = :contextid AND w.subwikis " . $subwikissql . ")";
+
+        $ouwikis = $DB->get_records_sql($sql, array_merge([
+                        'modname' => 'ouwiki',
+                        'contextlevel' => CONTEXT_MODULE,
+                        'subwikis' => OUWIKI_SUBWIKIS_INDIVIDUAL,
+                        'contextid' => $context->id], $userinparams, $userinparams2, $subwikisparams));
+        if ($ouwikis) {
+            // Update page content that related to user request delete.
+            self::update_xhmtl_content_users_request_delete($userlist->get_userids());
+            list($pagesql, $paramspageid) = $DB->get_in_or_equal(array_column($ouwikis, 'pageid'), SQL_PARAMS_NAMED);
+            // Delete unnecessary data.
+            $DB->delete_records_select('ouwiki_locks', 'pageid ' . $pagesql, $paramspageid);
+            // Set user to admin to other data.
+            $adminid = get_admin()->id;
+            // Process files.
+            $select = "userid {$userinsql} AND component = :component AND filearea IN (:attachment, :content)";
+            $params = array_merge(
+                    ['component' => 'mod_ouwiki', 'attachment' => 'attachment', 'content' => 'content'],
+                    $userinparams);
+            $DB->set_field_select('files', 'userid', $adminid, $select, $params);
+            // Process tables.
+            foreach ($userinparams as $u) {
+                $subwiki = $DB->get_record('ouwiki_subwikis', ['userid' => $u]);
+                if ($subwiki && $DB->record_exists('ouwiki_subwikis', ['userid' => $adminid, 'wikiid' => $subwiki->wikiid])) {
+                    // Since the subwiki already belong to the admin,we should delete it the subwiki record for other user.
+                    $DB->delete_records_select('ouwiki_subwikis', "userid = :userid", ['userid' => $u, 'wikiid' => $subwiki->wikiid]);
+                } else {
+                    $DB->set_field_select('ouwiki_subwikis', 'userid', $adminid,
+                            "userid = :userid", ['userid' => $u]);
+                }
+            }
+
+            $sql = "UPDATE {ouwiki_versions} SET userid = :adminid WHERE userid {$userinsql} AND pageid " . $pagesql;
+            $DB->execute($sql, array_merge(['adminid' => $adminid], $userinparams, $paramspageid));
+            $sql = "UPDATE {ouwiki_annotations} SET userid = :adminid, content = :content WHERE userid {$userinsql} AND pageid " .
+                    $pagesql;
+            $DB->execute($sql,
+                    array_merge([
+                            'adminid' => $adminid,
+                            'content' => get_string('privacy:annotationdeleted', 'mod_ouwiki')],
+                            $userinparams, $paramspageid));
+        }
+    }
+
 }
