@@ -4,6 +4,7 @@ steps:
     agents:
       Environment: production
     plugins:
-      - ssh://git@github.com/getsmarter/submodule-buildkite-plugin.git#master:
+      - ssh://git@github.com/getsmarter/submodule-buildkite-plugin.git#v1.3:
           parent_repo: online-campus
+          parent_branch: development
           submodule_path: mod/ouwiki
