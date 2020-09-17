@@ -519,8 +519,6 @@ Feature: Test Post and Comment on OUwiki entry
     Then "Older changes" "link" should exist
     And I should see "6"
     And I should see "1"
-    And I should see "Atom"
-    And I should see "RSS"
     # Check to make sure we can not see "Annotate" tab
     Given I click on "W.WX" "link"
     Then I should not see "Annotate"

@@ -24,39 +24,6 @@ Feature: Test OUwiki regressions
       | user | group |
       | student1 | G1 |
 
-  @javascript
-  Scenario: Verify Atom and RSS
-    Given I log in as "admin"
-    And I am on homepage
-    And I am on "Course 1" course homepage
-    And I turn editing mode on
-    And the following "activities" exist:
-      | course | section | activity | name | description         | groupmode | idnumber |
-      | C1     | 1       | ouwiki   | W.X  | wiki with no groups | 0         | WX       |
-    And I am on "Course 1" course homepage
-    And I follow "W.X"
-    And "Create page" "button" should exist
-    And I press "Create page"
-    And I set the field "Content" to "C1 no groups wiki"
-    And I press "Save changes"
-    And I edit a ouwiki page with the following data:
-      | Content | C29|
-    And I log out
-    And I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "W.X"
-    And I follow "Wiki changes"
-    And I follow "Atom"
-    #Even though I logged in as Student it shows "changed by Admin" as initially changes were made by Admin
-    Then I should see "Changed by Admin"
-    And I should see "W.X - Start page"
-    And I am on "Course 1" course homepage
-    And I follow "W.X"
-    And I follow "Wiki changes"
-    And I follow "RSS"
-    Then I should see "Changed by Admin"
-    And I should see "W.X - Start page"
-
   @javascript @_file_upload
   Scenario: Verify Template
     Given I log in as "admin"

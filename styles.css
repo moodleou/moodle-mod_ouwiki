@@ -570,18 +570,6 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
     margin-bottom:2em;
 }
 
-.ouw_subscribe {
-    margin-top:2em;
-    font-size:0.85em;
-}
-.ouw_subscribe img {
-    vertical-align:bottom;
-}
-.ouw_subscribe span {
-    position:relative;
-    top:-1px;
-}
-
 .ouw_belowmainhead {
     border:1px dotted #888;
     border-top:none;
