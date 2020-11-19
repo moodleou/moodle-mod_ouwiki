@@ -378,6 +378,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         // On main page, add export button
         if (!$xhtmlid && $CFG->enableportfolios && !isguestuser()) {
+            require_once($CFG->libdir . '/portfoliolib.php');
             $button = new portfolio_add_button();
             $button->set_callback_options('ouwiki_page_portfolio_caller',
                     array('pageid' => $pageid), 'mod_ouwiki');
@@ -409,7 +410,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         if (!$CFG->enableportfolios) {
             return '';
         }
-
+        require_once($CFG->libdir . '/portfoliolib.php');
         $button = new portfolio_add_button();
         $button->set_callback_options('ouwiki_all_portfolio_caller',
                $wikiparamsarray, 'mod_ouwiki');
