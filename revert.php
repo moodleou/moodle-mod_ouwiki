@@ -102,6 +102,10 @@ if ($confirmed) {
         '<input type="submit" name="cancel" value="'.get_string('cancel').'"/>';
     print '</form>';
 
+    // Because there are no tabs on this page we need to output an extra open div, which
+    // ouwiki_print_footer will close (otherwise we get an extra closing div tag).
+    echo html_writer::start_div();
+
     // Footer
     ouwiki_print_footer($course, $cm, $subwiki, $pagename);
 }
