@@ -86,46 +86,34 @@ Feature: Test OUwiki regressions
     And I add a "OU wiki" to section "1"
     #Values for Future
     And I set the following fields to these values:
-      | Name                | W.SG                                  |
-      | Description         | Allow edit for past,present, Future   |
-      | Sub-wikis           | One wiki per group                    |
-      | Group mode          | Separate groups                       |
-      | editbegin[enabled]  | 1                                     |
-      | editbegin[day]      | ## +2 days ## j ##                    |
-      | editbegin[month]    | ## +2 days ## n ##                    |
-      | editbegin[year]     | ## +2 days ## Y ##                    |
+      | Name               | W.SG                                |
+      | Description        | Allow edit for past,present, Future |
+      | Sub-wikis          | One wiki per group                  |
+      | Group mode         | Separate groups                     |
+      | Allow editing from | ## +2 days ##                       |
     And I press "Save and display"
     Then I should see "This wiki is currently locked."
     And I am on "Course 1" course homepage
     And I add a "OU wiki" to section "1"
     #Values for Past
     And I set the following fields to these values:
-      | Name                | W.SG                                  |
-      | Description         | Allow edit for past,present, Future   |
-      | Sub-wikis           | One wiki per group                    |
-      | Group mode          | Separate groups                       |
-      | editend[enabled]    | 1                                     |
-      | editend[day]        | ## -2 days ## j ##                    |
-      | editend[month]      | ## -2 days ## n ##                    |
-      | editend[year]       | ## -2 days ## Y ##                    |
+      | Name                 | W.SG                                |
+      | Description          | Allow edit for past,present, Future |
+      | Sub-wikis            | One wiki per group                  |
+      | Group mode           | Separate groups                     |
+      | Prevent editing from | ## -2 days ##                       |
     And I press "Save and display"
     Then I should see "This wiki is currently locked and can no longer be edited."
     And I am on "Course 1" course homepage
     And I add a "OU wiki" to section "1"
     #Values for Past and Future
     And I set the following fields to these values:
-      | Name                | W.SG                                  |
-      | Description         | Allow edit for past,present, Future   |
-      | Sub-wikis           | One wiki per group                    |
-      | Group mode          | Separate groups                       |
-      | editbegin[enabled]  | 1                                     |
-      | editbegin[day]      | ## -1 days ## j ##                    |
-      | editbegin[month]    | ## -1 days ## n ##                    |
-      | editbegin[year]     | ## -1 days ## Y ##                    |
-      | editend[enabled]    | 1                                     |
-      | editend[day]        | ## +1 days ## j ##                    |
-      | editend[month]      | ## +1 days ## n ##                    |
-      | editend[year]       | ## +1 days ## Y ##                    |
+      | Name                 | W.SG                                |
+      | Description          | Allow edit for past,present, Future |
+      | Sub-wikis            | One wiki per group                  |
+      | Group mode           | Separate groups                     |
+      | Allow editing from   | ## -1 days ##                       |
+      | Prevent editing from | ## +1 days ##                       |
     And I press "Save and display"
     Then I should see "This wiki's start page has not yet been created."
     And I press "Create page"
