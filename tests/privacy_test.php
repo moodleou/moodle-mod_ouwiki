@@ -424,14 +424,14 @@ class mod_ouwiki_privacy_testcase extends provider_testcase {
                 'filearea' => 'content', 'component' => 'mod_ouwiki']));
         // Test annotations after replace content.
         $annotation = $DB->get_record('ouwiki_annotations', ['pageid' => $this->pages[2][2]->pageid, 'userid' => $adminid]);
-        $this->assertContains(get_string('privacy:annotationdeleted', 'mod_ouwiki'), $annotation->content);
+        $this->assertStringContainsString(get_string('privacy:annotationdeleted', 'mod_ouwiki'), $annotation->content);
         $annotation = $DB->get_record('ouwiki_annotations', [
                 'pageid' => $this->pages[2][2]->pageid, 'userid' => $this->users[1]->id]);
         $this->assertNotEquals(get_string('privacy:annotationdeleted', 'mod_ouwiki'), $annotation->content);
         // Test versions after replace content.
         $version = $DB->get_record('ouwiki_versions', ['pageid' => $this->pages[2][2]->pageid, 'userid' => $adminid]);
-        $this->assertContains(get_string('privacy:xhtmlcontentdeleted', 'mod_ouwiki'), $version->xhtml);
-        $this->assertContains(ouwiki_display_user($this->users[1], $this->course->id), $version->xhtml);
+        $this->assertStringContainsString(get_string('privacy:xhtmlcontentdeleted', 'mod_ouwiki'), $version->xhtml);
+        $this->assertStringContainsString(ouwiki_display_user($this->users[1], $this->course->id), $version->xhtml);
     }
 
     /**
@@ -607,7 +607,7 @@ class mod_ouwiki_privacy_testcase extends provider_testcase {
         // Test annotations after replace content.
         $annotation = $DB->get_records('ouwiki_annotations', ['pageid' => $this->pages[2][2]->pageid, 'userid' => $adminid]);
         foreach ($annotation as $a) {
-            $this->assertContains(get_string('privacy:annotationdeleted', 'mod_ouwiki'), $a->content);
+            $this->assertStringContainsString(get_string('privacy:annotationdeleted', 'mod_ouwiki'), $a->content);
         }
         $annotation = $DB->get_record('ouwiki_annotations', [
                 'pageid' => $this->pages[2][2]->pageid, 'userid' => $this->users[1]->id]);
@@ -618,7 +618,7 @@ class mod_ouwiki_privacy_testcase extends provider_testcase {
             $matches = [];
             preg_match('/<a href="(.*)">(.*)<\/a>/U', $v->xhtml, $matches);
             $this->assertCount(0, $matches);
-            $this->assertContains(get_string('privacy:xhtmlcontentdeleted', 'mod_ouwiki'), $v->xhtml);
+            $this->assertStringContainsString(get_string('privacy:xhtmlcontentdeleted', 'mod_ouwiki'), $v->xhtml);
 
             // Check xhtml is valid.
             $html = '<p>' . ($v->xhtml) . '</p>';
