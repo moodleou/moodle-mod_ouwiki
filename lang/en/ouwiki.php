@@ -628,3 +628,5 @@ $string['privacy_you'] = 'You';
 $string['privacy_somebodyelse'] = 'Somebody else';
 $string['privacy:annotationdeleted'] = '[Annotation deleted at user request]';
 $string['privacy:xhtmlcontentdeleted'] = '[Contributor information deleted at user request]';
+
+$string['wiki_content_mask'] = 'Replace with fake text of a similar length, retaining HTML tags and [[wiki page]] links';
