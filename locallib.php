@@ -2025,11 +2025,11 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     $versioncontent = $DB->get_field('ouwiki_versions', 'xhtml', array('id' => $versionid));
     if (! empty($version->previousversionid)) {
         // Get any filenames in content.
-        preg_match_all("#@@PLUGINFILE@@/(\S)+([.]\w+)#", $versioncontent, $matches);
+        preg_match_all("#(?:(?:src|href)=\")(@@PLUGINFILE@@/\S+([.]\w+))(?:\")#", $versioncontent, $matches);
         if (! empty($matches)) {
             // Extract the file names from the matches.
             $filenames = array();
-            foreach ($matches[0] as $match) {
+            foreach ($matches[1] as $match) {
                 // Get file name.
                 $match = str_replace('@@PLUGINFILE@@/', '', $match);
                 array_push($filenames, urldecode($match));
