@@ -71,8 +71,8 @@ class tool_datamasking_test extends \advanced_testcase {
         \tool_datamasking\testing_utils::check_file($this, $fileids[1], 'b.txt', 2);
         \tool_datamasking\testing_utils::check_file($this, $fileids[2], 'c.txt', 3);
 
-        // Run the full masking plan including this plugin.
-        \tool_datamasking\api::get_plan()->execute();
+        // Run the full masking plan including this plugin, but without requiring mapping tables.
+        \tool_datamasking\api::get_plan()->execute([], [\tool_datamasking\tool_datamasking::TAG_SKIP_ID_MAPPING]);
 
         // After checks.
         $this->assertEquals(['Masked page ' . $p1, ''], $DB->get_fieldset_sql($ouwikipagessql));
