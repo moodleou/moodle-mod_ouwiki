@@ -52,7 +52,7 @@ class wiki_content_mask_test extends \advanced_testcase {
         $table->execute([], [], new \core\progress\none());
 
         $result = $DB->get_fieldset_sql('SELECT xhtml FROM {ouwiki_versions} ORDER BY id');
-        $this->assertRegExp('~<p>\[\[Masked page ' . $p1 . '\]\]</p>'.
+        $this->assertMatchesRegularExpression('~<p>\[\[Masked page ' . $p1 . '\]\]</p>'.
                 '<ul><li>\[\[Masked page ' . $p2 . '|[^\\]]+\]\]</li>' .
                 '<li>\[\[Masked page ' . $p3 . '\]\]</li>' .
                 '<li>\[\[Missing page\]\]</li></ul>~', $result[0]);
