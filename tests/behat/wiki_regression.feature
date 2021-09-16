@@ -111,6 +111,7 @@ Feature: Test OUwiki regressions
     Then I should see "C11"
     And I should not see "C10"
 
+  @javascript
   Scenario: Verify Allow editing for Past,Future and together
     Given I log in as "admin"
     And I am on homepage
