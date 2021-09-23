@@ -610,7 +610,7 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
 
         case OUWIKI_SUBWIKIS_INDIVIDUAL:
             $user = $DB->get_record('user', array('id' => $subwiki->userid),
-                    'username, ' . \core\user_fields::get_picture_fields());
+                    'username, ' . implode(',', \core_user\fields::get_picture_fields()));
             $wikifor = ouwiki_display_user($user, $cm->course);
             $userfieldsapi = \core_user\fields::for_userpic();
             $usernamefields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
