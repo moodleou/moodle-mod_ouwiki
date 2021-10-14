@@ -131,8 +131,7 @@ if ($curstep == 1) {
                 }
             } else if ($wikiinst->subwikis == OUWIKI_SUBWIKIS_INDIVIDUAL) {
                 // Individual wiki. Get all users user can view (checking subwiki for content).
-                $userfieldsapi = \core_user\fields::for_userpic();
-                $userfields = $userfieldsapi->get_sql('u', false, '', 'uid', false)->selects;
+                $userfields = user_picture::fields('u', null, 'uid');
                 $sql = "SELECT sw.id, $userfields
                         FROM {ouwiki_subwikis} sw
                         INNER JOIN {user} u ON sw.userid = u.id

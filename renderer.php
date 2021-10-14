@@ -378,6 +378,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         // On main page, add export button
         if (!$xhtmlid && $CFG->enableportfolios && !isguestuser()) {
+            require_once($CFG->libdir . '/portfoliolib.php');
             $button = new portfolio_add_button();
             $button->set_callback_options('ouwiki_page_portfolio_caller',
                     array('pageid' => $pageid), 'mod_ouwiki');
@@ -409,7 +410,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         if (!$CFG->enableportfolios) {
             return '';
         }
-
+        require_once($CFG->libdir . '/portfoliolib.php');
         $button = new portfolio_add_button();
         $button->set_callback_options('ouwiki_all_portfolio_caller',
                $wikiparamsarray, 'mod_ouwiki');
@@ -666,9 +667,6 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         // Add wiki name header.
         $output .= $this->get_wiki_heading_text();
 
-        // Add rss and atom feeds.
-        $output .= $this->get_feeds_section();
-
         // Add group/user selector.
         $showselector = true;
         if (($page == 'userparticipation.php' && $canview != OUWIKI_MY_PARTICIPATION)
@@ -705,15 +703,6 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      * @return string
      */
     public function get_wiki_heading_text() {
-        return '';
-    }
-
-    /**
-     * Returns empty string.
-     *
-     * @return string
-     */
-    public function get_feeds_section() {
         return '';
     }
 
@@ -1335,24 +1324,6 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      */
     public function get_attachments($files, $modcontextid, $pageversionversionid, $fcheck = false) {
         return '';
-    }
-
-    /**
-     * Returns html for the atom and rss feeds.
-     *
-     * @param string $atomurl
-     * @param string $rssurl
-     * @return string
-     */
-    public function ouwiki_get_feeds($atomurl, $rssurl) {
-        $a = new stdClass();
-        $a->atom = $atomurl;
-        $a->rss = $rssurl;
-        $url = str_replace('&amp;', '&', $atomurl);
-        $rssicon = html_writer::img($this->output->image_url('rss', 'ouwiki'), '');
-        $rsslink = html_writer::link($url, $rssicon, array('title' => get_string('feedalt', 'ouwiki')));
-        $content = html_writer::span(get_string('feedsubscribe', 'ouwiki', $a));
-        return html_writer::tag('p', $rsslink . $content, array('class' => 'ouw_subscribe'));
     }
 
     /**

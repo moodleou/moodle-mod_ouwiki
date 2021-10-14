@@ -79,7 +79,7 @@ Feature: Test view details against a user
     And I press "Save changes"
     Then "Start page" "link" should exist
     When I click on "Start page" "link"
-    Then  "frog" "link" should exist
+    Then  "frog" "link" should exist    
     And I log out
     # Check student has particpated and their grade can be displayed.
     Given I log in as "teacher1"
@@ -92,7 +92,6 @@ Feature: Test view details against a user
     And I should see "+3"
     And I should see "+2"
 
-  @javascript
   Scenario: Check User participation and downloads
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage

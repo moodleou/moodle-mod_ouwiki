@@ -275,8 +275,6 @@ function ouw_check() {
 </script>
 ';
 
-echo $ouwikioutput->ouwiki_get_feeds($atomurl, $rssurl);
-
 $pageversion = ouwiki_get_current_page($subwiki, $pagename);
 echo $ouwikioutput->get_bottom_buttons($subwiki, $cm, $context, $pageversion, false);
 
