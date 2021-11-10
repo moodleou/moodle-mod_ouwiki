@@ -3167,7 +3167,7 @@ function ouwiki_get_user_participation($userid, $subwiki) {
  */
 function ouwiki_get_user($userid) {
     global $DB;
-    $fields = \core_user\fields::get_picture_fields();
+    $fields = implode(',', \core_user\fields::get_picture_fields());
     $fields .= ',username,idnumber';
     $user = $DB->get_record('user', array('id' => $userid), $fields, MUST_EXIST);
     return $user;

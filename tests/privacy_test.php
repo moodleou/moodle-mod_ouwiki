@@ -233,13 +233,13 @@ class mod_ouwiki_privacy_testcase extends provider_testcase {
     public function test_get_contexts_for_userid() {
         // Get contexts for the first user.
         $contextids = provider::get_contexts_for_userid($this->users[1]->id)->get_contextids();
-        $this->assertContains($this->contexts[1]->id, $contextids);
-        $this->assertContains($this->contexts[2]->id, $contextids);
+        $this->assertTrue(in_array($this->contexts[1]->id, $contextids));
+        $this->assertTrue(in_array($this->contexts[2]->id, $contextids));
         // Get contexts for the second user.
         $contextids = provider::get_contexts_for_userid($this->users[2]->id)->get_contextids();
-        $this->assertContains($this->contexts[1]->id, $contextids);
-        $this->assertContains($this->contexts[2]->id, $contextids);
-        $this->assertContains($this->contexts[3]->id, $contextids);
+        $this->assertTrue(in_array($this->contexts[1]->id, $contextids));
+        $this->assertTrue(in_array($this->contexts[2]->id, $contextids));
+        $this->assertTrue(in_array($this->contexts[3]->id, $contextids));
     }
 
     /**
@@ -493,24 +493,24 @@ class mod_ouwiki_privacy_testcase extends provider_testcase {
 
         $user = $userlist->get_userids();
         $this->assertCount(2, $userlist);
-        $this->assertContains($this->users[1]->id, $user);
-        $this->assertContains($this->users[2]->id, $user);
+        $this->assertTrue(in_array($this->users[1]->id, $user));
+        $this->assertTrue(in_array($this->users[2]->id, $user));
 
         $userlist = new \core_privacy\local\request\userlist($this->contexts[2], 'mod_ouwiki');
         provider::get_users_in_context($userlist);
 
         $user = $userlist->get_userids();
         $this->assertCount(2, $userlist);
-        $this->assertContains($this->users[1]->id, $user);
-        $this->assertContains($this->users[2]->id, $user);
+        $this->assertTrue(in_array($this->users[1]->id, $user));
+        $this->assertTrue(in_array($this->users[2]->id, $user));
 
         $userlist = new \core_privacy\local\request\userlist($this->contexts[3], 'mod_ouwiki');
         provider::get_users_in_context($userlist);
 
         $user = $userlist->get_userids();
         $this->assertCount(1, $userlist);
-        $this->assertNotContains($this->users[1]->id, $user);
-        $this->assertContains($this->users[2]->id, $user);
+        $this->assertTrue(!in_array($this->users[1]->id, $user));
+        $this->assertTrue(in_array($this->users[2]->id, $user));
     }
 
     /**
