@@ -124,14 +124,14 @@ $v1 = new StdClass;
 $v1->version = get_string('olderversion', 'ouwiki');
 $v1->date = userdate($pageversion1->timecreated);
 $v1->savedby = get_string('savedby', 'ouwiki', $v1name);
-$v1->content = $diff1;
+$v1->content = clean_text($diff1);
 $v1->attachments = $attachdiff1;
 
 $v2 = new StdClass;
 $v2->version = get_string('newerversion', 'ouwiki');
 $v2->date = userdate($pageversion2->timecreated);
 $v2->savedby = get_string('savedby', 'ouwiki', $v2name);
-$v2->content = $diff2;
+$v2->content = clean_text($diff2);
 $v2->attachments = $attachdiff2;
 
 echo $ouwikioutput->ouwiki_print_diff($v1, $v2);

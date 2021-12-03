@@ -41,7 +41,7 @@ class ouwiki_locallib_test extends advanced_testcase {
      * Create temporary test tables and entries in the database for these tests.
      * These tests have to work on a brand new site.
      */
-    public function setUp() {
+    public function setUp(): void {
         global $CFG;
 
         parent::setup();
@@ -253,7 +253,8 @@ class ouwiki_locallib_test extends advanced_testcase {
             $exceptionoccured = false;
             $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $group2->id, $user->id, true);
         } catch (\moodle_exception $e) {
-            $this->assertContains('Wiki error: You do not have permission to see the content of this page', $e->getMessage());
+            $this->assertStringContainsString('Wiki error: You do not have permission to see the content of this page',
+                    $e->getMessage());
             $exceptionoccured = true;
          }
         $this->assertTrue($exceptionoccured);

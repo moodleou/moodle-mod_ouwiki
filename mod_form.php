@@ -26,7 +26,7 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         global $CFG, $COURSE;
 
         $mform =& $this->_form;
-        $data    = $this->_customdata['data'];
+        $data = $this->_customdata['data'] ?? null;
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
 

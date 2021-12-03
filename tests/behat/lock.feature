@@ -20,17 +20,13 @@ Feature: Test locking wiki pages
 
   Scenario: Lock and unlock buttons
     Given I log in as "admin"
+    And the following "activities" exist:
+      | activity | name      | intro          | course | idnumber | subwikis | groupmode |
+      | ouwiki   | Test Wiki | visible groups | C1     | ouwiki1  | 1        | 2         |
     And I am using the OSEP theme
     And I am on homepage
     And I am on "Course 1" course homepage
-    And I turn editing mode on in the OSEP theme
-    And I add a "OU wiki" to section "1"
-    And I set the following fields to these values:
-      | Name        | Test Wiki          |
-      | Description | visible groups     |
-      | Sub-wikis   | One wiki per group |
-      | Group mode  | Visible groups     |
-    And I press "Save and display"
+    And I follow "Test Wiki"
     And I press "Create page"
     And I set the field "Content" to "This is the start page"
     And I press "Save changes"

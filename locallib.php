@@ -610,9 +610,11 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
 
         case OUWIKI_SUBWIKIS_INDIVIDUAL:
             $user = $DB->get_record('user', array('id' => $subwiki->userid),
-                    'username, ' . user_picture::fields());
+                    'username, ' . implode(',', \core_user\fields::get_picture_fields()));
             $wikifor = ouwiki_display_user($user, $cm->course);
-            $usernamefields = user_picture::fields('u');
+            $userfieldsapi = \core_user\fields::for_userpic();
+            $usernamefields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
+
             if (has_capability('mod/ouwiki:viewallindividuals', $context)) {
                 // Get list of everybody...
                 $choicefield = 'user';
@@ -705,7 +707,8 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
 
     $jointype = $option == OUWIKI_GETPAGE_REQUIREVERSION ? 'JOIN' : 'LEFT JOIN';
 
-    $userfields = user_picture::fields('u', null, 'userid1');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', 'userid1', false)->selects;
 
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
                 p.locked, v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
@@ -788,7 +791,8 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
 function ouwiki_get_subwiki_allpages($subwiki) {
     global $DB;
 
-    $userfields = user_picture::fields('u', null, 'userid1');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', 'userid1', false)->selects;
 
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
                 p.locked, v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
@@ -814,7 +818,8 @@ function ouwiki_get_subwiki_allpages($subwiki) {
 function ouwiki_get_page_version($subwiki, $pagename, $versionid) {
     global $DB;
 
-    $userfields = user_picture::fields('u', null, 'userid1');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', 'userid1', false)->selects;
 
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
                 v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
@@ -844,7 +849,8 @@ function ouwiki_get_page_version($subwiki, $pagename, $versionid) {
 function ouwiki_get_prevnext_version_details($pageversion) {
     global $DB;
 
-    $userfields = user_picture::fields('u');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
 
     $prevnext = new StdClass;
 
@@ -1320,7 +1326,8 @@ function ouwiki_get_page_history($pageid, $selectdeleted, $limitfrom = '', $limi
         $deleted = ' AND v.deletedat IS NULL';
     }
 
-    $userfields = user_picture::fields('u');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
 
     $sql = "SELECT v.id AS versionid, v.timecreated, v.deletedat, u.username,
                 $userfields, v.wordcount, v.previousversionid, v.importversionid,
@@ -1356,7 +1363,8 @@ function ouwiki_get_page_history($pageid, $selectdeleted, $limitfrom = '', $limi
 function ouwiki_get_subwiki_index($subwikiid, $limitfrom = '', $limitnum = '') {
     global $DB;
 
-    $userfields = user_picture::fields('u');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
 
     // Get all the pages...
     $sql = "SELECT p.id AS pageid, p.title, v.id AS versionid, v.timecreated, $userfields,
@@ -1412,7 +1420,8 @@ function ouwiki_get_subwiki_index($subwikiid, $limitfrom = '', $limitnum = '') {
 function ouwiki_get_subwiki_allpages_index($subwiki) {
     global $DB;
 
-    $userfields = user_picture::fields('u', null, 'userid1');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', 'userid1', false)->selects;
 
     // Get all the pages...
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
@@ -1467,7 +1476,8 @@ function ouwiki_get_subwiki_allpages_index($subwiki) {
 function ouwiki_get_subwiki_recentchanges($subwikiid, $limitfrom = '', $limitnum = 51) {
     global $DB;
 
-    $userfields = user_picture::fields('u', null, 'userid1');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', 'userid1', false)->selects;
 
     $sql = "SELECT v.id AS versionid, v.timecreated, v.userid,
         p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
@@ -1545,7 +1555,8 @@ function ouwiki_get_subwiki_recentpages($subwikiid, $limitfrom = '', $limitnum =
     if ($subwikis) {
         list($usql, $params) = $DB->get_in_or_equal(array_keys($subwikis));
 
-        $userfields = user_picture::fields('u', null, 'userid1');
+        $userfieldsapi = \core_user\fields::for_userpic();
+        $userfields = $userfieldsapi->get_sql('u', false, '', 'userid1', false)->selects;
 
         $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
                 v.id AS versionid, v.timecreated, v.userid, $userfields,
@@ -2025,11 +2036,11 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     $versioncontent = $DB->get_field('ouwiki_versions', 'xhtml', array('id' => $versionid));
     if (! empty($version->previousversionid)) {
         // Get any filenames in content.
-        preg_match_all("#@@PLUGINFILE@@/(\S)+([.]\w+)#", $versioncontent, $matches);
+        preg_match_all("#(?:(?:src|href)=\")(@@PLUGINFILE@@/\S+([.]\w+))(?:\")#", $versioncontent, $matches);
         if (! empty($matches)) {
             // Extract the file names from the matches.
             $filenames = array();
-            foreach ($matches[0] as $match) {
+            foreach ($matches[1] as $match) {
                 // Get file name.
                 $match = str_replace('@@PLUGINFILE@@/', '', $match);
                 array_push($filenames, urldecode($match));
@@ -2398,7 +2409,8 @@ function ouwiki_get_annotations($pageversion) {
 
     $annotations = array();
 
-    $userfields = user_picture::fields('u', null, 'userid1');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', 'userid1', false)->selects;
 
     $rs = $DB->get_records_sql("SELECT a.id, a.pageid, a.userid, a.timemodified,
                                     a.content, $userfields
@@ -2782,8 +2794,8 @@ function ouwiki_print_editlock($lock, $ouwiki) {
                     var timeleft=ouw_countdownto-(new Date().getTime());
                     if (timeleft < 0) {
                         clearInterval(ouw_countdowninterval);
-                        var mform=document.getElementsByClassName('mform');
-                        var mformid=mform[0].getAttribute('id');
+                        var mform=document.querySelector('#ouwiki_belowtabs form');
+                        var mformid=mform.getAttribute('id');
                         document.forms[mformid].elements['save'].click();
                         return;
                     }
@@ -3155,7 +3167,7 @@ function ouwiki_get_user_participation($userid, $subwiki) {
  */
 function ouwiki_get_user($userid) {
     global $DB;
-    $fields = user_picture::fields();
+    $fields = implode(',', \core_user\fields::get_picture_fields());
     $fields .= ',username,idnumber';
     $user = $DB->get_record('user', array('id' => $userid), $fields, MUST_EXIST);
     return $user;
@@ -3178,7 +3190,8 @@ function ouwiki_get_participation($ouwiki, $subwiki, $context,
 
     // get user objects
     list($esql, $params) = get_enrolled_sql($context, 'mod/ouwiki:edit', $groupid);
-    $fields = user_picture::fields('u');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $fields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
     $fields .= ',u.username,u.idnumber';
     $sql = "SELECT $fields
                 FROM {user} u
@@ -3650,7 +3663,7 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
 
         // Last change info.
         $user = new stdClass();
-        foreach (explode(',', user_picture::fields()) as $field) {
+        foreach (explode(',', \core_user\fields::get_picture_fields()) as $field) {
             if ($field == 'id') {
                 $user->id = $pageversion->userid;
             } else {

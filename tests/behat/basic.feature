@@ -32,13 +32,14 @@ Feature: Test Post and Comment on OUwiki entry
 
   Scenario: No groups - basic access etc
     Given I log in as "teacher1"
+    And the following "activity" exists:
+      | activity  | ouwiki              |
+      | course    | C1                  |
+      | name      | W.WC                |
+      | intro     | wiki with no groups |
+      | groupmode | 0                   |
+      | section   | 1                   |
     And I am on homepage
-    And I am on "Course 1" course homepage
-    And I turn editing mode on
-    When I add a "OU wiki" to section "1" and I fill the form with:
-        | Name | W.WC |
-        | Description | wiki with no groups |
-        | Group mode | No groups |
     And I am on "Course 1" course homepage
     And I follow "W.WC"
     And "Create page" "button" should exist
@@ -76,19 +77,15 @@ Feature: Test Post and Comment on OUwiki entry
     And I log out
 
   Scenario: Separate groups - basic access etc
-    Given I log in as "teacher1"
-    And I am on homepage
-    And I am on "Course 1" course homepage
-    And I turn editing mode on
-    And I add a "OU wiki" to section "1"
-    And I set the following fields to these values:
-        | Name | W.SG |
-        | Description | Separate groups |
-        | Sub-wikis | One wiki per group |
-        | Group mode | Separate groups |
-    And I press "Save and display"
+    Given the following "activity" exists:
+      | activity  | ouwiki          |
+      | course    | C1              |
+      | name      | W.SG            |
+      | intro     | Separate groups |
+      | groupmode | 1               |
+      | section   | 1               |
+      | subwikis  | 1               |
     # test for student1 in group 1
-    And I log out
     Given I log in as "student1"
     And I am on homepage
     And I am on "Course 1" course homepage
@@ -192,16 +189,14 @@ Feature: Test Post and Comment on OUwiki entry
     And I log out
 
   Scenario: Visible groups - basic access etc
-    Given I log in as "teacher1"
-    And I am on homepage
-    And I am on "Course 1" course homepage
-    And I turn editing mode on
-    When I add a "OU wiki" to section "1" and I fill the form with:
-        | Name | W.VG |
-        | Description | visible groups |
-        | Sub-wikis | One wiki per group |
-        | Group mode | Visible groups |
-    And I log out
+    Given the following "activity" exists:
+      | activity  | ouwiki         |
+      | course    | C1             |
+      | name      | W.VG           |
+      | intro     | visible groups |
+      | groupmode | 2              |
+      | section   | 1              |
+      | subwikis  | 1              |
     Given I log in as "student1"
     And I am on homepage
     And I am on "Course 1" course homepage
@@ -246,11 +241,14 @@ Feature: Test Post and Comment on OUwiki entry
     And I am on homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on
-    When I add a "OU wiki" to section "1" and I fill the form with:
-        | Name | W.I |
-        | Description | individual wikis |
-        | Sub-wikis |Separate wiki for every user |
-        | Group mode | No groups |
+    And the following "activity" exists:
+      | activity  | ouwiki           |
+      | course    | C1               |
+      | name      | W.I              |
+      | intro     | individual wikis |
+      | groupmode | 0                |
+      | section   | 1                |
+      | subwikis  | 2                |
     And I log out
     # Checking to set up individual wiki for student 1
     Given I log in as "student1"
@@ -325,10 +323,13 @@ Feature: Test Post and Comment on OUwiki entry
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I turn editing mode on
-    When I add a "OU wiki" to section "1" and I fill the form with:
-        | Name | W.WX |
-        | Description | wiki with no groups |
-        | Group mode | No groups |
+    And the following "activity" exists:
+      | activity  | ouwiki              |
+      | course    | C1                  |
+      | name      | W.WX                |
+      | intro     | wiki with no groups |
+      | groupmode | 0                   |
+      | section   | 1                   |
     And I am on "Course 1" course homepage
     And I follow "W.WX"
     And "Create page" "button" should exist

@@ -560,7 +560,7 @@ function ouwiki_user_outline($course, $user, $mod, $wiki) {
         $result->info = get_string('numedits', 'ouwiki', count($versions));
 
         if ($grade) {
-            $result->info .= ', ' . get_string('grade') . ': ' . $grade->str_long_grade;
+            $result->info .= ', ' . get_string('gradenoun') . ': ' . $grade->str_long_grade;
         }
 
         $timecreated = end($versions)->timecreated;
@@ -568,7 +568,7 @@ function ouwiki_user_outline($course, $user, $mod, $wiki) {
         $result->time = $timecreated;
     } else if ($grade) {
         $result = new stdClass();
-        $result->info = get_string('grade') . ': ' . $grade->str_long_grade;
+        $result->info = get_string('gradenoun') . ': ' . $grade->str_long_grade;
         // If grade was last modified by the user themselves use date graded. Otherwise use date submitted.
         if ($grade->usermodified == $user->id || empty($grade->datesubmitted)) {
             $result->time = $grade->dategraded;
@@ -599,7 +599,7 @@ function ouwiki_user_complete($course, $user, $mod, $wiki) {
     if (!empty($grades->items[0]->grades)) {
         $grade = reset($grades->items[0]->grades);
         if ($grade != '-') {
-            echo $OUTPUT->container(get_string('grade') . ': ' . $grade->str_long_grade);
+            echo $OUTPUT->container(get_string('gradenoun') . ': ' . $grade->str_long_grade);
             if ($grade->str_feedback) {
                 echo $OUTPUT->container(get_string('feedback') . ': ' . $grade->str_feedback);
             }
