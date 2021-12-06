@@ -6,29 +6,31 @@ Feature: Test Post and Comment on OUwiki entry
 
   Background:
     Given the following "users" exist:
-        | username | firstname | lastname | email |
-        | teacher1 | Teacher | 1 | teacher1@asd.com |
-        | student1 | Student | 1 | student1@asd.com |
-        | student2 | Student | 2 | student2@asd.com |
-        | teacher2 | Teacher | 2 | teacher2@asd.com |
+      | username | firstname | lastname | email            |
+      | teacher1 | Teacher   | 1        | teacher1@asd.com |
+      | student1 | Student   | 1        | student1@asd.com |
+      | student2 | Student   | 2        | student2@asd.com |
+      | student3 | Student   | 3        | student3@asd.com |
+      | teacher2 | Teacher   | 2        | teacher2@asd.com |
     And the following "courses" exist:
-        | fullname | shortname | category |
-        | Course 1 | C1 | 0 |
+      | fullname | shortname | category | enablecompletion |
+      | Course 1 | C1        | 0        | 1                |
     And the following "course enrolments" exist:
-        | user | course | role |
-        | teacher1 | C1 | editingteacher |
-        | student1 | C1 | student |
-        | student2 | C1 | student |
-        | teacher2 | C1 | teacher |
+      | user     | course | role           |
+      | teacher1 | C1     | editingteacher |
+      | student1 | C1     | student        |
+      | student2 | C1     | student        |
+      | student3 | C1     | student        |
+      | teacher2 | C1     | teacher        |
     And the following "groups" exist:
-        | name | course | idnumber |
-        | G1 | C1 | G1 |
-        | G2 | C1 | G2 |
+      | name | course | idnumber |
+      | G1   | C1     | G1       |
+      | G2   | C1     | G2       |
     And the following "group members" exist:
-        | user | group |
-        | student1 | G1 |
-        | student2 | G2 |
-        | teacher2 | G1 |
+      | user     | group |
+      | student1 | G1    |
+      | student2 | G2    |
+      | teacher2 | G1    |
 
   Scenario: No groups - basic access etc
     Given I log in as "teacher1"
@@ -341,12 +343,12 @@ Feature: Test Post and Comment on OUwiki entry
     And "Teacher 1" "link" should exist
     # unable to check for date
     And I add a ouwiki page with the following data:
-        | Create new page | Frogs |
-        | Content | C24 |
+      | Create new page | Frogs |
+      | Content         | C24   |
     Then I should see "C24"
     And I add a ouwiki page with the following data:
-        | Create new page | Zombies |
-        | Content | C25 |
+      | Create new page | Zombies |
+      | Content         | C25     |
     Then I should see "C25"
     And "Frogs" "link" should exist
     When I click on "Frogs" "link"
@@ -355,8 +357,8 @@ Feature: Test Post and Comment on OUwiki entry
     When I click on "Start page" "link"
     Then I should see "C23 no groups wiki"
     And I add a ouwiki page with the following data:
-        | Create new page | Geckos |
-        | Content | C26 |
+      | Create new page | Geckos |
+      | Content         | C26    |
     Then I should see "C26"
     # Check wiki index for correct order
     When I click on "Wiki index" "link"
@@ -386,12 +388,12 @@ Feature: Test Post and Comment on OUwiki entry
     # Check editing history - 3 rows being shown incstead of 5 as per regression test.
     Given I click on "Start page" "link"
     And I add a ouwiki page with the following data:
-        | Create new page | Gremlins |
-        | Content | C23 |
+      | Create new page | Gremlins |
+      | Content         | C23      |
     And I edit a ouwiki page with the following data:
-        | Content | C27 A C27 B C27 C |
+      | Content | C27 A C27 B C27 C |
     And I edit a ouwiki page with the following data:
-        | Content | C27 A C27 B C28 B |
+      | Content | C27 A C27 B C28 B |
     When I click on "History" "link"
     And "Teacher 1" "link" should exist
     And "Student 1" "link" should not exist
@@ -430,69 +432,69 @@ Feature: Test Post and Comment on OUwiki entry
     When I click on "Zombies" "link"
     Then I should see "C25"
     And I edit a ouwiki page with the following data:
-      | Content | C29|
+      | Content | C29 |
     And I edit a ouwiki page with the following data:
-      | Content | C30|
+      | Content | C30 |
     And I edit a ouwiki page with the following data:
-      | Content | C31|
+      | Content | C31 |
     And I edit a ouwiki page with the following data:
-      | Content | C32|
+      | Content | C32 |
     And I edit a ouwiki page with the following data:
-      | Content | C33|
+      | Content | C33 |
     And I edit a ouwiki page with the following data:
-      | Content | C34|
+      | Content | C34 |
     And I edit a ouwiki page with the following data:
-      | Content | C35|
+      | Content | C35 |
     And I edit a ouwiki page with the following data:
-      | Content | C36|
+      | Content | C36 |
     And I edit a ouwiki page with the following data:
-      | Content | C37|
+      | Content | C37 |
     And I edit a ouwiki page with the following data:
-      | Content | C38|
+      | Content | C38 |
     And I edit a ouwiki page with the following data:
-      | Content | C39|
+      | Content | C39 |
     And I edit a ouwiki page with the following data:
-      | Content | C40|
+      | Content | C40 |
     And I edit a ouwiki page with the following data:
-      | Content | C41|
+      | Content | C41 |
     And I edit a ouwiki page with the following data:
-      | Content | C42|
+      | Content | C42 |
     And I edit a ouwiki page with the following data:
-      | Content | C43|
+      | Content | C43 |
     And I edit a ouwiki page with the following data:
-      | Content | C44|
+      | Content | C44 |
     And I edit a ouwiki page with the following data:
-      | Content | C45|
+      | Content | C45 |
     And I edit a ouwiki page with the following data:
-      | Content | C46|
+      | Content | C46 |
     And I edit a ouwiki page with the following data:
-      | Content | C47|
+      | Content | C47 |
     And I edit a ouwiki page with the following data:
-      | Content | C48|
+      | Content | C48 |
     And I edit a ouwiki page with the following data:
-      | Content | C49|
+      | Content | C49 |
     And I edit a ouwiki page with the following data:
-      | Content | C50|
+      | Content | C50 |
     And I edit a ouwiki page with the following data:
-      | Content | C51|
+      | Content | C51 |
     And I edit a ouwiki page with the following data:
-      | Content | C52|
+      | Content | C52 |
     And I edit a ouwiki page with the following data:
-      | Content | C53|
+      | Content | C53 |
     And I edit a ouwiki page with the following data:
-      | Content | C54|
+      | Content | C54 |
     And I edit a ouwiki page with the following data:
-      | Content | C56|
+      | Content | C56 |
     And I edit a ouwiki page with the following data:
-      | Content | C57|
+      | Content | C57 |
     And I edit a ouwiki page with the following data:
-      | Content | C58|
+      | Content | C58 |
     And I edit a ouwiki page with the following data:
-      | Content | C59|
+      | Content | C59 |
     And I edit a ouwiki page with the following data:
-      | Content | C60|
+      | Content | C60 |
     And I edit a ouwiki page with the following data:
-      | Content | C61|
+      | Content | C61 |
     And I edit a ouwiki page with the following data:
       | Content | C62 |
     And I edit a ouwiki page with the following data:
@@ -603,9 +605,9 @@ Feature: Test Post and Comment on OUwiki entry
     And I am on "Course 1" course homepage
     And I turn editing mode on
     When I add a "OU wiki" to section "1" and I fill the form with:
-        | Name | W.X |
-        | Description | wiki with no groups |
-        | Group mode | No groups |
+      | Name        | W.X                 |
+      | Description | wiki with no groups |
+      | Group mode  | No groups           |
     And I am on "Course 1" course homepage
     And I follow "W.X"
     And "Create page" "button" should exist
@@ -618,7 +620,7 @@ Feature: Test Post and Comment on OUwiki entry
     # unable to check for date
     And I add a ouwiki page with the following data:
       | Create new page | Attest |
-      | Content | C72 |
+      | Content         | C72    |
     Then I should see "C72"
     # Add attachments - we can/should not access a users hardisk so pull from system
     Given I click on "Edit" "link"
@@ -636,7 +638,7 @@ Feature: Test Post and Comment on OUwiki entry
     Then I should see "Annotate"
     And I add a ouwiki page with the following data:
       | Create new page | Vampires |
-      | Content | A1 A2 |
+      | Content         | A1 A2    |
     Given I click on "Annotate" "link"
     And "span.ouwiki-annotation-marker" "css_element" should exist
     When I click on "#marker0" "css_element"
@@ -697,3 +699,53 @@ Feature: Test Post and Comment on OUwiki entry
     And I should see "spider"
     And I should see "Teacher 1"
     And I log out
+
+  Scenario: Completion - create page
+    Given I log in as "student1"
+    And the following "activity" exists:
+      | activity        | ouwiki |
+      | course          | C1     |
+      | name            | W.WC   |
+      | section         | 1      |
+      | completion      | 2      |
+      | completionpages | 1      |
+    And the following "activity" exists:
+      | activity        | ouwiki |
+      | course          | C1     |
+      | name            | W.WC2  |
+      | section         | 1      |
+      | completion      | 2      |
+      | completionpages | 1      |
+      | completionedits | 1      |
+    And I am on "Course 1" course homepage
+    And I follow "W.WC"
+    And "Create page" "button" should exist
+    And I press "Create page"
+    And I set the field "Content" to "C1 no groups wiki"
+    And I press "Save changes"
+    # Confirm start page set up
+    Then I should see "C1 no groups wiki" in the ".ouwiki_content" "css_element"
+    And I am on "Course 1" course homepage
+    And I log out
+    # Check edit and preview page (though we can not test to see whether altered content in preview mode can be seen by otherusers)
+    Given I log in as "student2"
+    And I am on "Course 1" course homepage
+    And I follow "W.WC2"
+    And "Create page" "button" should exist
+    And I press "Create page"
+    And I set the field "Content" to "C1 no groups wiki"
+    And I press "Save changes"
+    Then I should see "C1 no groups wiki" in the ".ouwiki_content" "css_element"
+    When I click on "Edit" "link"
+    Then I should see "C1 no groups wiki"
+    And I set the field "Content" to "C7 no groups wiki"
+    When I press "Preview"
+    Then I should see "C7 no groups wiki" in the ".ouwiki_content" "css_element"
+    And I press "Save changes"
+    And I log out
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I navigate to "Reports > Activity completion" in current page administration
+    And "Completed" "icon" should exist in the "Student 1" "table_row"
+    And "Completed" "icon" should exist in the "Student 2" "table_row"
+    And "Completed" "icon" should not exist in the "Student 3" "table_row"

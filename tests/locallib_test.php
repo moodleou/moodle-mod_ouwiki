@@ -710,9 +710,16 @@ class ouwiki_locallib_test extends advanced_testcase {
         $ouwiki->template = null;
         $ouwiki->editbegin = null;
         $ouwiki->editend = null;
-
-        $ouwiki->completionpages = 0;
-        $ouwiki->completionedits = 0;
+        if (isset($options['completionpages'])) {
+            $ouwiki->completionpages = $options['completionpages'];
+        } else {
+            $ouwiki->completionpages = 0;
+        }
+        if (isset($options['completionedits'])) {
+            $ouwiki->completionedits = $options['completionpages'];
+        } else {
+            $ouwiki->completionedits = 0;
+        }
 
         $ouwiki->introformat = 0;
 
@@ -759,6 +766,71 @@ class ouwiki_locallib_test extends advanced_testcase {
         }
         $this->assertEquals($canaccess, $subwiki->canedit);
         $this->assertEquals($canaccess, $subwiki->canannotate);
+    }
+
+    /**
+     * Tests completion.
+     */
+    public function test_completion() {
+        global $USER, $DB, $CFG;
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        $adminid = $USER->id;
+        $CFG->enablecompletion = true;
+        $course = $this->get_new_course();
+        $course->enablecompletion = true;
+        $DB->update_record('course', $course);
+        $user1 = $this->get_new_user('editingteacher', $course->id);
+        $user2 = $this->get_new_user('student', $course->id);
+        $user3 = $this->get_new_user('testouwikiuser', $course->id);
+        // Test post discussions or replies.
+        $ouwiki = $this->get_new_ouwiki($course->id, OUWIKI_SUBWIKIS_SINGLE, array('completion' => COMPLETION_TRACKING_AUTOMATIC,
+               'completionpages' => 1));
+        $cm1 = get_coursemodule_from_instance('ouwiki', $ouwiki->id);
+        $this->assertNotEmpty($cm1);
+        $context = context_module::instance($cm1->id);
+        $groupid = 0;
+        $this->setUser($user1);
+        $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm1, $context, $groupid, $user1->id, true);
+
+        // Create the start page.
+        $startpagename = 'startpage';
+        $formdata = null;
+        $startpageversion = ouwiki_get_current_page($subwiki, $startpagename, OUWIKI_GETPAGE_CREATE);
+        $verid = ouwiki_save_new_version($course, $cm1, $ouwiki, $subwiki, $startpagename, $startpagename,
+                -1, -1, -1, null, $formdata);
+
+        $this->setUser($user2);
+        // Create a page with no sub pages.
+        $pagename2 = 'testpage2';
+        $content2 = 'testcontent2';
+        ouwiki_create_new_page($course, $cm1, $ouwiki, $subwiki, $startpagename, $pagename2, $content2, $formdata);
+        // Try get that page.
+        $pageversion = ouwiki_get_current_page($subwiki, $pagename2);
+        $this->assertEquals($pageversion->title, $pagename2);
+        // Test fullname info from ouwiki_get_current_page.
+        $this->assertTrue(ouwiki_get_completion_state_lib($cm1, $user1->id, COMPLETION_AND));
+        $this->assertTrue(ouwiki_get_completion_state_lib($cm1, $user2->id, COMPLETION_AND));
+        $ouwiki2 = $this->get_new_ouwiki($course->id, OUWIKI_SUBWIKIS_SINGLE, array('completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'completionpages' => 1, 'completionedits' => 1));
+        $cm2 = get_coursemodule_from_instance('ouwiki', $ouwiki2->id);
+        $this->setUser($user1);
+        $subwiki = ouwiki_get_subwiki($course, $ouwiki2, $cm2, $context, $groupid, $user1->id, true);
+        // Create the start page.
+        $startpagename = 'startpage';
+        $formdata = null;
+        $startpageversion = ouwiki_get_current_page($subwiki, $startpagename, OUWIKI_GETPAGE_CREATE);
+        $verid = ouwiki_save_new_version($course, $cm2, $ouwiki2, $subwiki, $startpagename, $startpagename,
+                -1, -1, -1, null, $formdata);
+        $this->setUser($user2);
+        // Create a page with no sub pages.
+        $pagename2 = 'testpage2';
+        $content2 = 'testcontent2';
+        ouwiki_create_new_page($course, $cm2, $ouwiki2, $subwiki, $startpagename, $pagename2, $content2, $formdata);
+
+        $this->assertTrue(ouwiki_get_completion_state_lib($cm2, $user1->id, COMPLETION_OR));
+        $this->assertTrue(ouwiki_get_completion_state_lib($cm2, $user2->id, COMPLETION_OR));
     }
 
 }

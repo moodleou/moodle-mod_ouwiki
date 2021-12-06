@@ -4022,3 +4022,51 @@ class ouwiki_all_portfolio_caller extends ouwiki_portfolio_caller_base {
         return sha1($bigstring);
     }
 }
+
+
+/**
+ * Obtains the automatic completion state for this module based on any conditions
+ * in module settings.
+ *
+ * @param object $cm Course-module
+ * @param int $userid User ID
+ * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
+ * @return bool True if completed, false if not, $type if conditions not set.
+ */
+function ouwiki_get_completion_state_lib($cm, $userid, $type) {
+    global $DB;
+    // Get forum details
+    $ouwiki = $DB->get_record('ouwiki', ['id' => $cm->instance]);
+
+    $countsql = "SELECT COUNT(1)
+                   FROM {ouwiki_versions} v
+             INNER JOIN {ouwiki_pages} p ON p.id = v.pageid
+             INNER JOIN {ouwiki_subwikis} s ON s.id = p.subwikiid
+                  WHERE v.userid = ? AND v.deletedat IS NULL AND s.wikiid = ?";
+
+    $result = $type; // Default return value
+
+    if ($ouwiki->completionedits) {
+        $value = $ouwiki->completionedits <= $DB->get_field_sql($countsql, [$userid, $ouwiki->id]);
+        if ($type == COMPLETION_AND) {
+            $result = $result && $value;
+        } else {
+            $result = $result || $value;
+        }
+    }
+    if ($ouwiki->completionpages) {
+        $value = $ouwiki->completionpages <=
+                $DB->get_field_sql($countsql .
+                        ' AND (SELECT MIN (id)
+                                 FROM {ouwiki_versions}
+                                WHERE pageid = p.id AND deletedat IS NULL) = v.id',
+                        [$userid, $ouwiki->id]);
+        if ($type == COMPLETION_AND) {
+            $result = $result && $value;
+        } else {
+            $result = $result || $value;
+        }
+    }
+
+    return $result;
+}
