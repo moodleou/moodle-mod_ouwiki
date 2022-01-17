@@ -4035,9 +4035,7 @@ class ouwiki_all_portfolio_caller extends ouwiki_portfolio_caller_base {
  */
 function ouwiki_get_completion_state_lib($cm, $userid, $type) {
     global $DB;
-    // Get forum details
     $ouwiki = $DB->get_record('ouwiki', ['id' => $cm->instance]);
-
     $countsql = "SELECT COUNT(1)
                    FROM {ouwiki_versions} v
              INNER JOIN {ouwiki_pages} p ON p.id = v.pageid

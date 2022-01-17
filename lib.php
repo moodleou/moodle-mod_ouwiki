@@ -853,3 +853,29 @@ function ouwiki_get_view_actions() {
 function ouwiki_get_post_actions() {
     return array('update', 'add', 'annotate', 'edit');
 }
+
+/**
+ * Given a course_module object, this function returns any
+ * "extra" information that may be needed when printing
+ * this activity in a course listing.
+ * See get_array_of_activities() in course/lib.php
+ */
+function ouwiki_get_coursemodule_info($coursemodule) {
+    global $DB;
+    $ouwiki = $DB->get_record('ouwiki',
+            ['id' => $coursemodule->instance], 'id, name, completionpages, completionedits');
+    if (!$ouwiki) {
+        return null;
+    }
+
+    $info = new cached_cm_info();
+    $info->customdata = (object)[];
+
+    // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
+    if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
+        $info->customdata->customcompletionrules['completionpages'] = $ouwiki->completionpages;
+        $info->customdata->customcompletionrules['completionedits'] = $ouwiki->completionedits;
+    }
+
+    return $info;
+}

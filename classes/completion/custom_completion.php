@@ -40,8 +40,8 @@ class custom_completion extends activity_custom_completion {
         // Use forum object to handle this request.
         $this->validate_rule($rule);
 
-        $result = ouwiki_get_completion_state_lib($this->cm->id, $this->userid, $rule);
-        return $result;
+        $result = ouwiki_get_completion_state_lib($this->cm, $this->userid, $rule);
+        return $result ? COMPLETION_COMPLETE : COMPLETION_INCOMPLETE;;
     }
     /**
      * Fetch the list of custom completion rules that this module defines.
@@ -49,7 +49,10 @@ class custom_completion extends activity_custom_completion {
      * @return array
      */
     public static function get_defined_custom_rules(): array {
-        return [];
+        return [
+                'completionpages',
+                'completionedits'
+        ];
     }
 
     /**
@@ -67,7 +70,12 @@ class custom_completion extends activity_custom_completion {
      * @return array
      */
     public function get_sort_order(): array {
-        return [];
+        return [
+                'completionview',
+                'completionpages',
+                'completionedits',
+                'completionusegrade'
+        ];
     }
 
 }
