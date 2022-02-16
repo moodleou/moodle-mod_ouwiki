@@ -3663,7 +3663,7 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
 
         // Last change info.
         $user = new stdClass();
-        foreach (explode(',', \core_user\fields::get_picture_fields()) as $field) {
+        foreach (\core_user\fields::get_picture_fields() as $field) {
             if ($field == 'id') {
                 $user->id = $pageversion->userid;
             } else {
