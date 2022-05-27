@@ -24,6 +24,7 @@ namespace mod_ouwiki;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tool_datamasking_test extends \advanced_testcase {
+    use \tool_datamasking\phpunit_clear_statics;
 
     /**
      * Tests actual behaviour of the masking applied in this plugin.
