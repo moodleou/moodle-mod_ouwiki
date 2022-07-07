@@ -28,6 +28,7 @@ if (!defined('MOODLE_INTERNAL')) {
 global $CFG;
 
 require_once($CFG->dirroot . '/mod/ouwiki/locallib.php');
+require_once($CFG->dirroot . '/mod/ouwiki/lib.php');
 
 class ouwiki_locallib_test extends advanced_testcase {
 
@@ -42,10 +43,8 @@ class ouwiki_locallib_test extends advanced_testcase {
      * These tests have to work on a brand new site.
      */
     public function setUp(): void {
-        global $CFG;
-
-        parent::setup();
-
+        $this->resetAfterTest();
+        $this->setAdminUser();
         $this->generator = $this->getDataGenerator()->get_plugin_generator('mod_ouwiki');
     }
 
@@ -833,4 +832,212 @@ class ouwiki_locallib_test extends advanced_testcase {
         $this->assertTrue(ouwiki_get_completion_state_lib($cm2, $user2->id, COMPLETION_OR));
     }
 
+    /**
+     * Test core_calendar provides the event for ouwiki.
+     */
+    public function test_ouwiki_core_calendar_provide_event_action() {
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course();
+        $ouwiki = $this->getDataGenerator()->create_module('ouwiki', ['course' => $course->id]);
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $ouwiki->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event.
+        $actionevent = mod_ouwiki_core_calendar_provide_event_action($event, $factory);
+
+        // Confirm the event was decorated.
+        $this->assertInstanceOf('\core_calendar\local\event\value_objects\action', $actionevent);
+        $this->assertEquals(get_string('view'), $actionevent->get_name());
+        $this->assertInstanceOf('moodle_url', $actionevent->get_url());
+        $this->assertEquals(1, $actionevent->get_item_count());
+        $this->assertTrue($actionevent->is_actionable());
+    }
+
+    /**
+     * Test core_calendar hidden when ouwiki hides.
+     */
+    public function test_ouwiki_core_calendar_provide_event_action_in_hidden_section() {
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course();
+        $ouwiki = $this->getDataGenerator()->create_module('ouwiki', ['course' => $course->id]);
+
+        // Enrol a student in the course.
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $ouwiki->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Set sections 0 as hidden.
+        set_section_visible($course->id, 0, 0);
+
+        // Now, log out.
+        $this->setUser();
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event for the student.
+        $actionevent = mod_ouwiki_core_calendar_provide_event_action($event, $factory, $student->id);
+
+        // Confirm the event is not shown at all.
+        $this->assertNull($actionevent);
+    }
+
+    /**
+     * Test core_calendar provides the events for user.
+     */
+    public function test_ouwiki_core_calendar_provide_event_action_for_user() {
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course();
+        $ouwiki = $this->getDataGenerator()->create_module('ouwiki', ['course' => $course->id]);
+
+        // Enrol a student in the course.
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $ouwiki->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Now, log out.
+        $this->setUser($student);
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event for the student.
+        $actionevent = mod_ouwiki_core_calendar_provide_event_action($event, $factory, $student->id);
+
+        // Confirm the event was decorated.
+        $this->assertInstanceOf('\core_calendar\local\event\value_objects\action', $actionevent);
+        $this->assertEquals(get_string('view'), $actionevent->get_name());
+        $this->assertInstanceOf('moodle_url', $actionevent->get_url());
+        $this->assertEquals(1, $actionevent->get_item_count());
+        $this->assertTrue($actionevent->is_actionable());
+    }
+
+    /**
+     * Test core_calendar provides the events for non-user.
+     */
+    public function test_ouwiki_core_calendar_provide_event_action_as_non_user() {
+        global $CFG;
+
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course();
+        $ouwiki = $this->getDataGenerator()->create_module('ouwiki', ['course' => $course->id]);
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $ouwiki->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Log out the user and set force login to true.
+        \core\session\manager::init_empty_session();
+        $CFG->forcelogin = true;
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event.
+        $actionevent = mod_ouwiki_core_calendar_provide_event_action($event, $factory);
+
+        // Ensure result was null.
+        $this->assertNull($actionevent);
+    }
+
+    /**
+     * Test core_calendar provides the action events completed.
+     */
+    public function test_ouwiki_core_calendar_provide_event_action_already_completed() {
+        global $CFG;
+
+        $CFG->enablecompletion = 1;
+
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $ouwiki = $this->getDataGenerator()->create_module('ouwiki', ['course' => $course->id],
+            ['completion' => 2, 'completionview' => 1, 'completionexpected' => time() + DAYSECS]);
+
+        // Get some additional data.
+        $cm = get_coursemodule_from_instance('ouwiki', $ouwiki->id);
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $ouwiki->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Mark the activity as completed.
+        $completion = new \completion_info($course);
+        $completion->set_module_viewed($cm);
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event.
+        $actionevent = mod_ouwiki_core_calendar_provide_event_action($event, $factory);
+
+        // Ensure result was null.
+        $this->assertNull($actionevent);
+    }
+
+    /**
+     * Test core_calendar provides the action events completed for user.
+     */
+    public function test_ouwiki_core_calendar_provide_event_action_already_completed_for_user() {
+        global $CFG;
+
+        $CFG->enablecompletion = 1;
+
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $ouwiki = $this->getDataGenerator()->create_module('ouwiki', ['course' => $course->id],
+            ['completion' => 2, 'completionview' => 1, 'completionexpected' => time() + DAYSECS]);
+
+        // Enrol a student in the course.
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+
+        // Get some additional data.
+        $cm = get_coursemodule_from_instance('ouwiki', $ouwiki->id);
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $ouwiki->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Mark the activity as completed for the student.
+        $completion = new \completion_info($course);
+        $completion->set_module_viewed($cm, $student->id);
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event for the student.
+        $actionevent = mod_ouwiki_core_calendar_provide_event_action($event, $factory, $student->id);
+
+        // Ensure result was null.
+        $this->assertNull($actionevent);
+    }
+
+    /**
+     * Creates an action event.
+     *
+     * @param int $courseid The course id.
+     * @param int $instanceid The instance id.
+     * @param string $eventtype The event type.
+     * @return bool|calendar_event
+     */
+    private function create_action_event($courseid, $instanceid, $eventtype) {
+        $event = new \stdClass();
+        $event->name = 'Calendar event';
+        $event->modulename  = 'ouwiki';
+        $event->courseid = $courseid;
+        $event->instance = $instanceid;
+        $event->type = CALENDAR_EVENT_TYPE_ACTION;
+        $event->eventtype = $eventtype;
+        $event->timestart = time();
+
+        return \calendar_event::create($event);
+    }
 }
