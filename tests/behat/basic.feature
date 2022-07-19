@@ -745,7 +745,8 @@ Feature: Test Post and Comment on OUwiki entry
     And I log out
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
-    And I navigate to "Reports > Activity completion" in current page administration
+    And I navigate to "Reports" in current page administration
+    And I click on "Activity completion" "link"
     And "Completed" "icon" should exist in the "Student 1" "table_row"
     And "Completed" "icon" should exist in the "Student 2" "table_row"
     And "Completed" "icon" should not exist in the "Student 3" "table_row"
