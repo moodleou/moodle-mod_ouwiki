@@ -61,7 +61,13 @@ class custom_completion extends activity_custom_completion {
      * @return array
      */
     public function get_custom_rule_descriptions(): array {
-        return [];
+        $completionpages = $this->cm->customdata->customcompletionrules['completionpages'] ?? 0;
+        $completionedits = $this->cm->customdata->customcompletionrules['completionedits'] ?? 0;
+
+        return [
+            'completionpages' => get_string('completiondetail:pages', 'ouwiki', $completionpages),
+            'completionedits' => get_string('completiondetail:edits', 'ouwiki', $completionedits),
+        ];
     }
 
     /**
