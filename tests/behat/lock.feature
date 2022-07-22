@@ -59,7 +59,7 @@ Feature: Test locking wiki pages
     And "Lock page" "button" should exist
 
     # Check existing pages get locked when the setting is changed
-    And I follow "Edit settings"
+    And I follow "Settings"
     And I set the following fields to these values:
       | Lock start pages | Yes |
     And I press "Save and display"
@@ -74,7 +74,7 @@ Feature: Test locking wiki pages
     And "Lock page" "button" should exist
 
     # Check existing pages don't get locked if the settings page is saved but setting is not changed
-    And I follow "Edit settings"
+    And I follow "Settings"
     And I set the following fields to these values:
       | Name             | Test Wiki 1 |
       | Lock start pages | Yes         |
@@ -83,7 +83,7 @@ Feature: Test locking wiki pages
     And "Lock page" "button" should exist
 
     # Check new pages from templates do get locked
-    And I follow "Edit settings"
+    And I follow "Settings"
     And I expand all fieldsets
     And I upload "mod/ouwiki/tests/fixtures/template.xml" file to "Template" filemanager
     And I press "Save and display"
