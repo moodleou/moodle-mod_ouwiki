@@ -39,7 +39,7 @@ class ouwiki_participation_table extends flexible_table {
     public $grade;
     public $extraheaders;
 
-    public function __construct($cm, $course, $ouwiki, $pagename, $groupid = 0,
+    public function __construct($cm, $course, $ouwiki, $pagename, $groupid,
         $groupname, $grade = null) {
 
         $this->cm = $cm;

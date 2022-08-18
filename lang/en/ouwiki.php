@@ -269,6 +269,8 @@ $string['completionpageshelp']='requiring new pages to complete';
 $string['completioneditsgroup']='Require edits';
 $string['completionedits']='User must make edits:';
 $string['completioneditshelp']='requiring edits to complete';
+$string['completiondetail:pages'] = 'Make pages: {$a}';
+$string['completiondetail:edits'] = 'Make edits: {$a}';
 
 $string['reverterrorversion'] = 'Cannot revert to nonexistent page version';
 $string['reverterrorcapability'] = 'You do not have permission to revert to an earlier version';

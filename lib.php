@@ -62,6 +62,10 @@ function ouwiki_add_instance($data, $mform) {
             $DB->set_field('ouwiki', 'template', '/'.$file->get_filename(), array('id' => $formdata->id));
         }
 
+        // Update completion event in calendar.
+        $completionexpected = (!empty($formdata->completionexpected)) ? $formdata->completionexpected : null;
+        \core_completion\api::update_completion_date_event($cmid, 'ouwiki', $ouwikiid, $completionexpected);
+
         return $ouwikiid;
     }
     // Note: template files will be stored based on the old data structure.
@@ -135,6 +139,10 @@ function ouwiki_update_instance($data, $mform) {
         }
     }
 
+    // Update completion event in calendar.
+    $completionexpected = (!empty($data->completionexpected)) ? $data->completionexpected : null;
+    \core_completion\api::update_completion_date_event($data->coursemodule, 'ouwiki', $data->id, $completionexpected);
+
     return true;
 }
 
@@ -192,6 +200,10 @@ function ouwiki_delete_instance($id) {
 
     $DB->delete_records_select('ouwiki_subwikis', 'wikiid = ?', array($id));
     $DB->delete_records('ouwiki', array('id' => $id));
+
+    // Delete event in calendar when deleting activity.
+    \core_completion\api::update_completion_date_event($cm->id, 'ouwiki', $id, null);
+
     return true;
 }
 
@@ -878,4 +890,38 @@ function ouwiki_get_coursemodule_info($coursemodule) {
     }
 
     return $info;
+}
+
+/**
+ * This function receives a calendar event and returns the action associated with it, or null if there is none.
+ *
+ * This is used by block_myoverview in order to display the event appropriately. If null is returned then the event
+ * is not displayed on the block.
+ *
+ * @param calendar_event $event
+ * @param \core_calendar\action_factory $factory
+ * @param int $userid User id to use for all capability checks, etc. Set to 0 for current user (default).
+ * @return \core_calendar\local\event\entities\action_interface|null
+ */
+function mod_ouwiki_core_calendar_provide_event_action(calendar_event $event, \core_calendar\action_factory $factory, int $userid = 0) {
+    global $USER;
+    if (!$userid) {
+        $userid = $USER->id;
+    }
+    $cm = get_fast_modinfo($event->courseid, $userid)->instances['ouwiki'][$event->instance];
+    if (!$cm->uservisible) {
+        // The module is not visible to the user for any reason.
+        return null;
+    }
+    $completion = new \completion_info($cm->get_course());
+    $completiondata = $completion->get_data($cm, false, $userid);
+    if ($completiondata->completionstate != COMPLETION_INCOMPLETE) {
+        return null;
+    }
+    return $factory->create_instance(
+        get_string('view'),
+        new \moodle_url('/mod/ouwiki/view.php', ['id' => $cm->id]),
+        1,
+        true
+    );
 }
