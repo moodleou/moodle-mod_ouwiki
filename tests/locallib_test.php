@@ -41,7 +41,7 @@ class ouwiki_locallib_test extends advanced_testcase {
      * Create temporary test tables and entries in the database for these tests.
      * These tests have to work on a brand new site.
      */
-    public function setUp() {
+    public function setUp(): void {
         global $CFG;
 
         parent::setup();
