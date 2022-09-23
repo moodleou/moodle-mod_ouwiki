@@ -22,8 +22,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version  = 2020050501;
-$plugin->requires = 2014051200;
+$plugin->version  = 2022092300;
+$plugin->requires = 2022041900;
 $plugin->component = 'mod_ouwiki';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '3.9 r1';
+$plugin->release = '4.0 r1';

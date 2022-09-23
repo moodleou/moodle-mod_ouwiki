@@ -24,13 +24,25 @@ namespace mod_ouwiki;
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tool_datamasking_test extends \advanced_testcase {
-    use \tool_datamasking\phpunit_clear_statics;
+    protected function tearDown(): void {
+        global $CFG;
+        if (file_exists("{$CFG->dirroot}/admin/tool/datamasking/version.php")) {
+            \tool_datamasking\mapping_tables::reset();
+            \tool_datamasking\files_mask::clear_statics();
+            \tool_datamasking\masked_glossaries::clear_statics();
+        }
+        parent::tearDown();
+    }
 
     /**
      * Tests actual behaviour of the masking applied in this plugin.
      */
     public function test_behaviour(): void {
-        global $DB;
+        global $DB, $CFG;
+
+        if (!file_exists("{$CFG->dirroot}/admin/tool/datamasking/version.php")) {
+            $this->markTestSkipped('This test uses tool_datamasking, which is not installed. Skipping.');
+        }
 
         $this->resetAfterTest();
 
