@@ -36,7 +36,7 @@ require_once($CFG->dirroot . '/search/tests/fixtures/testable_core_search.php');
  * @copyright 2017 The Open University
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_ouwiki_search_page_version_testcase extends advanced_testcase {
+class search_page_version_test extends advanced_testcase {
 
     /**
      * Tests get_recordset_by_timestamp function (obtains modified document page versions) and get_document

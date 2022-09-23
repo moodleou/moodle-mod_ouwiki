@@ -185,6 +185,7 @@ if ($curstep == 1) {
         // Create selection forms for available wikis.
         $pageparams['courseid'] = $listcourse->id;
         $i = 0;
+        $format = course_get_format($course);
         foreach ($availablewikis as $showwiki) {
             if ($i == 0) {
                 $coursename = $listcourse->shortname . ' ' . $listcourse->fullname;
@@ -192,9 +193,13 @@ if ($curstep == 1) {
             }
             $i++;
 
+            $cm = $showwiki->cm;
+            $secinfo = $modinfo->get_section_info($cm->sectionnum);
+            $cmname = new \core_courseformat\output\local\content\cm\cmname($format, $secinfo, $cm, false);
+
             echo html_writer::start_div('ouwiki_import_act');
             $customdata = array('wikiinfo' => $showwiki, 'params' => $pageparams,
-                    'actlink' => $courserenderer->course_section_cm_name($showwiki->cm));
+                    'actlink' => $courserenderer->render($cmname));
             $form = new mod_ouwiki_import_wikiselect_form(null, $customdata);
             $form->display();
             echo html_writer::end_div();

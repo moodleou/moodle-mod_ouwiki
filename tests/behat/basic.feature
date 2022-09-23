@@ -32,7 +32,7 @@ Feature: Test Post and Comment on OUwiki entry
       | student2 | G2    |
       | teacher2 | G1    |
 
-  Scenario: No groups - basic access etc
+  Scenario: No groups - basic access
     Given I log in as "teacher1"
     And the following "activity" exists:
       | activity  | ouwiki              |
@@ -78,7 +78,7 @@ Feature: Test Post and Comment on OUwiki entry
     And I should see "C7 no groups wiki" in the ".ouwiki_content" "css_element"
     And I log out
 
-  Scenario: Separate groups - basic access etc
+  Scenario: Separate groups - basic access
     Given the following "activity" exists:
       | activity  | ouwiki          |
       | course    | C1              |
@@ -190,7 +190,7 @@ Feature: Test Post and Comment on OUwiki entry
     And I should see "Student 2"
     And I log out
 
-  Scenario: Visible groups - basic access etc
+  Scenario: Visible groups - basic access
     Given the following "activity" exists:
       | activity  | ouwiki         |
       | course    | C1             |
@@ -238,7 +238,7 @@ Feature: Test Post and Comment on OUwiki entry
     Then "Create page" "button" should exist
     And I log out
 
-  Scenario: Individual - basic access etc
+  Scenario: Individual - basic access
     Given I log in as "teacher1"
     And I am on homepage
     And I am on "Course 1" course homepage
@@ -321,7 +321,7 @@ Feature: Test Post and Comment on OUwiki entry
     Then "Create page" "button" should exist
     And I log out
 
-  Scenario: Wiki history No groups -
+  Scenario: Wiki history - no groups
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I turn editing mode on
@@ -599,7 +599,7 @@ Feature: Test Post and Comment on OUwiki entry
     And I log out
 
   @javascript @_file_upload
-  Scenario: Attachments No groups
+  Scenario: Attachments - no groups
     Given I log in as "teacher1"
     And I am on homepage
     And I am on "Course 1" course homepage
@@ -609,7 +609,7 @@ Feature: Test Post and Comment on OUwiki entry
       | Description | wiki with no groups |
       | Group mode  | No groups           |
     And I am on "Course 1" course homepage
-    And I follow "W.X"
+    And I am on the "W.X" "ouwiki activity" page
     And "Create page" "button" should exist
     And I press "Create page"
     And I set the field "Content" to "C71 no groups wiki"
@@ -629,12 +629,13 @@ Feature: Test Post and Comment on OUwiki entry
     And I wait to be redirected
     Then "empty.txt" "link" should exist
     # Check for annotations (and test edit settings at the same time) - note we can not test for locking
-    And I click on "Topic 1" "link" in the ".breadcrumb" "css_element"
-    When I open the action menu in "W.X" "list_item"
-    And I click on "Edit settings" "link" in the "W.X" "list_item"
+    And I am on "Course 1" course homepage
+    When I open the action menu in "//div[contains(@class, 'activity-item') and contains(., 'W.X')]" "xpath_element"
+    And I choose "Edit settings" in the open action menu
     And I expand all fieldsets
     And I set the field "Annotation system" to "Yes"
-    When I press "Save and display"
+    And I press "Save and display"
+    When I am on the "W.X" "ouwiki activity" page
     Then I should see "Annotate"
     And I add a ouwiki page with the following data:
       | Create new page | Vampires |
@@ -700,7 +701,7 @@ Feature: Test Post and Comment on OUwiki entry
     And I should see "Teacher 1"
     And I log out
 
-  Scenario: Completion - create page
+  Scenario: Wiki completion - icons
     Given I log in as "student1"
     And the following "activity" exists:
       | activity        | ouwiki |
@@ -752,7 +753,7 @@ Feature: Test Post and Comment on OUwiki entry
     And "Completed" "icon" should not exist in the "Student 3" "table_row"
 
   @javascript
-  Scenario: Check ouwiki completion feature in web.
+  Scenario: Wiki completion - percentage
     Given the following "courses" exist:
       | fullname | shortname | format      | enablecompletion |
       | Course 2 | C2        | oustudyplan | 1                |

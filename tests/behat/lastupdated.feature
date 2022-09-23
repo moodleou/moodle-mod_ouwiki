@@ -67,8 +67,9 @@ Feature: Show last updated information on OU Wiki activity link
     Given I log in as "student1"
     And I am on site homepage
     When I am on "Course 1" course homepage
-    Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should not exist
-    And "/descendant::div[@class='activityinstance'][2]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should not exist
+    # Check for Last edit details
+    Then "/descendant::div[contains(@class, 'activity-item')][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should not exist
+    And "/descendant::div[contains(@class, 'activity-item')][2]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should not exist
     Given I follow "W.SG"
     And I press "Create page"
     And I set the field "Content" to "C2 separate groups wiki"
@@ -79,15 +80,17 @@ Feature: Show last updated information on OU Wiki activity link
     And I set the field "Content" to "C3 visible groups wiki"
     And I press "Save changes"
     And I am on "Course 1" course homepage
-    Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should exist
-    And "/descendant::div[@class='activityinstance'][2]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should exist
+    # Check for Last edit details
+    Then "/descendant::div[contains(@class, 'activity-item')][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should exist
+    And "/descendant::div[contains(@class, 'activity-item')][2]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should exist
     And I log out
     # Test for student 2 in group 2.
     Given I log in as "student2"
     And I am on site homepage
     When I am on "Course 1" course homepage
-    Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should not exist
-    And "/descendant::div[@class='activityinstance'][2]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should exist
+    # Check for Last edit details
+    Then "/descendant::div[contains(@class, 'activity-item')][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should not exist
+    And "/descendant::div[contains(@class, 'activity-item')][2]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should exist
 
   Scenario: Individual wikis
     Given I log in as "admin"
@@ -106,9 +109,11 @@ Feature: Show last updated information on OU Wiki activity link
     And I set the field "Content" to "C4 individual wiki"
     And I press "Save changes"
     And I am on "Course 1" course homepage
-    Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should exist
+    # Check for Last edit details
+    Then "/descendant::div[contains(@class, 'activity-item')][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should exist
     And I log out
     # Checking individual wiki for student 1 (visible info only).
     Given I log in as "student1"
     And I am on "Course 1" course homepage
-    Then "/descendant::div[@class='activityinstance'][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should not exist
+    # Check for Last edit details
+    Then "/descendant::div[contains(@class, 'activity-item')][1]//span[@class='lastmodtext ouwikilmt']" "xpath_element" should not exist
