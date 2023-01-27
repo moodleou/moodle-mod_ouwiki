@@ -60,7 +60,7 @@ class mod_ouwiki_privacy_testcase extends provider_testcase {
      * @throws dml_exception
      * @throws moodle_exception
      */
-    public function setUp() {
+    public function setUp(): void {
         global $DB;
         $this->resetAfterTest();
 
