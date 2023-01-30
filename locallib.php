@@ -3287,9 +3287,9 @@ function ouwiki_sort_participation($data) {
                         $words = ouwiki_wordcount_difference($version->wordcount, 0, false);
                     }
                     if ($words < 0) {
-                        $byusers[$version->userid]->wordsdeleted += abs($words);
+                        $byusers[$version->userid]->wordsdeleted += abs((int) $words);
                     } else {
-                        $byusers[$version->userid]->wordsadded += abs($words);
+                        $byusers[$version->userid]->wordsadded += abs((int) $words);
                     }
                 }
             }
