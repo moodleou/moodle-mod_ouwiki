@@ -113,7 +113,7 @@ function ouwiki_update_instance($data, $mform) {
     ouwiki_grade_item_update($data);
 
     if (!$cm = get_coursemodule_from_id('ouwiki', $data->coursemodule)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     // Checking course instance.

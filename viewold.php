@@ -34,14 +34,14 @@ $PAGE->set_url($url);
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('ouwiki', $id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     // Checking course instance
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
     if (!$ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance))) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     $PAGE->set_cm($cm);
@@ -54,13 +54,13 @@ $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 // Get the current page version
 $pageversion = ouwiki_get_page_version($subwiki, $pagename, $versionid);
 if (!$pageversion) {
-    print_error('Unknown page version');
+    throw new moodle_exception('Unknown page version');
 }
 
 // Check permission - Allow anyone with delete page capability to view a deleted page version
 $candelete = has_capability('mod/ouwiki:deletepage', $context);
 if (!empty($pageversion->deletedat) && !$candelete) {
-    print_error('viewdeletedversionerrorcapability', 'ouwiki');
+    throw new moodle_exception('viewdeletedversionerrorcapability', 'ouwiki');
 }
 
 // Get previous and next versions

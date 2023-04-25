@@ -38,7 +38,7 @@ $url = new moodle_url('/mod/ouwiki/index.php', array('id' => $id));
 $PAGE->set_url($url);
 
 if (!$course = $DB->get_record('course', array('id' => $id))) {
-    print_error('invalidcourseid');
+    throw new moodle_exception('invalidcourseid');
 }
 
 require_course_login($course->id, true);

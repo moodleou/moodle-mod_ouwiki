@@ -57,14 +57,14 @@ $save = $action === get_string('savechanges') ? true : false;
 $cancel = $action === get_string('cancel') ? true : false;
 
 if (!$cm = get_coursemodule_from_id('ouwiki', $id)) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 // Checking course instance
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
 if (!$ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance))) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 $PAGE->set_cm($cm);
@@ -76,7 +76,7 @@ if (!is_null($frompage)) {
     $returnurl = new moodle_url('/mod/ouwiki/view.php',
             ouwiki_display_wiki_parameters($frompage, $subwiki, $cm, OUWIKI_PARAMS_ARRAY));
     if (trim($pagename) === '') {
-        print_error('emptypagetitle', 'ouwiki', $returnurl);
+        throw new moodle_exception('emptypagetitle', 'ouwiki', $returnurl);
     }
     // Strip whitespace from new page name from form (editor does this for other links).
     $pagename = preg_replace('/\s+/', ' ', $pagename);
@@ -91,7 +91,7 @@ $returnurl = new moodle_url('/mod/ouwiki/view.php',
 $addsection = false;
 if (!is_null($newsection)) {
     if (trim($newsection) === '') {
-        print_error('emptysectiontitle', 'ouwiki', $returnurl);
+        throw new moodle_exception('emptysectiontitle', 'ouwiki', $returnurl);
     }
     $addsection = true;
 }
@@ -109,7 +109,7 @@ $PAGE->set_url($url);
 
 // Check permission
 if (!$subwiki->canedit) {
-    print_error('You do not have permission to edit this wiki');
+    throw new moodle_exception('You do not have permission to edit this wiki');
 }
 
 $useattachments = !$addsection && !$section;
@@ -156,10 +156,10 @@ if ($cancel) {
 // Get the current page version, creating page if needed
 $pageversion = ouwiki_get_current_page($subwiki, $pagename, OUWIKI_GETPAGE_CREATE);
 if ($addpage && !is_null($pageversion->xhtml)) {
-    print_error('duplicatepagetitle', 'ouwiki', $returnurl);
+    throw new moodle_exception('duplicatepagetitle', 'ouwiki', $returnurl);
 }
 if ($pageversion->locked === '1') {
-    print_error('thispageislocked', 'ouwiki', 'view.php?id='.$cm->id);
+    throw new moodle_exception('thispageislocked', 'ouwiki', 'view.php?id=' . $cm->id);
 }
 
 // Need list of known sections on current version
@@ -171,7 +171,7 @@ if (!preg_match('/^[0-9]+_[0-9]+$/', $section)) {
 }
 if ($section) {
     if (!array_key_exists($section, $knownsections)) {
-        print_error("Unknown section $section");
+        throw new moodle_exception("Unknown section $section");
     }
     $sectiontitle = $knownsections[$section];
     $sectiondetails = ouwiki_get_section_details($pageversion->xhtml, $section);

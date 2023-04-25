@@ -33,7 +33,7 @@ $deleteorphaned = optional_param('deleteorphaned', 0, PARAM_BOOL);
 $lockunlock = optional_param('lockediting', false, PARAM_BOOL);
 
 if (!empty($_POST) && !confirm_sesskey()) {
-    print_error('invalidrequest');
+    throw new moodle_exception('invalidrequest');
 }
 
 $url = new moodle_url('/mod/ouwiki/annotate.php', array('id' => $id));
@@ -41,14 +41,14 @@ $PAGE->set_url($url);
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('ouwiki', $id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     // Checking course instance
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
     if (!$ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance))) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     $PAGE->set_cm($cm);
@@ -62,7 +62,7 @@ $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 require_capability('mod/ouwiki:annotate', $context);
 if (!$subwiki->annotation) {
     $redirect = 'view.php?'.ouwiki_display_wiki_parameters($pagename, $subwiki, $cm, OUWIKI_PARAMS_URL);
-    print_error('You do not have permission to annotate this wiki page', 'error', $redirect);
+    throw new moodle_exception('You do not have permission to annotate this wiki page', 'error', $redirect);
 }
 
 // Get the current page version, creating page if needed
@@ -72,7 +72,7 @@ $wikiformfields = ouwiki_display_wiki_parameters($pagename, $subwiki, $cm, OUWIK
 // For everything except cancel we need to obtain a lock.
 if (!$cancel) {
     if (!$pageversion) {
-        print_error(get_string('startpagedoesnotexist', 'ouwiki'));
+        throw new moodle_exception('startpagedoesnotexist', 'ouwiki');
     }
     // Get lock
     list($lockok, $lock) = ouwiki_obtain_lock($ouwiki, $pageversion->pageid);
@@ -82,7 +82,7 @@ if (!$cancel) {
 if ($save) {
     if (!$lockok) {
         ouwiki_release_lock($pageversion->pageid);
-        print_error('cannotlockpage', 'ouwiki', 'view.php?'.ouwiki_display_wiki_parameters($pagename,
+        throw new moodle_exception('cannotlockpage', 'ouwiki', 'view.php?' . ouwiki_display_wiki_parameters($pagename,
                 $subwiki, $cm, OUWIKI_PARAMS_URL));
     }
 

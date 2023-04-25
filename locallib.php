@@ -83,7 +83,7 @@ function ouwiki_dberror($error, $source = null) {
         $source = preg_replace('@^.*/(.*)(\.php)?$@', '\1',
                 $backtrace[0]['file']).'/'.$backtrace[0]['line'];
     }
-    print_error('Database problem: '.$error.' (code OUWIKI-'.$source.')');
+    throw new moodle_exception('Database problem: ' . $error . ' (code OUWIKI-' . $source . ')');
 }
 
 function ouwiki_error($text, $source = null) {
@@ -92,7 +92,7 @@ function ouwiki_error($text, $source = null) {
         $source = preg_replace('^.*/(.*)(\.php)?$^', '$1',
                 $backtrace[0]['file']).'/'.$backtrace[0]['line'];
     }
-    print_error("Wiki error: $text (code OUWIKI-$source)");
+    throw new moodle_exception("Wiki error: $text (code OUWIKI-$source)");
 }
 
 /**
@@ -1234,7 +1234,7 @@ function ouwiki_obtain_lock($ouwiki, $pageid) {
             try {
                 $DB->delete_records('ouwiki_locks', array('pageid' => $pageid));
             } catch (Exception $e) {
-                print_error('Unable to delete lock record');
+                throw new moodle_exception('Unable to delete lock record');
             }
         }
     }
@@ -1288,7 +1288,7 @@ function ouwiki_release_lock($pageid) {
         try {
             $DB->delete_records('ouwiki_locks', array('id' => $lockid));
         } catch (Exception $e) {
-            print_error("Unable to delete lock record.");
+            throw new moodle_exception("Unable to delete lock record.");
         }
     }
 }

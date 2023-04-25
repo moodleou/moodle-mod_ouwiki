@@ -36,5 +36,5 @@ if ($lock = $DB->get_record('ouwiki_locks', array('id' => $lockid))) {
     readfile('pix/dot.png');
     exit;
 } else {
-    print_error('No such lock');
+    throw new moodle_exception('No such lock');
 }

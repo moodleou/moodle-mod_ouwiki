@@ -35,14 +35,14 @@ $PAGE->set_url($url);
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('ouwiki', $id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     // Checking course instance
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
     if (!$ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance))) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     $PAGE->set_cm($cm);
@@ -66,7 +66,7 @@ if ($compare) {
         }
     }
     if (count($versions) != 2) {
-        print_error(get_string('mustspecify2', 'ouwiki'));
+        throw new moodle_exception('mustspecify2', 'ouwiki');
     }
     sort($versions, SORT_NUMERIC);
     $wikiurlparams = html_entity_decode(ouwiki_display_wiki_parameters($pagename, $subwiki, $cm), ENT_QUOTES);

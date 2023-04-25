@@ -56,7 +56,7 @@ echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, get_stri
 echo $OUTPUT->heading(get_string('import', 'ouwiki'));
 
 if ((!$subwiki->canedit) || (!$ouwiki->allowimport)) {
-    print_error('You are not able to add content to this wiki.');
+    throw new moodle_exception('You are not able to add content to this wiki.');
 }
 
 // Get course id of wiki that is being imported from. Only used in steps 2,3 and 4.
