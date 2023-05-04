@@ -65,7 +65,7 @@ $locked = ($pageversion) ? $pageversion->locked : false;
 ouwiki_print_tabs('view', $pagename, $subwiki, $cm, $context, $pageversion ? true : false, $locked);
 
 if (($pagename === '' || $pagename === null) && strlen(preg_replace('/\s|<br\s*\/?>|<p>|<\/p>/',
-        '', $ouwiki->intro)) > 0) {
+        '', $ouwiki->intro ?? '')) > 0) {
     echo $ouwikioutput->ouwiki_get_intro($ouwiki->intro, $context->id);
 }
 
