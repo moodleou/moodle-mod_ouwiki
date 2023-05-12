@@ -1627,8 +1627,11 @@ function ouwiki_get_subwiki_missingpages($subwikiid, $limitfrom = '', $limitnum 
  * @return array Associative array of section ID => current title
  */
 function ouwiki_find_sections($content) {
-    $results = array();
-    $matchlist = array();
+    $results = [];
+    if (is_null($content)) {
+        return $results;
+    }
+    $matchlist = [];
     preg_match_all('~<h([0-9]) id="ouw_s([0-9]+_[0-9]+)">(.*?)</h([0-9])>~s',
             $content, $matchlist, PREG_SET_ORDER);
     foreach ($matchlist as $matches) {
