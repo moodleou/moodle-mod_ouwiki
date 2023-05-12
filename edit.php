@@ -166,7 +166,7 @@ if ($pageversion->locked === '1') {
 $knownsections = ouwiki_find_sections($pageversion->xhtml);
 
 // Get section, make sure the name is valid
-if (!preg_match('/^[0-9]+_[0-9]+$/', $section)) {
+if ($section && !preg_match('/^[0-9]+_[0-9]+$/', $section)) {
     $section = null;
 }
 if ($section) {
