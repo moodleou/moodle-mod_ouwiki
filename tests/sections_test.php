@@ -31,7 +31,7 @@ global $CFG;
 
 require_once($CFG->dirroot . '/mod/ouwiki/locallib.php');
 
-class sections_test extends advanced_testcase {
+class sections_test extends \advanced_testcase {
 
     public $sample = '
 <h1 id="ouw_s0_0">Start</h1>
