@@ -875,7 +875,7 @@ function ouwiki_get_post_actions() {
 function ouwiki_get_coursemodule_info($coursemodule) {
     global $DB;
     $ouwiki = $DB->get_record('ouwiki',
-            ['id' => $coursemodule->instance], 'id, name, completionpages, completionedits');
+            ['id' => $coursemodule->instance], 'id, name, completionpages, completionedits, intro, introformat');
     if (!$ouwiki) {
         return null;
     }
@@ -887,6 +887,10 @@ function ouwiki_get_coursemodule_info($coursemodule) {
     if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
         $info->customdata->customcompletionrules['completionpages'] = $ouwiki->completionpages;
         $info->customdata->customcompletionrules['completionedits'] = $ouwiki->completionedits;
+    }
+
+    if ($coursemodule->showdescription) {
+        $info->content = format_module_intro('ouwiki', $ouwiki, $coursemodule->id, false);
     }
 
     return $info;
