@@ -46,14 +46,14 @@ $url = new moodle_url('/mod/ouwiki/userparticipation.php', $params);
 $PAGE->set_url($url);
 
 if (!$cm = get_coursemodule_from_id('ouwiki', $id)) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 // Checking course instance
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
 if (!$ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance))) {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 $PAGE->set_cm($cm);
@@ -64,7 +64,7 @@ require_course_login($course, true, $cm);
 $canview = ouwiki_can_view_participation($course, $ouwiki, $subwiki, $cm, $USER->id);
 if (($canview == OUWIKI_NO_PARTICIPATION)
     || ($USER->id != $userid && $canview == OUWIKI_MY_PARTICIPATION)) {
-    print_error('nopermissiontoshow');
+    throw new moodle_exception('nopermissiontoshow');
 }
 
 list($user, $changes) = ouwiki_get_user_participation($userid, $subwiki);

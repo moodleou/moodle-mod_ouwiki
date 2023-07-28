@@ -3,6 +3,12 @@
     padding:10px;
     margin:1em;
 }
+#page-mod-ouwiki-edit .ouw_preview .box.generalbox.boxaligncenter::after {
+    content: "";
+    clear: both;
+    display: block;
+    visibility: hidden;
+}
 #page-mod-ouwiki-view .ouw_recentchanges {
     font-size:0.7em;
     color:#636363;
@@ -230,7 +236,7 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
     font-weight: bold;
 }
  */
- 
+
 #page-mod-ouwiki-wikiindex ul.ouw_index,
 #page-mod-ouwiki-wikiindex ul.ouw_index li,
 #page-mod-ouwiki-wikiindex ul.ouw_indextree,
@@ -705,7 +711,7 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
 
 
 .ouw_linkedfrom .ouw_topheading {
-		
+
 		background: none;
 		padding:0px;
 		border: none;

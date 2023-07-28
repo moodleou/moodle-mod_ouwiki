@@ -22,8 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_ouwiki;
 
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * PHPUnit data generator testcase
@@ -32,7 +33,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2014 The Open University
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_ouwiki_generator_testcase extends advanced_testcase {
+class generator_test extends \advanced_testcase {
 
     public function test_ouwiki_generator() {
         global $DB;
@@ -61,7 +62,7 @@ class mod_ouwiki_generator_testcase extends advanced_testcase {
         $this->assertEquals('ouwiki', $cm->modname);
         $this->assertEquals($course->id, $cm->course);
 
-        $context = context_module::instance($cm->id);
+        $context = \context_module::instance($cm->id);
         $this->assertEquals($wiki->cmid, $context->instanceid);
 
         // Test options pulled through.

@@ -35,14 +35,14 @@ $PAGE->set_url($url);
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('ouwiki', $id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     // Checking course instance.
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
     if (!$ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance))) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     $PAGE->set_cm($cm);
@@ -56,7 +56,7 @@ $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 $format = required_param('format', PARAM_ALPHA);
 if ($format !== OUWIKI_FORMAT_HTML && $format !== OUWIKI_FORMAT_PDF
     && $format !== OUWIKI_FORMAT_TEMPLATE && $format !== OUWIKI_FORMAT_HTML_PRINT) {
-    print_error('Unexpected format');
+    throw new moodle_exception('Unexpected format');
 }
 
 // Get basic wiki details for filename.
@@ -278,7 +278,7 @@ function get_online_display_content($format, $pageversion, $context, $subwiki, $
             }
             $markup .= '<versionid>' . $pageversion->versionid . '</versionid>';
             // Copy images found in content.
-            preg_match_all('#<img.*?src="@@PLUGINFILE@@/(.*?)".*?/>#', $pageversion->xhtml, $matches);
+            preg_match_all('#<img.*?src="@@PLUGINFILE@@/(.*?)".*?/?>#', $pageversion->xhtml, $matches);
             if (!empty($matches)) {
                 // Extract the file names from the matches.
                 foreach ($matches[1] as $key => $match) {

@@ -41,13 +41,13 @@ if (is_null($pagename)) {
 
 // Restrict page name
 if (core_text::strlen($pagename) > 200) {
-    print_error('pagenametoolong', 'ouwiki');
+    throw new moodle_exception('pagenametoolong', 'ouwiki');
 }
 // Convert nbsp to space
 $pagename = str_replace(html_entity_decode('&nbsp;', ENT_QUOTES, 'UTF-8'), ' ', $pagename);
 $pagename = trim($pagename);
 if (strtolower($pagename) == strtolower(get_string('startpage', 'ouwiki'))) {
-    print_error('pagenameisstartpage', 'ouwiki');
+    throw new moodle_exception('pagenameisstartpage', 'ouwiki');
 }
 
 // Load efficiently (and with full $cm data) using get_fast_modinfo
@@ -57,12 +57,12 @@ $course = $DB->get_record_select('course',
 $modinfo = get_fast_modinfo($course);
 $cm = $modinfo->get_cm($id);
 if ($cm->modname !== 'ouwiki') {
-    print_error('invalidcoursemodule');
+    throw new moodle_exception('invalidcoursemodule');
 }
 
 $ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance));
 if (!$ouwiki) {
-    print_error("Wiki ID is incorrect in database");
+    throw new moodle_exception('Wiki ID is incorrect in database');
 }
 $context = context_module::instance($cm->id);
 

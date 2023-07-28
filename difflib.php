@@ -304,8 +304,9 @@ class ouwiki_line {
         $data = str_replace(array('&nbsp;', '&#xA0;', '&#160;') , '      ', $data);
 
         // Tags replaced with equal number of spaces
-        $data = preg_replace_callback('/<.*?'.'>/', create_function(
-            '$matches', 'return preg_replace("/./"," ", $matches[0]);'), $data);
+        $data = preg_replace_callback('/<.*?'.'>/', function($matches) {
+            return preg_replace("/./", " ", $matches[0]);
+        }, $data);
 
         // 2. Analyse string so that each space-separated thing
         // is counted as a 'word' (note these may not be real words,
@@ -409,8 +410,9 @@ function ouwiki_diff_html_to_lines($content) {
     // Get rid of all script, style, object tags (that might contain non-text
     // outside tags)
     $content = preg_replace_callback(
-        '^(<script .*?</script>)|(<object .*?</object>)|(<style .*?</style>)^i', create_function(
-            '$matches', 'return preg_replace("/./"," ",$matches[0]);'), $content);
+        '^(<script .*?</script>)|(<object .*?</object>)|(<style .*?</style>)^i', function($matches) {
+            return preg_replace("/./", " ", $matches[0]);
+        }, $content);
 
     // Get rid of all ` symbols as we are going to use these for a marker later.
     $content = preg_replace('/[`]/', ' ', $content);
@@ -424,8 +426,9 @@ function ouwiki_diff_html_to_lines($content) {
         }
         $taglist .= "<$blocktag>|<\\/$blocktag>";
     }
-    $content = preg_replace_callback('/(('.$taglist.')\s*)+/i', create_function(
-        '$matches', 'return "`".preg_replace("/./"," ",substr($matches[0],1));'), $content);
+    $content = preg_replace_callback('/(('.$taglist.')\s*)+/i', function($matches) {
+        return "`" . preg_replace("/./", " ", substr($matches[0], 1));
+    }, $content);
 
     // Now go through splitting each line
     $lines = array();
@@ -697,7 +700,7 @@ function ouwiki_diff($file1, $file2) {
  */
 function ouwiki_diff_add_markers($html, $words, $markerclass, $beforetext, $aftertext) {
     // Sort words by start position
-    usort($words, create_function('$a,$b', 'return $a->start-$b->start;'));
+    usort($words, function($a, $b) { return $a->start - $b->start; });
 
     // Add marker for each word. We use an odd tag name which will
     // be replaced by span later, this for ease of replacing
@@ -744,11 +747,11 @@ function ouwiki_diff_html($html1, $html2) {
     list($deleted, $added) = ouwiki_diff_words($lines1, $lines2);
     $changes = count($deleted) + count($added);
     $result1 = ouwiki_diff_add_markers($html1, $deleted, 'ouw_deleted',
-        '<img src="'.$OUTPUT->pix_url('diff_deleted_begins', 'ouwiki').'" alt="'.get_string('deletedbegins', 'ouwiki').'" />',
-        '<img src="'.$OUTPUT->pix_url('diff_added_ends', 'ouwiki').'" alt="'.get_string('deletedends', 'ouwiki').'" />');
+        '<img src="'.$OUTPUT->image_url('diff_deleted_begins', 'ouwiki').'" alt="'.get_string('deletedbegins', 'ouwiki').'" />',
+        '<img src="'.$OUTPUT->image_url('diff_added_ends', 'ouwiki').'" alt="'.get_string('deletedends', 'ouwiki').'" />');
     $result2 = ouwiki_diff_add_markers($html2, $added, 'ouw_added',
-        '<img src="'.$OUTPUT->pix_url('diff_added_begins', 'ouwiki').'" alt="'.get_string('addedbegins', 'ouwiki').'" />',
-        '<img src="'.$OUTPUT->pix_url('diff_added_ends', 'ouwiki').'" alt="'.get_string('addedends', 'ouwiki').'" />');
+        '<img src="'.$OUTPUT->image_url('diff_added_begins', 'ouwiki').'" alt="'.get_string('addedbegins', 'ouwiki').'" />',
+        '<img src="'.$OUTPUT->image_url('diff_added_ends', 'ouwiki').'" alt="'.get_string('addedends', 'ouwiki').'" />');
     return array($result1, $result2, $changes);
 }
 

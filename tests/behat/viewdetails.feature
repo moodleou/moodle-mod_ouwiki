@@ -21,8 +21,7 @@ Feature: Test view details against a user
         | student2 | C1 | student |
         | teacher2 | C1 | teacher |
     And I log in as "admin"
-    And I am on site homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
     When I add a "OU wiki" to section "1" and I fill the form with:
       | Name | Test 1 |
@@ -35,7 +34,7 @@ Feature: Test view details against a user
   Scenario: View details
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test 1"
     And "Create page" "button" should exist
     And I press "Create page"
@@ -45,7 +44,7 @@ Feature: Test view details against a user
     # Add extra content as student.
     Given I log in as "student2"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test 1"
     When I click on "Edit" "link"
     And I set the field "Content" to "Test content 1 some other stuff"
@@ -54,7 +53,7 @@ Feature: Test view details against a user
     # Set up 'frog' wiki subpage.
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test 1"
     And I click on "Edit" "link"
     And I set the field "Content" to "Test content 1 some other stuff [[frog]]"
@@ -71,7 +70,7 @@ Feature: Test view details against a user
     # Add extra content to 'frog' page as student.
     Given I log in as "student2"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test 1"
     And  "frog" "link" should exist
     And I click on "frog" "link"
@@ -80,15 +79,52 @@ Feature: Test view details against a user
     And I press "Save changes"
     Then "Start page" "link" should exist
     When I click on "Start page" "link"
-    Then  "frog" "link" should exist    
+    Then  "frog" "link" should exist
     And I log out
     # Check student has particpated and their grade can be displayed.
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test 1"
     Given I click on "Participation by user" "link"
     When I click on "detail" "link" in the "Student 2" "table_row"
     And I should see "User grade"
     And I should see "+3"
     And I should see "+2"
+
+  @javascript
+  Scenario: Check User participation and downloads
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Test 1"
+    And I press "Create page"
+    And I set the field "Content" to "Test content 1"
+    And I press "Save changes"
+    And I log out
+    # Add extra content as student.
+    Given I log in as "student2"
+    And I am on "Course 1" course homepage
+    And I follow "Test 1"
+    When I click on "Edit" "link"
+    And I set the field "Content" to "Test content 1 some other stuff"
+    And I press "Save changes"
+    And I log out
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Test 1"
+    And I follow "Participation by user"
+    # Very imprecise, would be good to check column value without xpath
+    Then I should see "1" in the "Student 2" "table_row"
+    And I should see "1" in the "Teacher 1" "table_row"
+    And I should see "3" in the "Student 2" "table_row"
+    And I should see "3" in the "Teacher 1" "table_row"
+    Given I set the field "Download table data as" to "Microsoft Excel (.xlsx)"
+    And I press "Download"
+    # Only seems to be a behat step to check download from link not form.
+    And I am on "Course 1" course homepage
+    And I follow "Test 1"
+    And I follow "Participation by user"
+    And I click on "detail" "link" in the "Student 2" "table_row"
+    Then I should see "+3"
+    Given I set the field "Download table data as" to "Microsoft Excel (.xlsx)"
+    And I press "Download"

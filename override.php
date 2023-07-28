@@ -28,11 +28,11 @@ require_once(dirname(__FILE__) . '/../../config.php');
 require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
 
 if (!data_submitted()) {
-    print_error("Only POST requests accepted");
+    throw new moodle_exception("Only POST requests accepted");
 }
 
 if (!has_capability('mod/ouwiki:overridelock', $context)) {
-    print_error("You do not have the capability to override editing locks");
+    throw new moodle_exception("You do not have the capability to override editing locks");
 }
 
 $pageversion = ouwiki_get_current_page($subwiki, $pagename, OUWIKI_GETPAGE_ACCEPTNOVERSION);

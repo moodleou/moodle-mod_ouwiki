@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_ouwiki;
+
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
 }
@@ -29,7 +31,7 @@ global $CFG;
 
 require_once($CFG->dirroot . '/mod/ouwiki/locallib.php');
 
-class ouwiki_test_sections extends advanced_testcase {
+class sections_test extends \advanced_testcase {
 
     public $sample = '
 <h1 id="ouw_s0_0">Start</h1>
@@ -66,5 +68,10 @@ x
                 '6_666' => 'V6',
                 '0_1' => 'End'
             ), $sections);
+    }
+
+    public function test_find_sections_with_null_content(): void {
+        $sections = ouwiki_find_sections(null);
+        $this->assertEquals([], $sections);
     }
 }

@@ -84,7 +84,7 @@ function ouwiki_dberror($error, $source = null) {
         $source = preg_replace('@^.*/(.*)(\.php)?$@', '\1',
                 $backtrace[0]['file']).'/'.$backtrace[0]['line'];
     }
-    print_error('Database problem: '.$error.' (code OUWIKI-'.$source.')');
+    throw new moodle_exception('Database problem: ' . $error . ' (code OUWIKI-' . $source . ')');
 }
 
 function ouwiki_error($text, $source = null) {
@@ -93,7 +93,7 @@ function ouwiki_error($text, $source = null) {
         $source = preg_replace('^.*/(.*)(\.php)?$^', '$1',
                 $backtrace[0]['file']).'/'.$backtrace[0]['line'];
     }
-    print_error("Wiki error: $text (code OUWIKI-$source)");
+    throw new moodle_exception("Wiki error: $text (code OUWIKI-$source)");
 }
 
 /**
@@ -185,8 +185,22 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
                 $groupid = reset($groups)->id;
             }
             $othergroup = !groups_is_member($groupid);
-            // Removed AND userid IS NULL.
-            $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid = ?', array($ouwiki->id, $groupid));
+
+            // Place get subwiki here to facilitate checking agaimst magic number below.
+            $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid = ?
+                    AND userid IS NULL', array($ouwiki->id, $groupid));
+
+            if ($othergroup && $cm->groupmode == SEPARATEGROUPS) {
+                // Ignore if in feed,
+                // get magic has optional_param check against subwiki->magic - to deal with separate groups problem.
+                $magic = optional_param('magic', 0, PARAM_RAW);
+                if (!$subwiki || $magic != $subwiki->magic) {
+                    if (!has_capability('moodle/site:accessallgroups', $context) &&
+                        !has_capability('mod/ouwiki:editothers', $context)) {
+                           ouwiki_error(get_string('error_nopermission', 'ouwiki'));
+                    }
+                }
+            }
             if ($subwiki) {
                 ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $othergroup);
                 return $subwiki;
@@ -265,7 +279,7 @@ function ouwiki_create_subwiki($ouwiki, $cm, $course, $userid = null, $groupid =
 	$subwiki->magic = ouwiki_generate_magic_number();
     $subwiki->userid = ($userid) ? $userid : $subwiki->magic;
     $subwiki->groupid = ($groupid) ? $groupid : $subwiki->magic;
-    	
+
     // Create Wiki!
     try {
         $subwiki->id = $DB->insert_record('ouwiki_subwikis', $subwiki);
@@ -398,6 +412,12 @@ function ouwiki_init_pages($course, $cm, $ouwiki, $subwiki) {
                 }
             }
         }
+        // lock start page if setting enabled
+        if ($ouwiki->lockstartpages) {
+            // get start page
+            $startpage = ouwiki_get_current_page($subwiki, null);
+            ouwiki_lock_editing($startpage->pageid, true);
+        }
     } else {
         ouwiki_error('Failed to load wiki template - file missing.');
     }
@@ -477,9 +497,9 @@ function ouwiki_shared_url_params($pagename, $subwiki, $cm) {
         if ($subwiki->groupid) {
             $params['group'] = $subwiki->groupid;
         }
-        if ($subwiki->userid) {
-            $params['user'] = $subwiki->userid;
-        }
+    }
+    if ($subwiki->userid) {
+        $params['user'] = $subwiki->userid;
     }
     if (strtolower(trim($pagename)) !== strtolower(get_string('startpage', 'ouwiki')) &&
             $pagename !== '') {
@@ -512,12 +532,12 @@ function ouwiki_display_wiki_parameters($page, $subwiki, $cm, $type = OUWIKI_PAR
                 $output .= ouwiki_get_parameter('group', $subwiki->groupid, $type);
             }
         }
-        if ($subwiki->userid) {
-            if ($type == OUWIKI_PARAMS_ARRAY) {
-                $output['user'] = $subwiki->userid;
-            } else {
-                $output .= ouwiki_get_parameter('user', $subwiki->userid, $type);
-            }
+    }
+    if ($subwiki->userid) {
+        if ($type == OUWIKI_PARAMS_ARRAY) {
+            $output['user'] = $subwiki->userid;
+        } else {
+            $output .= ouwiki_get_parameter('user', $subwiki->userid, $type);
         }
     }
     if ($page !== '') {
@@ -581,7 +601,7 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
     switch($ouwiki->subwikis) {
         case OUWIKI_SUBWIKIS_GROUPS:
             $groups = groups_get_activity_allowed_groups($cm);
-            uasort($groups, create_function('$a,$b', 'return strcasecmp($a->name,$b->name);'));
+            uasort($groups, function($a, $b) { return strcasecmp($a->name, $b->name); });
             $wikifor = htmlspecialchars($groups[$subwiki->groupid]->name);
 
             // Do they have more than one?
@@ -593,9 +613,11 @@ function ouwiki_display_subwiki_selector($subwiki, $ouwiki, $cm, $context, $cour
 
         case OUWIKI_SUBWIKIS_INDIVIDUAL:
             $user = $DB->get_record('user', array('id' => $subwiki->userid),
-                    'username, ' . user_picture::fields());
+                    'username, ' . implode(',', \core_user\fields::get_picture_fields()));
             $wikifor = ouwiki_display_user($user, $cm->course);
-            $usernamefields = user_picture::fields('u');
+            $userfieldsapi = \core_user\fields::for_userpic();
+            $usernamefields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
+
             if (has_capability('mod/ouwiki:viewallindividuals', $context)) {
                 // Get list of everybody...
                 $choicefield = 'user';
@@ -688,7 +710,8 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
 
     $jointype = $option == OUWIKI_GETPAGE_REQUIREVERSION ? 'JOIN' : 'LEFT JOIN';
 
-    $userfields = user_picture::fields('u', null, 'userid');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', 'userid1', false)->selects;
 
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
                 p.locked, v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
@@ -697,7 +720,6 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
             $jointype {ouwiki_versions} v ON p.currentversionid = v.id
             LEFT JOIN {user} u ON v.userid = u.id
             WHERE p.subwikiid = ? AND $pagename_s";
-
     $pageversion = $DB->get_record_sql($sql, $params);
     if (!$pageversion) {
         if ($option != OUWIKI_GETPAGE_CREATE) {
@@ -710,6 +732,7 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
         $pageversion->title = $pagename ? $pagename : '';
         $pageversion->locked = 0;
         $pageversion->firstversionid = null; // new page
+        $pageversion->timemodified = time();
         try {
             $pageversion->pageid = $DB->insert_record('ouwiki_pages', $pageversion);
         } catch (Exception $e) {
@@ -771,7 +794,8 @@ function ouwiki_get_current_page($subwiki, $pagename, $option = OUWIKI_GETPAGE_R
 function ouwiki_get_subwiki_allpages($subwiki) {
     global $DB;
 
-    $userfields = user_picture::fields('u', null, 'userid');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', 'userid1', false)->selects;
 
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
                 p.locked, v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
@@ -797,7 +821,8 @@ function ouwiki_get_subwiki_allpages($subwiki) {
 function ouwiki_get_page_version($subwiki, $pagename, $versionid) {
     global $DB;
 
-    $userfields = user_picture::fields('u', null, 'userid');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', 'userid1', false)->selects;
 
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
                 v.id AS versionid, v.xhtml, v.timecreated, v.userid, v.xhtmlformat,
@@ -827,7 +852,8 @@ function ouwiki_get_page_version($subwiki, $pagename, $versionid) {
 function ouwiki_get_prevnext_version_details($pageversion) {
     global $DB;
 
-    $userfields = user_picture::fields('u');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
 
     $prevnext = new StdClass;
 
@@ -1211,7 +1237,7 @@ function ouwiki_obtain_lock($ouwiki, $pageid) {
             try {
                 $DB->delete_records('ouwiki_locks', array('pageid' => $pageid));
             } catch (Exception $e) {
-                print_error('Unable to delete lock record');
+                throw new moodle_exception('Unable to delete lock record');
             }
         }
     }
@@ -1265,7 +1291,7 @@ function ouwiki_release_lock($pageid) {
         try {
             $DB->delete_records('ouwiki_locks', array('id' => $lockid));
         } catch (Exception $e) {
-            print_error("Unable to delete lock record.");
+            throw new moodle_exception("Unable to delete lock record.");
         }
     }
 }
@@ -1281,7 +1307,7 @@ function ouwiki_override_lock($pageid) {
     try {
         $DB->delete_records('ouwiki_locks', array('pageid' => $pageid));
     } catch (Exception $e) {
-        error("Unable to delete lock record.");
+        ouwiki_error("Unable to delete lock record.");
     }
 }
 
@@ -1303,7 +1329,8 @@ function ouwiki_get_page_history($pageid, $selectdeleted, $limitfrom = '', $limi
         $deleted = ' AND v.deletedat IS NULL';
     }
 
-    $userfields = user_picture::fields('u');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
 
     $sql = "SELECT v.id AS versionid, v.timecreated, v.deletedat, u.username,
                 $userfields, v.wordcount, v.previousversionid, v.importversionid,
@@ -1339,7 +1366,8 @@ function ouwiki_get_page_history($pageid, $selectdeleted, $limitfrom = '', $limi
 function ouwiki_get_subwiki_index($subwikiid, $limitfrom = '', $limitnum = '') {
     global $DB;
 
-    $userfields = user_picture::fields('u');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
 
     // Get all the pages...
     $sql = "SELECT p.id AS pageid, p.title, v.id AS versionid, v.timecreated, $userfields,
@@ -1395,7 +1423,8 @@ function ouwiki_get_subwiki_index($subwikiid, $limitfrom = '', $limitnum = '') {
 function ouwiki_get_subwiki_allpages_index($subwiki) {
     global $DB;
 
-    $userfields = user_picture::fields('u', null, 'userid');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', 'userid1', false)->selects;
 
     // Get all the pages...
     $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid, p.firstversionid,
@@ -1450,7 +1479,8 @@ function ouwiki_get_subwiki_allpages_index($subwiki) {
 function ouwiki_get_subwiki_recentchanges($subwikiid, $limitfrom = '', $limitnum = 51) {
     global $DB;
 
-    $userfields = user_picture::fields('u', null, 'userid');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', 'userid1', false)->selects;
 
     $sql = "SELECT v.id AS versionid, v.timecreated, v.userid,
         p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
@@ -1528,7 +1558,8 @@ function ouwiki_get_subwiki_recentpages($subwikiid, $limitfrom = '', $limitnum =
     if ($subwikis) {
         list($usql, $params) = $DB->get_in_or_equal(array_keys($subwikis));
 
-        $userfields = user_picture::fields('u', null, 'userid');
+        $userfieldsapi = \core_user\fields::for_userpic();
+        $userfields = $userfieldsapi->get_sql('u', false, '', 'userid1', false)->selects;
 
         $sql = "SELECT p.id AS pageid, p.subwikiid, p.title, p.currentversionid,
                 v.id AS versionid, v.timecreated, v.userid, $userfields,
@@ -1599,8 +1630,11 @@ function ouwiki_get_subwiki_missingpages($subwikiid, $limitfrom = '', $limitnum 
  * @return array Associative array of section ID => current title
  */
 function ouwiki_find_sections($content) {
-    $results = array();
-    $matchlist = array();
+    $results = [];
+    if (is_null($content)) {
+        return $results;
+    }
+    $matchlist = [];
     preg_match_all('~<h([0-9]) id="ouw_s([0-9]+_[0-9]+)">(.*?)</h([0-9])>~s',
             $content, $matchlist, PREG_SET_ORDER);
     foreach ($matchlist as $matches) {
@@ -1637,18 +1671,18 @@ function ouwiki_get_section_details($content, $sectionxhtmlid) {
     // Check heading number
     $matches = array();
     if (!preg_match('|<h([0-9]) id="ouw_s'.$sectionxhtmlid.'">|s', $content, $matches)) {
-        error('Unable to find expected section');
+        ouwiki_error('Unable to find expected section');
     }
     $h = $matches[1];
 
     // Find position of heading and of next heading with equal or lower number
     $startpos = strpos($content, $stupid = '<h'.$h.' id="ouw_s'.$sectionxhtmlid.'">');
     if ($startpos === false) {
-        error('Unable to find expected section again');
+        ouwiki_error('Unable to find expected section again');
     }
     $endpos = strlen($content);
     for ($count = 1; $count <= $h; $count++) {
-        $nextheading = strpos($content, '<h'.$count, $startpos + 1);
+        $nextheading = strpos($content, '<h'.$count.' id="ouw_s', $startpos + 1);
         if ($nextheading !== false && $nextheading < $endpos) {
             $endpos = $nextheading;
         }
@@ -2008,11 +2042,11 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
     $versioncontent = $DB->get_field('ouwiki_versions', 'xhtml', array('id' => $versionid));
     if (! empty($version->previousversionid)) {
         // Get any filenames in content.
-        preg_match_all("#@@PLUGINFILE@@/(\S)+([.]\w+)#", $versioncontent, $matches);
+        preg_match_all("#(?:(?:src|href)=\")(@@PLUGINFILE@@/\S+([.]\w+))(?:\")#", $versioncontent, $matches);
         if (! empty($matches)) {
             // Extract the file names from the matches.
             $filenames = array();
-            foreach ($matches[0] as $match) {
+            foreach ($matches[1] as $match) {
                 // Get file name.
                 $match = str_replace('@@PLUGINFILE@@/', '', $match);
                 array_push($filenames, urldecode($match));
@@ -2381,7 +2415,8 @@ function ouwiki_get_annotations($pageversion) {
 
     $annotations = array();
 
-    $userfields = user_picture::fields('u', null, 'userid');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', 'userid1', false)->selects;
 
     $rs = $DB->get_records_sql("SELECT a.id, a.pageid, a.userid, a.timemodified,
                                     a.content, $userfields
@@ -2538,7 +2573,7 @@ function ouwiki_setup_annotation_markers($xhtmlcontent) {
 function ouwiki_get_annotation_marker($position) {
     global $OUTPUT;
 
-    $icon = '<img src="'.$OUTPUT->pix_url('annotation-marker', 'ouwiki').'" alt="'.
+    $icon = '<img src="'.$OUTPUT->image_url('annotation-marker', 'ouwiki').'" alt="'.
             get_string('annotationmarker', 'ouwiki').'" title="'.
             get_string('annotationmarker', 'ouwiki').'" />';
     return '<span class="ouwiki-annotation-marker" id="marker'.$position.'">'.$icon.'</span>';
@@ -2558,7 +2593,7 @@ function ouwiki_highlight_existing_annotations($xhtmlcontent, $annotations, $pag
 
     $content = $xhtmlcontent;
 
-    $icon = '<img src="'.$OUTPUT->pix_url('annotation', 'ouwiki').'" alt="'.
+    $icon = '<img src="'.$OUTPUT->image_url('annotation', 'ouwiki').'" alt="'.
             get_string('expandannotation', 'ouwiki').'" title="'.
             get_string('expandannotation', 'ouwiki').'" />';
 
@@ -2706,7 +2741,8 @@ function ouwiki_display_lock_page_form($pageversion, $cmid, $pagename) {
     $genericformdetails ='<form method="get" action="lock.php">
     <div class="ouwiki_lock_div">
     <input type="hidden" name="ouw_pageid" value="'.$pageversion->pageid.'" />
-    <input type="hidden" name="id" value="'.$cmid.'" />';
+    <input type="hidden" name="id" value="'.$cmid.'" />
+    <input type="hidden" name="user" value="'.$pageversion->userid.'" />';
     if (!empty($pagename)) {
         $genericformdetails .= '<input type="hidden" name="page" value="' . $pagename . '" />';
     }
@@ -2764,7 +2800,9 @@ function ouwiki_print_editlock($lock, $ouwiki) {
                     var timeleft=ouw_countdownto-(new Date().getTime());
                     if (timeleft < 0) {
                         clearInterval(ouw_countdowninterval);
-                        document.forms['mform1'].elements['save'].click();
+                        var mform=document.querySelector('#ouwiki_belowtabs form');
+                        var mformid=mform.getAttribute('id');
+                        document.forms[mformid].elements['save'].click();
                         return;
                     }
                     if(timeleft<2*60*1000) {
@@ -2967,7 +3005,7 @@ function ouwiki_get_search_form($subwiki, $cmid) {
             'id' => 'ouwiki_searchquery', 'value' => $query));
     $out .= html_writer::empty_tag('input', array('type' => 'image',
             'id' => 'ousearch_searchbutton', 'alt' => get_string('search'),
-            'title' => get_string('search'), 'src' => $OUTPUT->pix_url('i/search')));
+            'title' => get_string('search'), 'src' => $OUTPUT->image_url('i/search')));
     $out .= html_writer::end_tag('div');
     $out .= html_writer::end_tag('form');
     return $out;
@@ -2981,9 +3019,16 @@ function ouwiki_get_search_form($subwiki, $cmid) {
  */
 function ouwiki_count_words($content) {
 
+    // Put a space before open tag will break line like p,ol,ul to count correctly.
+    $tags = ['p', 'ol', 'ul'];
+    $content = preg_replace_callback('/(\<([a-zA-Z]*)[^>]*\>)/', function($a) use ($tags) {
+        if (!empty($a[2]) && in_array($a[2], $tags)) {
+            return ' ' . $a[1];
+        }
+        return $a[0];
+    }, $content);
     // Strip tags and convert entities to text
     $content = html_entity_decode(strip_tags($content), ENT_QUOTES, 'UTF-8');
-
     // combine to a single word
     // hyphen
     // apostrophe
@@ -3007,9 +3052,8 @@ function ouwiki_count_words($content) {
     $pattern[1] = '/\s\s+/';
     $content = preg_replace($pattern, ' ', $content);
 
-    // trim again for extra spaces created
-    $content = trim($content);
-
+    // Trim again for extra spaces created and replace endline with space to correct count number.
+    $content = trim(preg_replace('/\s+/', ' ', $content));
     if (empty($content)) {
         return 0;
     } else {
@@ -3129,7 +3173,7 @@ function ouwiki_get_user_participation($userid, $subwiki) {
  */
 function ouwiki_get_user($userid) {
     global $DB;
-    $fields = user_picture::fields();
+    $fields = implode(',', \core_user\fields::get_picture_fields());
     $fields .= ',username,idnumber';
     $user = $DB->get_record('user', array('id' => $userid), $fields, MUST_EXIST);
     return $user;
@@ -3152,7 +3196,8 @@ function ouwiki_get_participation($ouwiki, $subwiki, $context,
 
     // get user objects
     list($esql, $params) = get_enrolled_sql($context, 'mod/ouwiki:edit', $groupid);
-    $fields = user_picture::fields('u');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $fields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
     $fields .= ',u.username,u.idnumber';
     $sql = "SELECT $fields
                 FROM {user} u
@@ -3248,9 +3293,9 @@ function ouwiki_sort_participation($data) {
                         $words = ouwiki_wordcount_difference($version->wordcount, 0, false);
                     }
                     if ($words < 0) {
-                        $byusers[$version->userid]->wordsdeleted += abs($words);
+                        $byusers[$version->userid]->wordsdeleted += abs((int) $words);
                     } else {
-                        $byusers[$version->userid]->wordsadded += abs($words);
+                        $byusers[$version->userid]->wordsadded += abs((int) $words);
                     }
                 }
             }
@@ -3372,12 +3417,14 @@ function ouwiki_display_portfolio_page_in_index($pageversion) {
 
 function ouwiki_build_up_sub_index($pageid, $index, &$subtree) {
     $thispage = $index[$pageid];
+    $subtree[$pageid] = $thispage;
     if (count($thispage->linksto) > 0) {
         foreach ($thispage->linksto as $childid) {
-            ouwiki_build_up_sub_index($childid, $index, $subtree);
+            if (empty($subtree[$childid]) && $childid != $pageid) {
+                ouwiki_build_up_sub_index($childid, $index, $subtree);
+            }
         }
     }
-    $subtree[$pageid] = $thispage;
 }
 
 function ouwiki_get_sub_tree_from_index($pageid, $index) {
@@ -3622,7 +3669,7 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
 
         // Last change info.
         $user = new stdClass();
-        foreach (explode(',', user_picture::fields()) as $field) {
+        foreach (\core_user\fields::get_picture_fields() as $field) {
             if ($field == 'id') {
                 $user->id = $pageversion->userid;
             } else {
@@ -3980,4 +4027,50 @@ class ouwiki_all_portfolio_caller extends ouwiki_portfolio_caller_base {
         }
         return sha1($bigstring);
     }
+}
+
+
+/**
+ * Obtains the automatic completion state for this module based on any conditions
+ * in module settings.
+ *
+ * @param object $cm Course-module
+ * @param int $userid User ID
+ * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
+ * @return bool True if completed, false if not, $type if conditions not set.
+ */
+function ouwiki_get_completion_state_lib($cm, $userid, $type) {
+    global $DB;
+    $ouwiki = $DB->get_record('ouwiki', ['id' => $cm->instance]);
+    $countsql = "SELECT COUNT(1)
+                   FROM {ouwiki_versions} v
+             INNER JOIN {ouwiki_pages} p ON p.id = v.pageid
+             INNER JOIN {ouwiki_subwikis} s ON s.id = p.subwikiid
+                  WHERE v.userid = ? AND v.deletedat IS NULL AND s.wikiid = ?";
+
+    $result = $type; // Default return value
+
+    if ($ouwiki->completionedits) {
+        $value = $ouwiki->completionedits <= $DB->get_field_sql($countsql, [$userid, $ouwiki->id]);
+        if ($type == COMPLETION_AND) {
+            $result = $result && $value;
+        } else {
+            $result = $result || $value;
+        }
+    }
+    if ($ouwiki->completionpages) {
+        $value = $ouwiki->completionpages <=
+                $DB->get_field_sql($countsql .
+                        ' AND (SELECT MIN (id)
+                                 FROM {ouwiki_versions}
+                                WHERE pageid = p.id AND deletedat IS NULL) = v.id',
+                        [$userid, $ouwiki->id]);
+        if ($type == COMPLETION_AND) {
+            $result = $result && $value;
+        } else {
+            $result = $result || $value;
+        }
+    }
+
+    return $result;
 }

@@ -62,6 +62,10 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
             $data->enablewordcount = 1;
         }
 
+        if (empty($data->timemodified)) {
+            $data->timemodified = time();
+        }
+
         // insert the ouwiki record
         $newitemid = $DB->insert_record('ouwiki', $data);
         // immediately after inserting "activity" record, call this

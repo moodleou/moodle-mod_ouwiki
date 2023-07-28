@@ -28,6 +28,7 @@ if (!defined('MOODLE_INTERNAL')) {
 global $CFG;
 
 require_once($CFG->dirroot . '/mod/ouwiki/locallib.php');
+require_once($CFG->dirroot . '/mod/ouwiki/lib.php');
 
 class ouwiki_locallib_test extends advanced_testcase {
 
@@ -41,11 +42,9 @@ class ouwiki_locallib_test extends advanced_testcase {
      * Create temporary test tables and entries in the database for these tests.
      * These tests have to work on a brand new site.
      */
-    public function setUp() {
-        global $CFG;
-
-        parent::setup();
-
+    public function setUp(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
         $this->generator = $this->getDataGenerator()->get_plugin_generator('mod_ouwiki');
     }
 
@@ -249,8 +248,15 @@ class ouwiki_locallib_test extends advanced_testcase {
         $this->assertNotEmpty($cm);
         $context = context_module::instance($cm->id);
         $this->setUser($user);
-        $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $group2->id, $user->id, true);
-        $this->check_subwiki($ouwiki, $subwiki, false, $group2->id);
+        try {
+            $exceptionoccured = false;
+            $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $group2->id, $user->id, true);
+        } catch (\moodle_exception $e) {
+            $this->assertStringContainsString('Wiki error: You do not have permission to see the content of this page',
+                    $e->getMessage());
+            $exceptionoccured = true;
+         }
+        $this->assertTrue($exceptionoccured);
     }
 
     public function test_ouwiki_init_individual_wiki_access() {
@@ -289,7 +295,7 @@ class ouwiki_locallib_test extends advanced_testcase {
 
         // Check student viewing someone else's wiki throws exception (add nothing after this).
         $this->setUser($user);
-        $this->setExpectedException('moodle_exception');
+        $this->expectException('moodle_exception');
         $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $adminuserid, true);
         $this->fail('Expected exception on access to another users wiki');// Shouldn't get here.
     }
@@ -346,6 +352,27 @@ class ouwiki_locallib_test extends advanced_testcase {
         $test['count'] = 2;
         $testcount = ouwiki_count_words($test['string']);
         $this->assertEquals($test['count'], $testcount);
+
+        $test['string'] = 'Three' . "\n" . 'word' . "\n" .'test';
+        $test['count'] = 3;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEquals($test['count'], $testcount);
+
+        $test['string'] = 'Three' . '<p>word</p>' . "\n" .'test';
+        $test['count'] = 3;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEquals($test['count'], $testcount);
+
+        $test['string'] = 'Four test' . '<p>word</p>' . "\n" .'test';
+        $test['count'] = 4;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEquals($test['count'], $testcount);
+
+        $test['string'] = 'Five test' . '<ol>ol</ol>' . "\n" .'test<ul>ul</ul>';
+        $test['count'] = 5;
+        $testcount = ouwiki_count_words($test['string']);
+        $this->assertEquals($test['count'], $testcount);
+
     }
 
     /*
@@ -592,6 +619,19 @@ class ouwiki_locallib_test extends advanced_testcase {
     }
 
     /**
+     * Test no infinite loop on building sub index
+     */
+    public function test_ouwiki_build_up_sub_index() {
+        $index = [
+            1 => (object) ['linksto' => [2]],
+            2 => (object) ['linksto' => [1]]
+        ];
+        $subtree = [];
+        ouwiki_build_up_sub_index(1, $index,$subtree);
+        $this->assertEquals($index, $subtree);
+    }
+
+    /**
      * Simple test of last modified time returning
      */
     public function test_ouwiki_get_last_modified() {
@@ -669,9 +709,16 @@ class ouwiki_locallib_test extends advanced_testcase {
         $ouwiki->template = null;
         $ouwiki->editbegin = null;
         $ouwiki->editend = null;
-
-        $ouwiki->completionpages = 0;
-        $ouwiki->completionedits = 0;
+        if (isset($options['completionpages'])) {
+            $ouwiki->completionpages = $options['completionpages'];
+        } else {
+            $ouwiki->completionpages = 0;
+        }
+        if (isset($options['completionedits'])) {
+            $ouwiki->completionedits = $options['completionpages'];
+        } else {
+            $ouwiki->completionedits = 0;
+        }
 
         $ouwiki->introformat = 0;
 
@@ -720,4 +767,277 @@ class ouwiki_locallib_test extends advanced_testcase {
         $this->assertEquals($canaccess, $subwiki->canannotate);
     }
 
+    /**
+     * Tests completion.
+     */
+    public function test_completion() {
+        global $USER, $DB, $CFG;
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        $adminid = $USER->id;
+        $CFG->enablecompletion = true;
+        $course = $this->get_new_course();
+        $course->enablecompletion = true;
+        $DB->update_record('course', $course);
+        $user1 = $this->get_new_user('editingteacher', $course->id);
+        $user2 = $this->get_new_user('student', $course->id);
+        $user3 = $this->get_new_user('testouwikiuser', $course->id);
+        // Test post discussions or replies.
+        $ouwiki = $this->get_new_ouwiki($course->id, OUWIKI_SUBWIKIS_SINGLE, array('completion' => COMPLETION_TRACKING_AUTOMATIC,
+               'completionpages' => 1));
+        $cm1 = get_coursemodule_from_instance('ouwiki', $ouwiki->id);
+        $this->assertNotEmpty($cm1);
+        $context = context_module::instance($cm1->id);
+        $groupid = 0;
+        $this->setUser($user1);
+        $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm1, $context, $groupid, $user1->id, true);
+
+        // Create the start page.
+        $startpagename = 'startpage';
+        $formdata = null;
+        $startpageversion = ouwiki_get_current_page($subwiki, $startpagename, OUWIKI_GETPAGE_CREATE);
+        $verid = ouwiki_save_new_version($course, $cm1, $ouwiki, $subwiki, $startpagename, $startpagename,
+                -1, -1, -1, null, $formdata);
+
+        $this->setUser($user2);
+        // Create a page with no sub pages.
+        $pagename2 = 'testpage2';
+        $content2 = 'testcontent2';
+        ouwiki_create_new_page($course, $cm1, $ouwiki, $subwiki, $startpagename, $pagename2, $content2, $formdata);
+        // Try get that page.
+        $pageversion = ouwiki_get_current_page($subwiki, $pagename2);
+        $this->assertEquals($pageversion->title, $pagename2);
+        // Test fullname info from ouwiki_get_current_page.
+        $this->assertTrue(ouwiki_get_completion_state_lib($cm1, $user1->id, COMPLETION_AND));
+        $this->assertTrue(ouwiki_get_completion_state_lib($cm1, $user2->id, COMPLETION_AND));
+        $ouwiki2 = $this->get_new_ouwiki($course->id, OUWIKI_SUBWIKIS_SINGLE, array('completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'completionpages' => 1, 'completionedits' => 1));
+        $cm2 = get_coursemodule_from_instance('ouwiki', $ouwiki2->id);
+        $this->setUser($user1);
+        $subwiki = ouwiki_get_subwiki($course, $ouwiki2, $cm2, $context, $groupid, $user1->id, true);
+        // Create the start page.
+        $startpagename = 'startpage';
+        $formdata = null;
+        $startpageversion = ouwiki_get_current_page($subwiki, $startpagename, OUWIKI_GETPAGE_CREATE);
+        $verid = ouwiki_save_new_version($course, $cm2, $ouwiki2, $subwiki, $startpagename, $startpagename,
+                -1, -1, -1, null, $formdata);
+        $this->setUser($user2);
+        // Create a page with no sub pages.
+        $pagename2 = 'testpage2';
+        $content2 = 'testcontent2';
+        ouwiki_create_new_page($course, $cm2, $ouwiki2, $subwiki, $startpagename, $pagename2, $content2, $formdata);
+
+        $this->assertTrue(ouwiki_get_completion_state_lib($cm2, $user1->id, COMPLETION_OR));
+        $this->assertTrue(ouwiki_get_completion_state_lib($cm2, $user2->id, COMPLETION_OR));
+    }
+
+    /**
+     * Test core_calendar provides the event for ouwiki.
+     */
+    public function test_ouwiki_core_calendar_provide_event_action() {
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course();
+        $ouwiki = $this->getDataGenerator()->create_module('ouwiki', ['course' => $course->id]);
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $ouwiki->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event.
+        $actionevent = mod_ouwiki_core_calendar_provide_event_action($event, $factory);
+
+        // Confirm the event was decorated.
+        $this->assertInstanceOf('\core_calendar\local\event\value_objects\action', $actionevent);
+        $this->assertEquals(get_string('view'), $actionevent->get_name());
+        $this->assertInstanceOf('moodle_url', $actionevent->get_url());
+        $this->assertEquals(1, $actionevent->get_item_count());
+        $this->assertTrue($actionevent->is_actionable());
+    }
+
+    /**
+     * Test core_calendar hidden when ouwiki hides.
+     */
+    public function test_ouwiki_core_calendar_provide_event_action_in_hidden_section() {
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course();
+        $ouwiki = $this->getDataGenerator()->create_module('ouwiki', ['course' => $course->id]);
+
+        // Enrol a student in the course.
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $ouwiki->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Set sections 0 as hidden.
+        set_section_visible($course->id, 0, 0);
+
+        // Now, log out.
+        $this->setUser();
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event for the student.
+        $actionevent = mod_ouwiki_core_calendar_provide_event_action($event, $factory, $student->id);
+
+        // Confirm the event is not shown at all.
+        $this->assertNull($actionevent);
+    }
+
+    /**
+     * Test core_calendar provides the events for user.
+     */
+    public function test_ouwiki_core_calendar_provide_event_action_for_user() {
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course();
+        $ouwiki = $this->getDataGenerator()->create_module('ouwiki', ['course' => $course->id]);
+
+        // Enrol a student in the course.
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $ouwiki->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Now, log out.
+        $this->setUser($student);
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event for the student.
+        $actionevent = mod_ouwiki_core_calendar_provide_event_action($event, $factory, $student->id);
+
+        // Confirm the event was decorated.
+        $this->assertInstanceOf('\core_calendar\local\event\value_objects\action', $actionevent);
+        $this->assertEquals(get_string('view'), $actionevent->get_name());
+        $this->assertInstanceOf('moodle_url', $actionevent->get_url());
+        $this->assertEquals(1, $actionevent->get_item_count());
+        $this->assertTrue($actionevent->is_actionable());
+    }
+
+    /**
+     * Test core_calendar provides the events for non-user.
+     */
+    public function test_ouwiki_core_calendar_provide_event_action_as_non_user() {
+        global $CFG;
+
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course();
+        $ouwiki = $this->getDataGenerator()->create_module('ouwiki', ['course' => $course->id]);
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $ouwiki->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Log out the user and set force login to true.
+        \core\session\manager::init_empty_session();
+        $CFG->forcelogin = true;
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event.
+        $actionevent = mod_ouwiki_core_calendar_provide_event_action($event, $factory);
+
+        // Ensure result was null.
+        $this->assertNull($actionevent);
+    }
+
+    /**
+     * Test core_calendar provides the action events completed.
+     */
+    public function test_ouwiki_core_calendar_provide_event_action_already_completed() {
+        global $CFG;
+
+        $CFG->enablecompletion = 1;
+
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $ouwiki = $this->getDataGenerator()->create_module('ouwiki', ['course' => $course->id],
+            ['completion' => 2, 'completionview' => 1, 'completionexpected' => time() + DAYSECS]);
+
+        // Get some additional data.
+        $cm = get_coursemodule_from_instance('ouwiki', $ouwiki->id);
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $ouwiki->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Mark the activity as completed.
+        $completion = new \completion_info($course);
+        $completion->set_module_viewed($cm);
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event.
+        $actionevent = mod_ouwiki_core_calendar_provide_event_action($event, $factory);
+
+        // Ensure result was null.
+        $this->assertNull($actionevent);
+    }
+
+    /**
+     * Test core_calendar provides the action events completed for user.
+     */
+    public function test_ouwiki_core_calendar_provide_event_action_already_completed_for_user() {
+        global $CFG;
+
+        $CFG->enablecompletion = 1;
+
+        // Create the activity.
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $ouwiki = $this->getDataGenerator()->create_module('ouwiki', ['course' => $course->id],
+            ['completion' => 2, 'completionview' => 1, 'completionexpected' => time() + DAYSECS]);
+
+        // Enrol a student in the course.
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+
+        // Get some additional data.
+        $cm = get_coursemodule_from_instance('ouwiki', $ouwiki->id);
+
+        // Create a calendar event.
+        $event = $this->create_action_event($course->id, $ouwiki->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+
+        // Mark the activity as completed for the student.
+        $completion = new \completion_info($course);
+        $completion->set_module_viewed($cm, $student->id);
+
+        // Create an action factory.
+        $factory = new \core_calendar\action_factory();
+
+        // Decorate action event for the student.
+        $actionevent = mod_ouwiki_core_calendar_provide_event_action($event, $factory, $student->id);
+
+        // Ensure result was null.
+        $this->assertNull($actionevent);
+    }
+
+    /**
+     * Creates an action event.
+     *
+     * @param int $courseid The course id.
+     * @param int $instanceid The instance id.
+     * @param string $eventtype The event type.
+     * @return bool|calendar_event
+     */
+    private function create_action_event($courseid, $instanceid, $eventtype) {
+        $event = new \stdClass();
+        $event->name = 'Calendar event';
+        $event->modulename  = 'ouwiki';
+        $event->courseid = $courseid;
+        $event->instance = $instanceid;
+        $event->type = CALENDAR_EVENT_TYPE_ACTION;
+        $event->eventtype = $eventtype;
+        $event->timestart = time();
+
+        return \calendar_event::create($event);
+    }
 }

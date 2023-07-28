@@ -34,6 +34,9 @@ function ouwiki_add_instance($data, $mform) {
     $context = context_module::instance($cmid);
 
     if ($formdata = $data) {
+
+        $formdata->timemodified = time();
+
         // Set up null values
         $nullvalues = array('editbegin', 'editend', 'timeout');
         foreach ($nullvalues as $nullvalue) {
@@ -43,7 +46,7 @@ function ouwiki_add_instance($data, $mform) {
         }
 
         if (strlen(preg_replace('/(<.*?>)|(&.*?;)|\s/', '', $formdata->intro)) == 0) {
-            unset($formdata->intro);
+            $formdata->intro = null;
         }
 
         // Create record
@@ -59,6 +62,10 @@ function ouwiki_add_instance($data, $mform) {
             $DB->set_field('ouwiki', 'template', '/'.$file->get_filename(), array('id' => $formdata->id));
         }
 
+        // Update completion event in calendar.
+        $completionexpected = (!empty($formdata->completionexpected)) ? $formdata->completionexpected : null;
+        \core_completion\api::update_completion_date_event($cmid, 'ouwiki', $ouwikiid, $completionexpected);
+
         return $ouwikiid;
     }
     // Note: template files will be stored based on the old data structure.
@@ -68,9 +75,27 @@ function ouwiki_update_instance($data, $mform) {
     global $CFG, $DB;
 
     $data->id = $data->instance;
+    $data->timemodified = time();
+
+
+    if ($data->lockstartpages) {
+        // Find current value of 'lock start pages' setting
+        $lockstartpages = $DB->get_field('ouwiki', 'lockstartpages', array('id' => $data->id));
+    }
 
     // Update main record.
     $DB->update_record('ouwiki', $data);
+
+    // Lock all start pages if the 'lock start pages' setting has been activated
+    if ($data->lockstartpages && isset($lockstartpages) && !$lockstartpages) {
+        $sql = "UPDATE {ouwiki_pages}
+            SET locked = 1
+            WHERE locked = 0
+            AND title = ''
+            AND subwikiid IN (SELECT id FROM {ouwiki_subwikis} WHERE wikiid = ?)";
+
+        $DB->execute($sql, array($data->id));
+    }
 
     // Set up null values
     $nullvalues = array('editbegin', 'editend', 'timeout');
@@ -81,14 +106,14 @@ function ouwiki_update_instance($data, $mform) {
         }
     }
     if (strlen(preg_replace('/(<.*?>)|(&.*?;)|\s/', '', $data->intro)) == 0) {
-        unset($data->intro);
+        $data->intro = null;
         $DB->set_field('ouwiki', 'intro', null, array('id' => $data->id));
     }
 
     ouwiki_grade_item_update($data);
 
     if (!$cm = get_coursemodule_from_id('ouwiki', $data->coursemodule)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     // Checking course instance.
@@ -113,6 +138,10 @@ function ouwiki_update_instance($data, $mform) {
             }
         }
     }
+
+    // Update completion event in calendar.
+    $completionexpected = (!empty($data->completionexpected)) ? $data->completionexpected : null;
+    \core_completion\api::update_completion_date_event($data->coursemodule, 'ouwiki', $data->id, $completionexpected);
 
     return true;
 }
@@ -171,6 +200,10 @@ function ouwiki_delete_instance($id) {
 
     $DB->delete_records_select('ouwiki_subwikis', 'wikiid = ?', array($id));
     $DB->delete_records('ouwiki', array('id' => $id));
+
+    // Delete event in calendar when deleting activity.
+    \core_completion\api::update_completion_date_event($cm->id, 'ouwiki', $id, null);
+
     return true;
 }
 
@@ -192,6 +225,10 @@ function ouwiki_get_extra_capabilities() {
  */
 function ouwiki_ousearch_update_all($feedback = null, $courseid = 0) {
     global $CFG, $DB;
+    if (get_config('local_ousearch', 'ousearchindexingdisabled')) {
+        // Do nothing if the OU Search system is turned off.
+        return;
+    }
     require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
     // Get list of all wikis. We need the coursemodule data plus
     // the type of subwikis
@@ -358,54 +395,6 @@ function ouwiki_supports($feature) {
     }
 }
 
-/**
- * Obtains the automatic completion state for this module based on any conditions
- * in module settings.
- *
- * @param object $course Course
- * @param object $cm Course-module
- * @param int $userid User ID
- * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
- * @return bool True if completed, false if not, $type if conditions not set.
- */
-function ouwiki_get_completion_state($course, $cm, $userid, $type) {
-    global $CFG, $DB;
-
-    // Get forum details
-    $ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance));
-
-    $countsql = "SELECT COUNT(1)
-            FROM {ouwiki_versions} v
-                INNER JOIN {ouwiki_pages} p ON p.id = v.pageid
-                INNER JOIN {ouwiki_subwikis} s ON s.id = p.subwikiid
-            WHERE v.userid = ? AND v.deletedat IS NULL AND s.wikiid = ?";
-
-    $result = $type; // Default return value
-
-    if ($ouwiki->completionedits) {
-        $value = $ouwiki->completionedits <= $DB->get_field_sql($countsql, array($userid, $ouwiki->id));
-        if ($type == COMPLETION_AND) {
-            $result = $result && $value;
-        } else {
-            $result = $result || $value;
-        }
-    }
-    if ($ouwiki->completionpages) {
-        $value = $ouwiki->completionpages <=
-            $DB->get_field_sql($countsql.
-            ' AND (SELECT MIN(id)
-                FROM {ouwiki_versions}
-                WHERE pageid = p.id AND deletedat IS NULL) = v.id',
-                array($userid, $ouwiki->id));
-        if ($type == COMPLETION_AND) {
-            $result = $result && $value;
-        } else {
-            $result = $result || $value;
-        }
-    }
-
-    return $result;
-}
 
 /**
  * This function prints the recent activity (since current user's last login)
@@ -535,7 +524,7 @@ function ouwiki_user_outline($course, $user, $mod, $wiki) {
         $result->info = get_string('numedits', 'ouwiki', count($versions));
 
         if ($grade) {
-            $result->info .= ', ' . get_string('grade') . ': ' . $grade->str_long_grade;
+            $result->info .= ', ' . get_string('gradenoun') . ': ' . $grade->str_long_grade;
         }
 
         $timecreated = end($versions)->timecreated;
@@ -543,7 +532,7 @@ function ouwiki_user_outline($course, $user, $mod, $wiki) {
         $result->time = $timecreated;
     } else if ($grade) {
         $result = new stdClass();
-        $result->info = get_string('grade') . ': ' . $grade->str_long_grade;
+        $result->info = get_string('gradenoun') . ': ' . $grade->str_long_grade;
         // If grade was last modified by the user themselves use date graded. Otherwise use date submitted.
         if ($grade->usermodified == $user->id || empty($grade->datesubmitted)) {
             $result->time = $grade->dategraded;
@@ -574,7 +563,7 @@ function ouwiki_user_complete($course, $user, $mod, $wiki) {
     if (!empty($grades->items[0]->grades)) {
         $grade = reset($grades->items[0]->grades);
         if ($grade != '-') {
-            echo $OUTPUT->container(get_string('grade') . ': ' . $grade->str_long_grade);
+            echo $OUTPUT->container(get_string('gradenoun') . ': ' . $grade->str_long_grade);
             if ($grade->str_feedback) {
                 echo $OUTPUT->container(get_string('feedback') . ': ' . $grade->str_feedback);
             }
@@ -875,4 +864,64 @@ function ouwiki_get_view_actions() {
  */
 function ouwiki_get_post_actions() {
     return array('update', 'add', 'annotate', 'edit');
+}
+
+/**
+ * Given a course_module object, this function returns any
+ * "extra" information that may be needed when printing
+ * this activity in a course listing.
+ * See get_array_of_activities() in course/lib.php
+ */
+function ouwiki_get_coursemodule_info($coursemodule) {
+    global $DB;
+    $ouwiki = $DB->get_record('ouwiki',
+            ['id' => $coursemodule->instance], 'id, name, completionpages, completionedits');
+    if (!$ouwiki) {
+        return null;
+    }
+
+    $info = new cached_cm_info();
+    $info->customdata = (object)[];
+
+    // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
+    if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
+        $info->customdata->customcompletionrules['completionpages'] = $ouwiki->completionpages;
+        $info->customdata->customcompletionrules['completionedits'] = $ouwiki->completionedits;
+    }
+
+    return $info;
+}
+
+/**
+ * This function receives a calendar event and returns the action associated with it, or null if there is none.
+ *
+ * This is used by block_myoverview in order to display the event appropriately. If null is returned then the event
+ * is not displayed on the block.
+ *
+ * @param calendar_event $event
+ * @param \core_calendar\action_factory $factory
+ * @param int $userid User id to use for all capability checks, etc. Set to 0 for current user (default).
+ * @return \core_calendar\local\event\entities\action_interface|null
+ */
+function mod_ouwiki_core_calendar_provide_event_action(calendar_event $event, \core_calendar\action_factory $factory, int $userid = 0) {
+    global $USER;
+    if (!$userid) {
+        $userid = $USER->id;
+    }
+    $cm = get_fast_modinfo($event->courseid, $userid)->instances['ouwiki'][$event->instance];
+    if (!$cm->uservisible) {
+        // The module is not visible to the user for any reason.
+        return null;
+    }
+    $completion = new \completion_info($cm->get_course());
+    $completiondata = $completion->get_data($cm, false, $userid);
+    if ($completiondata->completionstate != COMPLETION_INCOMPLETE) {
+        return null;
+    }
+    return $factory->create_instance(
+        get_string('view'),
+        new \moodle_url('/mod/ouwiki/view.php', ['id' => $cm->id]),
+        1,
+        true
+    );
 }

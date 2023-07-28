@@ -34,14 +34,14 @@ $PAGE->set_url($url);
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('ouwiki', $id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     // Checking course instance
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
     if (!$ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance))) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     $PAGE->set_cm($cm);
@@ -54,13 +54,13 @@ $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 // Get the current page version
 $pageversion = ouwiki_get_page_version($subwiki, $pagename, $versionid);
 if (!$pageversion) {
-    print_error('Unknown page version');
+    throw new moodle_exception('Unknown page version');
 }
 
 // Check permission - Allow anyone with delete page capability to view a deleted page version
 $candelete = has_capability('mod/ouwiki:deletepage', $context);
 if (!empty($pageversion->deletedat) && !$candelete) {
-    print_error('viewdeletedversionerrorcapability', 'ouwiki');
+    throw new moodle_exception('viewdeletedversionerrorcapability', 'ouwiki');
 }
 
 // Get previous and next versions
@@ -76,10 +76,14 @@ echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagenam
         array('name' => get_string('oldversion', 'ouwiki'), 'link' => null)
     ), true, true);
 
+// Fix double htmlspecialchars for ampersand in "Older changes" and "Newer changes" links.
+if ($prevnext->prev || $prevnext->next) {
+    $wikiparams = str_replace('&amp;', '&', $wikiparams);
+}
 // Information box
 if ($prevnext->prev) {
     $date = ouwiki_nice_date($prevnext->prev->timecreated);
-    $prev = link_arrow_left(get_string('previousversion', 'ouwiki', $date), "viewold.php?$wikiparams&amp;version={$prevnext->prev->versionid}");
+    $prev = link_arrow_left(get_string('previousversion', 'ouwiki', $date), "viewold.php?$wikiparams&version={$prevnext->prev->versionid}");
 } else {
     $prev = '';
 }
@@ -89,7 +93,7 @@ if ($prevnext->next) {
         $next = link_arrow_right(get_string('nextversion', 'ouwiki', $date), "view.php?$wikiparams");
     } else {
         $date = ouwiki_nice_date($prevnext->next->timecreated);
-        $next = link_arrow_right(get_string('nextversion', 'ouwiki', $date), "viewold.php?$wikiparams&amp;version={$prevnext->next->versionid}");
+        $next = link_arrow_right(get_string('nextversion', 'ouwiki', $date), "viewold.php?$wikiparams&version={$prevnext->next->versionid}");
     }
 } else {
     $next = '';

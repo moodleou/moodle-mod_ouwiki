@@ -45,7 +45,7 @@ $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 // Get the current page version
 $pageversion = ouwiki_get_current_page($subwiki, $pagename);
 
-if ($pageversion) {
+if ($pageversion && !isguestuser()) {
     $ouwikioutput->set_export_button('page', $pageversion->pageid, $course->id);
 }
 echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagename, $context);
@@ -54,11 +54,11 @@ echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, $pagenam
 $courselink = new moodle_url('/course/view.php?id=', array('id' =>  $cm->course));
 /*
 if (($cm->groupmode == 0) && isset($subwiki->groupid)) {
-    print_error("Sub-wikis is set to 'One wiki per group'.
+    throw new moodle_exception("Sub-wikis is set to 'One wiki per group'.
         Please change Group mode to 'Separate groups' or 'Visible groups'.", 'error', $courselink);
 }
 if (($cm->groupmode > 0) && !isset($subwiki->groupid)) {
-    print_error("Sub-wikis is NOT set to 'One wiki per group'.
+    throw new moodle_exception("Sub-wikis is NOT set to 'One wiki per group'.
         Please change Group mode to 'No groups'.", 'error', $courselink);
 }
 */
@@ -67,14 +67,14 @@ $locked = ($pageversion) ? $pageversion->locked : false;
 ouwiki_print_tabs('view', $pagename, $subwiki, $cm, $context, $pageversion ? true : false, $locked);
 
 if (($pagename === '' || $pagename === null) && strlen(preg_replace('/\s|<br\s*\/?>|<p>|<\/p>/',
-        '', $ouwiki->intro)) > 0) {
+        '', $ouwiki->intro ?? '')) > 0) {
     echo $ouwikioutput->ouwiki_get_intro($ouwiki->intro, $context->id);
 }
 
 if ($pageversion) {
     // Print warning if page is large (more than 75KB)
     if (strlen($pageversion->xhtml) > 75 * 1024) {
-        print '<div class="ouwiki-sizewarning"><img src="' . $OUTPUT->pix_url('warning', 'ouwiki') .
+        print '<div class="ouwiki-sizewarning"><img src="' . $OUTPUT->image_url('warning', 'ouwiki') .
                 '" alt="" />' . get_string('sizewarning', 'ouwiki') .
                 '</div>';
     }

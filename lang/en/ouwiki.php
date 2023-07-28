@@ -31,6 +31,9 @@ $string['subwikis_single'] = 'Single wiki for course';
 $string['subwikis_groups'] = 'One wiki per group';
 $string['subwikis_individual'] = 'Separate wiki for every user';
 
+$string['lockstartpages'] = 'Lock start pages';
+$string['lockstartpages_help'] = 'Will lock all existing start pages and any start pages created after this point when a template is used to populate content.';
+
 $string['note'] = 'Note:';
 $string['subwikiexist'] = 'Sub-wiki\'s have already been created. Adding a template file only affects
 newly created and empty sub-wiki\'s, existing content will remain as at present.';
@@ -156,6 +159,7 @@ $string['frompages']='from {$a}...';
 $string['nowikipages'] = 'This wiki does not have any pages.';
 
 $string['error_export'] = 'An error occurred while exporting wiki data.';
+$string['error_nopermission'] = 'You do not have permission to see the content of this page';
 
 $string['changesnav']='Changes';
 $string['advice_diff']='The older version is shown on the
@@ -253,12 +257,11 @@ $string['feednewpage']='Created by {$a->name}';
 $string['feeditemdescriptiondate']='{$a->main} on {$a->date}.';
 $string['feeditemdescriptionnodate']='{$a->main}.';
 $string['feedsubscribe']='You can subscribe to a feed containing this information: <a href=\'{$a->atom}\'>Atom</a> or <a href=\'{$a->rss}\'>RSS</a>.';
-$string['feedalt']='Subscribe to Atom feed';
-
+$string['feedalt'] = 'Subscribe to Atom feed';
+$string['rssfeedalt'] = 'Subscribe to RSS feed';
 
 $string['olderversion']='Older version';
 $string['newerversion']='Newer version';
-
 
 $string['completionpagesgroup']='Require new pages';
 $string['completionpages']='User must create new pages:';
@@ -266,6 +269,8 @@ $string['completionpageshelp']='requiring new pages to complete';
 $string['completioneditsgroup']='Require edits';
 $string['completionedits']='User must make edits:';
 $string['completioneditshelp']='requiring edits to complete';
+$string['completiondetail:pages'] = 'Make pages: {$a}';
+$string['completiondetail:edits'] = 'Make edits: {$a}';
 
 $string['reverterrorversion'] = 'Cannot revert to nonexistent page version';
 $string['reverterrorcapability'] = 'You do not have permission to revert to an earlier version';
@@ -589,6 +594,44 @@ $string['event:ouwikipagecreated'] = 'ouwiki page created';
 $string['event:ouwikipageupdated'] = 'ouwiki page updated';
 $string['event:savefailed'] = 'Session fail on page save';
 $string['ouwikicrontask'] = 'OU wiki maintenance jobs';
+$string['search:activity'] = 'OUWiki - activity information';
+$string['search:page_version'] = 'OUWiki - page versions';
+
+$string['privacy:metadata:core_files'] = 'Files attached to subwikis';
+$string['privacy:metadata:ouwiki_locks'] = 'Temporary storage for ouwiki edit locks';
+$string['privacy:metadata:ouwiki_locks:userid'] = 'User who locked a page';
+$string['privacy:metadata:ouwiki_locks:sectionstart'] = 'Time for section start lock';
+$string['privacy:metadata:ouwiki_locks:lockedat'] = 'Date when locked';
+$string['privacy:metadata:ouwiki_locks:seenat'] = 'Time at which the user\'s client checked in to confirm';
+$string['privacy:metadata:ouwiki_locks:expiresat'] = 'Time at which lock expires';
+$string['privacy:metadata:ouwiki_locks:sectionstart'] = 'This is the start position in bytes relative to the beginning of 
+the \'xhtml\' field in the specified version.';
+$string['privacy:metadata:ouwiki_locks:sectionsize'] = 'This is the size of the section being edited in bytes.';
+$string['privacy:metadata:ouwiki_annotations'] = 'Annotations of OU wiki pages';
+$string['privacy:metadata:ouwiki_annotations:userid'] = 'User who created annotation';
+$string['privacy:metadata:ouwiki_annotations:content'] = 'Annotation content of the page';
+$string['privacy:metadata:ouwiki_annotations:timemodified'] = 'Time when annotation was last modified';
+$string['privacy:metadata:ouwiki_subwikis'] = 'Information about subwikis';
+$string['privacy:metadata:ouwiki_subwikis:userid'] = 'User who owns a subwiki (for individual or single wikis)';
+$string['privacy:metadata:ouwiki_subwikis:groupid'] = 'Group that owns a subwiki';
+$string['privacy:metadata:ouwiki_versions'] = 'Information about OU wiki pages history';
+$string['privacy:metadata:ouwiki_versions:userid'] = 'User who created revision';
+$string['privacy:metadata:ouwiki_versions:xhtml'] = 'Revision content';
+$string['privacy:metadata:ouwiki_versions:timecreated'] = 'Time when revision was created';
+$string['privacy:metadata:ouwiki_versions:changestart'] = 'The starting point when the section was edited';
+$string['privacy:metadata:ouwiki_versions:changesize'] = 'The new size of the section when the section was edited';
+$string['privacy:metadata:ouwiki_versions:changeprevsize'] = 'The previous size of the section number when the section was edited';
+$string['privacy:metadata:ouwiki_versions:deletedat'] = 'Revision delete date';
+$string['privacy:metadata:ouwiki_versions:wordcount'] = 'Word count of revision content';
+$string['privacy:metadata:ouwiki_versions:previousversionid'] = 'The previous revision id';
+$string['privacy:metadata:ouwiki_versions:importversionid'] = 'The import revision id';
+$string['privacy:metadata:preferences:ouwiki_hide_annotations'] = 'Hide annotations when view wiki';
+$string['privacy_you'] = 'You';
+$string['privacy_somebodyelse'] = 'Somebody else';
+$string['privacy:annotationdeleted'] = '[Annotation deleted at user request]';
+$string['privacy:xhtmlcontentdeleted'] = '[Contributor information deleted at user request]';
+
+$string['wiki_content_mask'] = 'Replace with fake text of a similar length, retaining HTML tags and [[wiki page]] links';
 
 $string['tableofcontents'] = 'Table of contents';
 $string['printwiki'] = 'Print Wiki ';

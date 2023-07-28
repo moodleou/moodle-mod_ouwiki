@@ -37,7 +37,7 @@ class mod_ouwiki_annotate_form extends moodleform {
         $mform->addElement('hidden', 'user', $currentuserid);
         $mform->setType('user', PARAM_INT);
 
-        if (count($annotations != 0)) {
+        if ($annotations) {
             usort($annotations, array('mod_ouwiki_annotate_form', 'ouwiki_internal_position_sort'));
             $editnumber = 1;
             foreach ($annotations as $annotation) {
@@ -61,7 +61,8 @@ class mod_ouwiki_annotate_form extends moodleform {
         }
 
         if ($canlock) {
-            $mform->addElement('checkbox', 'lockediting', get_string('lockediting', 'ouwiki'));
+            $mform->addElement('checkbox', 'lockediting', get_string('lockediting', 'ouwiki'), '', [
+                'class' => 'lockediting']);
             if (ouwiki_is_page_editing_locked($pageid)) {
                 $mform->setDefault('lockediting', true);
             } else {

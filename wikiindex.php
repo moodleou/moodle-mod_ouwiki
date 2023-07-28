@@ -38,14 +38,14 @@ $PAGE->set_url($url);
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('ouwiki', $id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     // Checking course instance
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
     if (!$ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance))) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     $PAGE->set_cm($cm);
@@ -60,7 +60,9 @@ $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 $wikiparams = ouwiki_display_wiki_parameters('', $subwiki, $cm);
 
 // Do header
-$ouwikioutput->set_export_button('subwiki', $subwiki->id, $course->id, !empty($treemode) ? 1 : 0);
+if (!isguestuser()) {
+    $ouwikioutput->set_export_button('subwiki', $subwiki->id, $course->id, !empty($treemode) ? 1 : 0);
+}
 echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, get_string('index', 'ouwiki'), $context, null, false);
 
 // Print tabs for selecting index type

@@ -36,14 +36,14 @@ $PAGE->set_url($url);
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('ouwiki', $id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     // Checking course instance
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
     if (!$ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance))) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     $PAGE->set_cm($cm);
@@ -56,7 +56,7 @@ $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 // Get the page version to be reverted back to (must not be deleted page version)
 $pageversion = ouwiki_get_page_version($subwiki, $pagename, $versionid);
 if (!$pageversion || !empty($pageversion->deletedat)) {
-    print_error('reverterrorversion', 'ouwiki');
+    throw new moodle_exception('reverterrorversion', 'ouwiki');
 }
 
 // Check for cancel
@@ -68,7 +68,7 @@ if (isset($cancelled)) {
 // Check permission - Allow anyone with edit capability to revert to a previous version
 $canrevert = has_capability('mod/ouwiki:edit', $context);
 if (!$canrevert) {
-    print_error('reverterrorcapability', 'ouwiki');
+    throw new moodle_exception('reverterrorcapability', 'ouwiki');
 }
 
 // Check if reverting to previous version has been confirmed
@@ -101,6 +101,10 @@ if ($confirmed) {
         '<input type="submit" name="confirm" value="'.get_string('revertversion', 'ouwiki').'"/> '.
         '<input type="submit" name="cancel" value="'.get_string('cancel').'"/>';
     print '</form>';
+
+    // Because there are no tabs on this page we need to output an extra open div, which
+    // ouwiki_print_footer will close (otherwise we get an extra closing div tag).
+    echo html_writer::start_div();
 
     // Footer
     ouwiki_print_footer($course, $cm, $subwiki, $pagename);

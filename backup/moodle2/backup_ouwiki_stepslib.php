@@ -36,7 +36,8 @@ class backup_ouwiki_activity_structure_step extends backup_activity_structure_st
         $userinfo = $this->get_setting_value('userinfo');
 
         $els = array('name', 'subwikis', 'intro', 'editbegin', 'editend', 'annotation',
-                'introformat', 'completionedits', 'completionpages', 'enablewordcount', 'allowimport');
+                'introformat', 'completionedits', 'completionpages', 'enablewordcount',
+                'allowimport', 'timemodified', 'lockstartpages', 'timeout', 'grade');
         if (!$userinfo) {
             $els[] = 'template';
         }

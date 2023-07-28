@@ -22,6 +22,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+define('NO_OUTPUT_BUFFERING', true);
+
 require_once(dirname(__FILE__) . '/../../config.php');
 require($CFG->dirroot . '/mod/ouwiki/basicpage.php');
 require($CFG->dirroot . '/mod/ouwiki/import_form.php');
@@ -54,7 +56,7 @@ echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, get_stri
 echo $OUTPUT->heading(get_string('import', 'ouwiki'));
 
 if ((!$subwiki->canedit) || (!$ouwiki->allowimport)) {
-    print_error('You are not able to add content to this wiki.');
+    throw new moodle_exception('You are not able to add content to this wiki.');
 }
 
 // Get course id of wiki that is being imported from. Only used in steps 2,3 and 4.
@@ -129,7 +131,8 @@ if ($curstep == 1) {
                 }
             } else if ($wikiinst->subwikis == OUWIKI_SUBWIKIS_INDIVIDUAL) {
                 // Individual wiki. Get all users user can view (checking subwiki for content).
-                $userfields = user_picture::fields('u', null, 'uid');
+                $userfieldsapi = \core_user\fields::for_userpic();
+                $userfields = $userfieldsapi->get_sql('u', false, '', 'uid', false)->selects;
                 $sql = "SELECT sw.id, $userfields
                         FROM {ouwiki_subwikis} sw
                         INNER JOIN {user} u ON sw.userid = u.id
@@ -182,6 +185,7 @@ if ($curstep == 1) {
         // Create selection forms for available wikis.
         $pageparams['courseid'] = $listcourse->id;
         $i = 0;
+        $format = course_get_format($course);
         foreach ($availablewikis as $showwiki) {
             if ($i == 0) {
                 $coursename = $listcourse->shortname . ' ' . $listcourse->fullname;
@@ -189,9 +193,13 @@ if ($curstep == 1) {
             }
             $i++;
 
+            $cm = $showwiki->cm;
+            $secinfo = $modinfo->get_section_info($cm->sectionnum);
+            $cmname = new \core_courseformat\output\local\content\cm\cmname($format, $secinfo, $cm);
+
             echo html_writer::start_div('ouwiki_import_act');
             $customdata = array('wikiinfo' => $showwiki, 'params' => $pageparams,
-                    'actlink' => $courserenderer->course_section_cm_name($showwiki->cm));
+                    'actlink' => $courserenderer->render($cmname));
             $form = new mod_ouwiki_import_wikiselect_form(null, $customdata);
             $form->display();
             echo html_writer::end_div();

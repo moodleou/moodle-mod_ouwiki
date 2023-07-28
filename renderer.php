@@ -60,7 +60,8 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         } else {
             $annotations = '';
         }
-
+        // Count words before convert content.
+        $totalcountnumber = ouwiki_count_words($pageversion->xhtml);
         // Setup annotations according to the page we are on.
             if ($page == 'view') {
             if ($subwiki->annotation && count($annotations)) {
@@ -152,7 +153,12 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         // Add wordcount.
         if ($showwordcount) {
-            $output .= $this->ouwiki_render_wordcount($pageversion->wordcount);
+            if ($totalcountnumber == $pageversion->wordcount) {
+                $output .= $this->ouwiki_render_wordcount($pageversion->wordcount);
+            } else {
+                // Apply for legacy data with total count number is wrong.
+                $output .= $this->ouwiki_render_wordcount($totalcountnumber);
+            }
         }
 
         $output .= html_writer::end_tag('div'); // End of ouwiki-content.
@@ -261,7 +267,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $filename = $file->get_filename();
                 $mimetype = $file->get_mimetype();
                 $iconimage = html_writer::empty_tag('img',
-                        array('src' => $this->output->pix_url(file_mimetype_icon($mimetype)),
+                        array('src' => $this->output->image_url(file_mimetype_icon($mimetype)),
                                 'alt' => $mimetype, 'class' => 'icon'));
                 $path = file_encode_url($CFG->wwwroot . '/pluginfile.php', '/' . $modcontext->id .
                         '/mod_ouwiki/attachment/' . $pageversion->versionid . '/' . $filename);
@@ -380,7 +386,8 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         }
 
         // On main page, add export button
-        if (!$xhtmlid && $CFG->enableportfolios) {
+        if (!$xhtmlid && $CFG->enableportfolios && !isguestuser()) {
+            require_once($CFG->libdir . '/portfoliolib.php');
             $button = new portfolio_add_button();
             $button->set_callback_options('ouwiki_page_portfolio_caller',
                     array('pageid' => $pageid), 'mod_ouwiki');
@@ -412,7 +419,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         if (!$CFG->enableportfolios) {
             return '';
         }
-
+        require_once($CFG->libdir . '/portfoliolib.php');
         $button = new portfolio_add_button();
         $button->set_callback_options('ouwiki_all_portfolio_caller',
                $wikiparamsarray, 'mod_ouwiki');
@@ -449,8 +456,8 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $content = ouwiki_convert_content($content, $subwiki, $cm, null, $contentformat);
         // Need to replace brokenfile.php with draftfile.php since switching off filters
         // will switch off all filter.
-        $content = str_replace("\"$CFG->httpswwwroot/brokenfile.php#",
-                "\"$CFG->httpswwwroot/draftfile.php", $content);
+        $content = str_replace("\"$CFG->wwwroot/brokenfile.php#",
+            "\"$CFG->wwwroot/draftfile.php", $content);
         // Create output to be returned for printing.
         $output = html_writer::tag('p', get_string('previewwarning', 'ouwiki'),
                 array('class' => 'ouw_warning'));
@@ -526,17 +533,17 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $filename = $file->get_filename();
         $mimetype = $file->get_mimetype();
         $iconimage = html_writer::empty_tag('img',
-                array('src' => $OUTPUT->pix_url(file_mimetype_icon($mimetype)),
+                array('src' => $OUTPUT->image_url(file_mimetype_icon($mimetype)),
                 'alt' => $mimetype, 'class' => 'icon'));
 
         if ($action === 'add') {
             $addedstart = html_writer::empty_tag('img', array(
-                'src' => $OUTPUT->pix_url('diff_added_begins', 'ouwiki'),
+                'src' => $OUTPUT->image_url('diff_added_begins', 'ouwiki'),
                 'alt' => get_string('addedbegins', 'ouwiki'),
                 'class' => 'icon')
             );
             $addedend = html_writer::empty_tag('img', array(
-                'src' => $OUTPUT->pix_url('diff_added_ends', 'ouwiki'),
+                'src' => $OUTPUT->image_url('diff_added_ends', 'ouwiki'),
                 'alt' => get_string('addedends', 'ouwiki'),
                 'class' => 'icon')
             );
@@ -550,12 +557,12 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         } else if ($action === 'delete') {
             $deletedstart = html_writer::empty_tag('img' , array(
-                'src' => $OUTPUT->pix_url('diff_deleted_begins', 'ouwiki'),
+                'src' => $OUTPUT->image_url('diff_deleted_begins', 'ouwiki'),
                 'alt' => get_string('deletedbegins', 'ouwiki'),
                 'class' => 'icon')
             );
             $deletedend = html_writer::empty_tag('img', array(
-                'src' => $OUTPUT->pix_url('diff_deleted_ends', 'ouwiki'),
+                'src' => $OUTPUT->image_url('diff_deleted_ends', 'ouwiki'),
                 'alt' => get_string('deletedends', 'ouwiki'),
                 'class' => 'icon')
             );
@@ -669,9 +676,6 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         // Add wiki name header.
         $output .= $this->get_wiki_heading_text();
 
-        // Add rss and atom feeds.
-        $output .= $this->get_feeds_section();
-
         // Add group/user selector.
         $showselector = true;
         if (($page == 'userparticipation.php' && $canview != OUWIKI_MY_PARTICIPATION)
@@ -708,15 +712,6 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      * @return string
      */
     public function get_wiki_heading_text() {
-        return '';
-    }
-
-    /**
-     * Returns empty string.
-     *
-     * @return string
-     */
-    public function get_feeds_section() {
         return '';
     }
 
@@ -1144,7 +1139,8 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                     $lastdate = $date;
                 }
                 $now = time();
-                $edittime = $time;
+                $edittime = strtotime($time);
+                $edittimedisplay = $time;
                 if ($now - $edittime < 5*60) {
                     $category = 'ouw_recenter';
                 } else if ($now - $edittime < 4*60*60) {
@@ -1153,7 +1149,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                     $category = 'ouw_recentnot';
                 }
                 $time = html_writer::start_tag('span', array('class' => $category));
-                $time .= $edittime;
+                $time .= $edittimedisplay;
                 $time .= html_writer::end_tag('span');
             }
             $page = $change->title ? htmlspecialchars($change->title) :
@@ -1207,7 +1203,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
             if (!$table->is_downloading()) {
                 $pageparams = ouwiki_display_wiki_parameters($change->title, $subwiki, $cm);
-                $pagestr = $page . ' ' . $lastdate . ' ' . $edittime;
+                $pagestr = $page . ' ' . $lastdate . ' ' . $edittimedisplay;
                 if ($change->id != $change->firstversionid) {
                     $accesshidetext = get_string('viewwikichanges', 'ouwiki', $pagestr);
                     $changeurl = new moodle_url("/mod/ouwiki/diff.php?$pageparams" .
@@ -1281,7 +1277,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
             $mform->addElement('header', 'usergrade', get_string('usergrade', 'ouwiki'));
 
-            $mform->addElement('select', 'grade', get_string('grade'),  $grademenu);
+            $mform->addElement('select', 'grade', get_string('gradenoun'),  $grademenu);
             $mform->setDefault('grade', $user->grade);
 
             $mform->addElement('submit', 'savechanges', get_string('savechanges'));
@@ -1389,24 +1385,6 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      */
     public function get_attachments($files, $modcontextid, $pageversionversionid, $fcheck = false) {
         return '';
-    }
-
-    /**
-     * Returns html for the atom and rss feeds.
-     *
-     * @param string $atomurl
-     * @param string $rssurl
-     * @return string
-     */
-    public function ouwiki_get_feeds($atomurl, $rssurl) {
-        $a = new stdClass();
-        $a->atom = $atomurl;
-        $a->rss = $rssurl;
-        $url = str_replace('&amp;', '&', $atomurl);
-        $rssicon = html_writer::img($this->output->pix_url('rss', 'ouwiki'), '');
-        $rsslink = html_writer::link($url, $rssicon, array('title' => get_string('feedalt', 'ouwiki')));
-        $content = html_writer::span(get_string('feedsubscribe', 'ouwiki', $a));
-        return html_writer::tag('p', $rsslink . $content, array('class' => 'ouw_subscribe'));
     }
 
     /**

@@ -36,14 +36,14 @@ $PAGE->set_url($url);
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('ouwiki', $id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     // Checking course instance
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
     if (!$ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance))) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemodule');
     }
 
     $PAGE->set_cm($cm);
@@ -60,10 +60,10 @@ $pageversion1 = ouwiki_get_page_version($subwiki, $pagename, $v1);
 $pageversion2 = ouwiki_get_page_version($subwiki, $pagename, $v2);
 if (!$pageversion1 || !$pageversion2 ||
    ((!empty($pageversion1->deletedat) || !empty($pageversion2->deletedat)) && !$candelete)) {
-    print_error('Specified version does not exist');
+    throw new moodle_exception('Specified version does not exist');
 }
 if ($pageversion1 >= $pageversion2) {
-    print_error('Versions out of order');
+    throw new moodle_exception('Versions out of order');
 }
 
 // Print header
@@ -124,14 +124,14 @@ $v1 = new StdClass;
 $v1->version = get_string('olderversion', 'ouwiki');
 $v1->date = userdate($pageversion1->timecreated);
 $v1->savedby = get_string('savedby', 'ouwiki', $v1name);
-$v1->content = $diff1;
+$v1->content = clean_text($diff1);
 $v1->attachments = $attachdiff1;
 
 $v2 = new StdClass;
 $v2->version = get_string('newerversion', 'ouwiki');
 $v2->date = userdate($pageversion2->timecreated);
 $v2->savedby = get_string('savedby', 'ouwiki', $v2name);
-$v2->content = $diff2;
+$v2->content = clean_text($diff2);
 $v2->attachments = $attachdiff2;
 
 echo $ouwikioutput->ouwiki_print_diff($v1, $v2);

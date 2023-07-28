@@ -39,7 +39,7 @@ class ouwiki_participation_table extends flexible_table {
     public $grade;
     public $extraheaders;
 
-    public function __construct($cm, $course, $ouwiki, $pagename, $groupid = 0,
+    public function __construct($cm, $course, $ouwiki, $pagename, $groupid,
         $groupname, $grade = null) {
 
         $this->cm = $cm;
@@ -60,7 +60,7 @@ class ouwiki_participation_table extends flexible_table {
         global $CFG;
 
         // extra headers for export only
-        if (!empty($download)) {
+        if (!empty($download) && !in_array($download, ['ods', 'excel'])) {
             $this->extraheaders = array(
                 format_string($this->course->shortname, true),
                 format_string($this->ouwiki->name, true),
@@ -183,7 +183,9 @@ class ouwiki_participation_table extends flexible_table {
         $this->started_output = true;
         if ($this->exportclass !== null) {
             $this->exportclass->start_table($this->sheettitle);
-            $this->exportclass->output_headers($this->extraheaders);
+            if ($this->extraheaders) {
+                $this->exportclass->output_headers($this->extraheaders);
+            }
             $this->exportclass->output_headers($this->headers);
         } else {
             $this->start_html();
@@ -224,7 +226,7 @@ class ouwiki_user_participation_table extends flexible_table {
         global $CFG;
 
         // extra headers for export only
-        if (!empty($download)) {
+        if (!empty($download) && !in_array($download, ['ods', 'excel'])) {
             $this->extraheaders = array(
                 format_string($this->course->shortname, true),
                 format_string($this->ouwiki->name, true),
@@ -311,7 +313,9 @@ class ouwiki_user_participation_table extends flexible_table {
         $this->started_output = true;
         if ($this->exportclass !== null) {
             $this->exportclass->start_table($this->sheettitle);
-            $this->exportclass->output_headers($this->extraheaders);
+            if ($this->extraheaders) {
+                $this->exportclass->output_headers($this->extraheaders);
+            }
             $this->exportclass->output_headers($this->headers);
         } else {
             $this->start_html();

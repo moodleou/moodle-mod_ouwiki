@@ -487,6 +487,58 @@ WHERE
         upgrade_mod_savepoint(true, 2014031100, 'ouwiki');
     }
 
+    if ($oldversion < 2017062000) {
+
+        // Add timemodified field for applying global search to ouwiki activity.
+        $wikitable = new xmldb_table('ouwiki');
+        $field = new xmldb_field('timemodified', XMLDB_TYPE_INTEGER, '10', null,
+            null, null);
+
+        // Conditionally launch add field timemodified.
+        if (!$dbman->field_exists($wikitable, $field)) {
+            // Add the field but allowing nulls.
+            $dbman->add_field($wikitable, $field);
+            // Set the field to 0 for everything.
+            $DB->set_field('ouwiki', 'timemodified', '0');
+            // Changing nullability of field timemodified to not null.
+            $field = new xmldb_field('timemodified', XMLDB_TYPE_INTEGER, '10', null,
+                XMLDB_NOTNULL, null, null);
+            // Launch change of nullability for field themetype.
+            $dbman->change_field_notnull($wikitable, $field);
+        }
+
+        // OUWiki savepoint reached.
+        upgrade_mod_savepoint(true, 2017062000, 'ouwiki');
+    }
+
+    if ($oldversion < 2017101200) {
+
+        // Add index on timecreated to make search indexing faster.
+        $table = new xmldb_table('ouwiki_versions');
+        $index = new xmldb_index('timecreated', XMLDB_INDEX_NOTUNIQUE, array('timecreated'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Ouwiki savepoint reached.
+        upgrade_mod_savepoint(true, 2017101200, 'ouwiki');
+    }
+
+    if ($oldversion < 2020050500) {
+
+        // Define field lockstartpages to be added to ouwiki.
+        $table = new xmldb_table('ouwiki');
+        $field = new xmldb_field('lockstartpages', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', null);
+
+        // Conditionally launch add field lockstartpages.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Ouwiki savepoint reached.
+        upgrade_mod_savepoint(true, 2020050500, 'ouwiki');
+    }
+
     // Must always return true from these functions
     return true;
 }

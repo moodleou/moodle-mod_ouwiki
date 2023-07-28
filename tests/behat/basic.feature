@@ -6,40 +6,43 @@ Feature: Test Post and Comment on OUwiki entry
 
   Background:
     Given the following "users" exist:
-        | username | firstname | lastname | email |
-        | teacher1 | Teacher | 1 | teacher1@asd.com |
-        | student1 | Student | 1 | student1@asd.com |
-        | student2 | Student | 2 | student2@asd.com |
-        | teacher2 | Teacher | 2 | teacher2@asd.com |
+      | username | firstname | lastname | email            |
+      | teacher1 | Teacher   | 1        | teacher1@asd.com |
+      | student1 | Student   | 1        | student1@asd.com |
+      | student2 | Student   | 2        | student2@asd.com |
+      | student3 | Student   | 3        | student3@asd.com |
+      | teacher2 | Teacher   | 2        | teacher2@asd.com |
     And the following "courses" exist:
-        | fullname | shortname | category |
-        | Course 1 | C1 | 0 |
+      | fullname | shortname | category | enablecompletion |
+      | Course 1 | C1        | 0        | 1                |
     And the following "course enrolments" exist:
-        | user | course | role |
-        | teacher1 | C1 | editingteacher |
-        | student1 | C1 | student |
-        | student2 | C1 | student |
-        | teacher2 | C1 | teacher |
+      | user     | course | role           |
+      | teacher1 | C1     | editingteacher |
+      | student1 | C1     | student        |
+      | student2 | C1     | student        |
+      | student3 | C1     | student        |
+      | teacher2 | C1     | teacher        |
     And the following "groups" exist:
-        | name | course | idnumber |
-        | G1 | C1 | G1 |
-        | G2 | C1 | G2 |
+      | name | course | idnumber |
+      | G1   | C1     | G1       |
+      | G2   | C1     | G2       |
     And the following "group members" exist:
-        | user | group |
-        | student1 | G1 |
-        | student2 | G2 |
-        | teacher2 | G1 |
+      | user     | group |
+      | student1 | G1    |
+      | student2 | G2    |
+      | teacher2 | G1    |
 
-  Scenario: No groups - basic access etc
+  Scenario: No groups - basic access
     Given I log in as "teacher1"
+    And the following "activity" exists:
+      | activity  | ouwiki              |
+      | course    | C1                  |
+      | name      | W.WC                |
+      | intro     | wiki with no groups |
+      | groupmode | 0                   |
+      | section   | 1                   |
     And I am on homepage
-    And I follow "Course 1"
-    And I turn editing mode on
-    When I add a "OU wiki" to section "1" and I fill the form with:
-        | Name | W.WC |
-        | Description | wiki with no groups |
-        | Group mode | No groups |
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.WC"
     And "Create page" "button" should exist
     And I press "Create page"
@@ -53,13 +56,13 @@ Feature: Test Post and Comment on OUwiki entry
     # Check edit and preview page (though we can not test to see whether altered content in preview mode can be seen by otherusers)
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.WC"
     Then I should see "C1 no groups wiki" in the ".ouwiki_content" "css_element"
     And I log out
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.WC"
     When I click on "Edit" "link"
     Then I should see "C1 no groups wiki"
@@ -70,28 +73,24 @@ Feature: Test Post and Comment on OUwiki entry
     And I log out
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.WC"
     And I should see "C7 no groups wiki" in the ".ouwiki_content" "css_element"
     And I log out
 
-  Scenario: Separate groups - basic access etc
-    Given I log in as "teacher1"
-    And I am on homepage
-    And I follow "Course 1"
-    And I turn editing mode on
-    And I add a "OU wiki" to section "1"
-    And I set the following fields to these values:
-        | Name | W.SG |
-        | Description | Separate groups |
-        | Sub-wikis | One wiki per group |
-        | Group mode | Separate groups |
-    And I press "Save and display"
+  Scenario: Separate groups - basic access
+    Given the following "activity" exists:
+      | activity  | ouwiki          |
+      | course    | C1              |
+      | name      | W.SG            |
+      | intro     | Separate groups |
+      | groupmode | 1               |
+      | section   | 1               |
+      | subwikis  | 1               |
     # test for student1 in group 1
-    And I log out
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.SG"
     Then I should see "Viewing wiki for: G1" in the ".ouw_subwiki" "css_element"
     And "Create page" "button" should exist
@@ -103,7 +102,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Create start page for group 2
     Given I log in as "student2"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.SG"
     Then I should see "Viewing wiki for: G2" in the ".ouw_subwiki" "css_element"
     And "Create page" "button" should exist
@@ -119,7 +118,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Check for correct content and creator for each group
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.SG"
     And "div.singleselect" "css_element" should exist
     And the "Separate groups" select box should contain "G1"
@@ -139,7 +138,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Check adding wiki pages - by adding a link to start page
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.SG"
     When I click on "Edit" "link"
     Then I should see "C2 separate groups wiki"
@@ -161,7 +160,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Check adding wiki pages - by 'Create a new page' name in text field
     Given I log in as "student2"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.SG"
     Then I should see "C6 separate groups wiki"
     And I set the field "Create new page" to "frog"
@@ -191,20 +190,18 @@ Feature: Test Post and Comment on OUwiki entry
     And I should see "Student 2"
     And I log out
 
-  Scenario: Visible groups - basic access etc
-    Given I log in as "teacher1"
-    And I am on homepage
-    And I follow "Course 1"
-    And I turn editing mode on
-    When I add a "OU wiki" to section "1" and I fill the form with:
-        | Name | W.VG |
-        | Description | visible groups |
-        | Sub-wikis | One wiki per group |
-        | Group mode | Visible groups |
-    And I log out
+  Scenario: Visible groups - basic access
+    Given the following "activity" exists:
+      | activity  | ouwiki         |
+      | course    | C1             |
+      | name      | W.VG           |
+      | intro     | visible groups |
+      | groupmode | 2              |
+      | section   | 1              |
+      | subwikis  | 1              |
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.VG"
     # Check selected dropdown option is G1
     And "div.singleselect" "css_element" should exist
@@ -226,7 +223,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Check for correct content and creator for each group
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.VG"
     And "div.singleselect" "css_element" should exist
     And the "Visible groups" select box should contain "G1"
@@ -241,21 +238,24 @@ Feature: Test Post and Comment on OUwiki entry
     Then "Create page" "button" should exist
     And I log out
 
-  Scenario: Individual - basic access etc
+  Scenario: Individual - basic access
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
-    When I add a "OU wiki" to section "1" and I fill the form with:
-        | Name | W.I |
-        | Description | individual wikis |
-        | Sub-wikis |Separate wiki for every user |
-        | Group mode | No groups |
+    And the following "activity" exists:
+      | activity  | ouwiki           |
+      | course    | C1               |
+      | name      | W.I              |
+      | intro     | individual wikis |
+      | groupmode | 0                |
+      | section   | 1                |
+      | subwikis  | 2                |
     And I log out
     # Checking to set up individual wiki for student 1
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.I"
     Then "Viewing wiki for:" "text" should exist
     And "Student 1" "link" should exist
@@ -267,7 +267,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Checking to set up individual wiki for student 2
     Given I log in as "student2"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.I"
     Then "Viewing wiki for:" "text" should exist
     And "Student 2" "link" should exist
@@ -279,7 +279,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Check to see that a non-editing teacher can view individual wiki of students belonging to their group
     Given I log in as "teacher2"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.I"
     And "div.individualselector" "css_element" should exist
     And the field "Viewing wiki for:" matches value "Teacher 2"
@@ -293,7 +293,7 @@ Feature: Test Post and Comment on OUwiki entry
     # Check that editing teacher can view and visit all individual wikis
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.I"
     And "div.individualselector" "css_element" should exist
     And the field "Viewing wiki for:" matches value "Teacher 1"
@@ -305,7 +305,7 @@ Feature: Test Post and Comment on OUwiki entry
     Then I should see "C4 individual wiki" in the ".ouwiki_content" "css_element"
     And "Student 1" "link" should exist
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.I"
     And "div.individualselector" "css_element" should exist
     Given I set the field "Viewing wiki for:" to "Student 2"
@@ -313,7 +313,7 @@ Feature: Test Post and Comment on OUwiki entry
     Then I should see "C5 individual wiki" in the ".ouwiki_content" "css_element"
     And "Student 2" "link" should exist
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.I"
     And "div.individualselector" "css_element" should exist
     Given I set the field "Viewing wiki for:" to "Teacher 2"
@@ -321,16 +321,18 @@ Feature: Test Post and Comment on OUwiki entry
     Then "Create page" "button" should exist
     And I log out
 
-  Scenario: Wiki history No groups -
+  Scenario: Wiki history - no groups
     Given I log in as "teacher1"
-    And I am on site homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
-    When I add a "OU wiki" to section "1" and I fill the form with:
-        | Name | W.WX |
-        | Description | wiki with no groups |
-        | Group mode | No groups |
-    And I follow "Course 1"
+    And the following "activity" exists:
+      | activity  | ouwiki              |
+      | course    | C1                  |
+      | name      | W.WX                |
+      | intro     | wiki with no groups |
+      | groupmode | 0                   |
+      | section   | 1                   |
+    And I am on "Course 1" course homepage
     And I follow "W.WX"
     And "Create page" "button" should exist
     And I press "Create page"
@@ -341,12 +343,12 @@ Feature: Test Post and Comment on OUwiki entry
     And "Teacher 1" "link" should exist
     # unable to check for date
     And I add a ouwiki page with the following data:
-        | Create new page | Frogs |
-        | Content | C24 |
+      | Create new page | Frogs |
+      | Content         | C24   |
     Then I should see "C24"
     And I add a ouwiki page with the following data:
-        | Create new page | Zombies |
-        | Content | C25 |
+      | Create new page | Zombies |
+      | Content         | C25     |
     Then I should see "C25"
     And "Frogs" "link" should exist
     When I click on "Frogs" "link"
@@ -355,8 +357,8 @@ Feature: Test Post and Comment on OUwiki entry
     When I click on "Start page" "link"
     Then I should see "C23 no groups wiki"
     And I add a ouwiki page with the following data:
-        | Create new page | Geckos |
-        | Content | C26 |
+      | Create new page | Geckos |
+      | Content         | C26    |
     Then I should see "C26"
     # Check wiki index for correct order
     When I click on "Wiki index" "link"
@@ -386,113 +388,113 @@ Feature: Test Post and Comment on OUwiki entry
     # Check editing history - 3 rows being shown incstead of 5 as per regression test.
     Given I click on "Start page" "link"
     And I add a ouwiki page with the following data:
-        | Create new page | Gremlins |
-        | Content | C23 |
+      | Create new page | Gremlins |
+      | Content         | C23      |
     And I edit a ouwiki page with the following data:
-        | Content | C27 A C27 B C27 C |
+      | Content | C27 A C27 B C27 C |
     And I edit a ouwiki page with the following data:
-        | Content | C27 A C27 B C28 B |
+      | Content | C27 A C27 B C28 B |
     When I click on "History" "link"
     And "Teacher 1" "link" should exist
     And "Student 1" "link" should not exist
     And "Student 2" "link" should not exist
     And "Teacher 2" "link" should not exist
-    And I should see "View" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
-    And I should see "Delete" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
-    And I should not see "Revert" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
-    And I should see "changes" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
-    And I should see "View" in the "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element"
-    And I should see "Delete" in the "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element"
-    And I should see "Revert" in the "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element"
-    And I should see "changes" in the "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element"
-    And I should see "View" in the "//form[@name='ouw_history']//table//tr[4]//td[3]" "xpath_element"
-    And I should see "Delete" in the "//form[@name='ouw_history']//table//tr[4]//td[3]" "xpath_element"
-    And I should see "Revert" in the "//form[@name='ouw_history']//table//tr[4]//td[3]" "xpath_element"
-    And I should not see "changes" in the "//form[@name='ouw_history']//table//tr[4]//td[3]" "xpath_element"
-    Given I click on "View" "link" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
+    And I should see "View" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
+    And I should see "Delete" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
+    And I should not see "Revert" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
+    And I should see "changes" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
+    And I should see "View" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
+    And I should see "Delete" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
+    And I should see "Revert" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
+    And I should see "changes" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
+    And I should see "View" in the "//form[@name='ouw_history']//table//tbody//tr[3]//td[3]" "xpath_element"
+    And I should see "Delete" in the "//form[@name='ouw_history']//table//tbody//tr[3]//td[3]" "xpath_element"
+    And I should see "Revert" in the "//form[@name='ouw_history']//table//tbody//tr[3]//td[3]" "xpath_element"
+    And I should not see "changes" in the "//form[@name='ouw_history']//table//tbody//tr[3]//td[3]" "xpath_element"
+    Given I click on "View" "link" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
     Then I should see "C27 A C27 B C28 B"
     And I click on "History" "link"
-    Given I click on "View" "link" in the "//form[@name='ouw_history']//table//tr[4]//td[3]" "xpath_element"
+    Given I click on "View" "link" in the "//form[@name='ouw_history']//table//tbody//tr[3]//td[3]" "xpath_element"
     Then I should see "C23"
     # Page changes
     And I click on "History" "link"
-    Given I click on "changes" "link" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
+    Given I click on "changes" "link" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
     Then I should see "C27 C" in the "//span[@class='ouw_deleted']" "xpath_element"
     And I should see "C28 B" in the "//span[@class='ouw_added']" "xpath_element"
     And I log out
     # Check against number of changes made - WIC07
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.WX"
     And "Frogs" "link" should exist
     When I click on "Frogs" "link"
     When I click on "Zombies" "link"
     Then I should see "C25"
     And I edit a ouwiki page with the following data:
-      | Content | C29|
+      | Content | C29 |
     And I edit a ouwiki page with the following data:
-      | Content | C30|
+      | Content | C30 |
     And I edit a ouwiki page with the following data:
-      | Content | C31|
+      | Content | C31 |
     And I edit a ouwiki page with the following data:
-      | Content | C32|
+      | Content | C32 |
     And I edit a ouwiki page with the following data:
-      | Content | C33|
+      | Content | C33 |
     And I edit a ouwiki page with the following data:
-      | Content | C34|
+      | Content | C34 |
     And I edit a ouwiki page with the following data:
-      | Content | C35|
+      | Content | C35 |
     And I edit a ouwiki page with the following data:
-      | Content | C36|
+      | Content | C36 |
     And I edit a ouwiki page with the following data:
-      | Content | C37|
+      | Content | C37 |
     And I edit a ouwiki page with the following data:
-      | Content | C38|
+      | Content | C38 |
     And I edit a ouwiki page with the following data:
-      | Content | C39|
+      | Content | C39 |
     And I edit a ouwiki page with the following data:
-      | Content | C40|
+      | Content | C40 |
     And I edit a ouwiki page with the following data:
-      | Content | C41|
+      | Content | C41 |
     And I edit a ouwiki page with the following data:
-      | Content | C42|
+      | Content | C42 |
     And I edit a ouwiki page with the following data:
-      | Content | C43|
+      | Content | C43 |
     And I edit a ouwiki page with the following data:
-      | Content | C44|
+      | Content | C44 |
     And I edit a ouwiki page with the following data:
-      | Content | C45|
+      | Content | C45 |
     And I edit a ouwiki page with the following data:
-      | Content | C46|
+      | Content | C46 |
     And I edit a ouwiki page with the following data:
-      | Content | C47|
+      | Content | C47 |
     And I edit a ouwiki page with the following data:
-      | Content | C48|
+      | Content | C48 |
     And I edit a ouwiki page with the following data:
-      | Content | C49|
+      | Content | C49 |
     And I edit a ouwiki page with the following data:
-      | Content | C50|
+      | Content | C50 |
     And I edit a ouwiki page with the following data:
-      | Content | C51|
+      | Content | C51 |
     And I edit a ouwiki page with the following data:
-      | Content | C52|
+      | Content | C52 |
     And I edit a ouwiki page with the following data:
-      | Content | C53|
+      | Content | C53 |
     And I edit a ouwiki page with the following data:
-      | Content | C54|
+      | Content | C54 |
     And I edit a ouwiki page with the following data:
-      | Content | C56|
+      | Content | C56 |
     And I edit a ouwiki page with the following data:
-      | Content | C57|
+      | Content | C57 |
     And I edit a ouwiki page with the following data:
-      | Content | C58|
+      | Content | C58 |
     And I edit a ouwiki page with the following data:
-      | Content | C59|
+      | Content | C59 |
     And I edit a ouwiki page with the following data:
-      | Content | C60|
+      | Content | C60 |
     And I edit a ouwiki page with the following data:
-      | Content | C61|
+      | Content | C61 |
     And I edit a ouwiki page with the following data:
       | Content | C62 |
     And I edit a ouwiki page with the following data:
@@ -520,8 +522,6 @@ Feature: Test Post and Comment on OUwiki entry
     Then "Older changes" "link" should exist
     And I should see "6"
     And I should see "1"
-    And I should see "Atom"
-    And I should see "RSS"
     # Check to make sure we can not see "Annotate" tab
     Given I click on "W.WX" "link"
     Then I should not see "Annotate"
@@ -536,8 +536,8 @@ Feature: Test Post and Comment on OUwiki entry
     And I should not see "Zombies"
     When I click on "History" "link"
     Then "Student 1" "link" should exist
-    And I should see "Revert" in the "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element"
-    Given I click on "Revert" "link" in the "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element"
+    And I should see "Revert" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
+    Given I click on "Revert" "link" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
     When I click on "Revert" "button"
     Then I should see "C24"
     And I should see "Zombies"
@@ -546,14 +546,13 @@ Feature: Test Post and Comment on OUwiki entry
       | Content | PORNOGRAPHY |
     And I log out
     Given I log in as "admin"
-    And I am on site homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.WX"
     When I click on "Frogs" "link"
     Then I should see "PORNOGRAPHY"
     When I click on "History" "link"
-    And I should see "Delete" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
-    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
+    And I should see "Delete" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
+    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
     Then I should see "Undelete" in the "//form[@name='ouw_history']//table//tr[contains(@class, 'ouw_deletedrow')]//td[3]" "xpath_element"
     And I should see "changes" in the "//form[@name='ouw_history']//table//tr[contains(@class, 'ouw_deletedrow')]//td[3]" "xpath_element"
     When I click on "W.WX" "link"
@@ -566,11 +565,11 @@ Feature: Test Post and Comment on OUwiki entry
     And I click on "Frogs" "link"
     Then I should see "PORNOGRAPHY"
     When I click on "History" "link"
-    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
-    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element"
-    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tr[4]//td[3]" "xpath_element"
-    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tr[5]//td[3]" "xpath_element"
-    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tr[6]//td[3]" "xpath_element"
+    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
+    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
+    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tbody//tr[3]//td[3]" "xpath_element"
+    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tbody//tr[4]//td[3]" "xpath_element"
+    Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tbody//tr[5]//td[3]" "xpath_element"
     When I click on "W.WX" "link"
     And I click on "Frogs" "link"
     Then "Create page" "button" should exist
@@ -581,36 +580,36 @@ Feature: Test Post and Comment on OUwiki entry
     And I set the field "Content" to "SAFE"
     And I press "Save changes"
     When I click on "History" "link"
-    Then I should see "Delete" in the "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element"
-    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element"
-    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tr[4]//td[3]" "xpath_element"
-    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tr[5]//td[3]" "xpath_element"
-    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tr[6]//td[3]" "xpath_element"
-    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tr[7]//td[3]" "xpath_element"
+    Then I should see "Delete" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
+    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
+    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tbody//tr[3]//td[3]" "xpath_element"
+    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tbody//tr[4]//td[3]" "xpath_element"
+    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tbody//tr[5]//td[3]" "xpath_element"
+    And I should see "Undelete" in the "//form[@name='ouw_history']//table//tbody//tr[6]//td[3]" "xpath_element"
     And I log out
     Given I log in as "student1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "W.WX"
     And I click on "Frogs" "link"
     Then I should see "SAFE"
     When I click on "History" "link"
-    Then "//form[@name='ouw_history']//table//tr[2]//td[3]" "xpath_element" should exist
-    And "//form[@name='ouw_history']//table//tr[3]//td[3]" "xpath_element" should not exist
+    Then "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element" should exist
+    And "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element" should not exist
     And I log out
 
-  @javascript
-  Scenario: Attachments No groups
+  @javascript @_file_upload
+  Scenario: Attachments - no groups
     Given I log in as "teacher1"
     And I am on homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I turn editing mode on
     When I add a "OU wiki" to section "1" and I fill the form with:
-        | Name | W.X |
-        | Description | wiki with no groups |
-        | Group mode | No groups |
-    And I follow "Course 1"
-    And I follow "W.X"
+      | Name        | W.X                 |
+      | Description | wiki with no groups |
+      | Group mode  | No groups           |
+    And I am on "Course 1" course homepage
+    And I am on the "W.X" "ouwiki activity" page
     And "Create page" "button" should exist
     And I press "Create page"
     And I set the field "Content" to "C71 no groups wiki"
@@ -621,7 +620,7 @@ Feature: Test Post and Comment on OUwiki entry
     # unable to check for date
     And I add a ouwiki page with the following data:
       | Create new page | Attest |
-      | Content | C72 |
+      | Content         | C72    |
     Then I should see "C72"
     # Add attachments - we can/should not access a users hardisk so pull from system
     Given I click on "Edit" "link"
@@ -630,23 +629,26 @@ Feature: Test Post and Comment on OUwiki entry
     And I wait to be redirected
     Then "empty.txt" "link" should exist
     # Check for annotations (and test edit settings at the same time) - note we can not test for locking
-    Given I click on "Edit settings" "link"
+    And I am on "Course 1" course homepage
+    When I open the action menu in "//div[contains(@class, 'activity-item') and contains(., 'W.X')]" "xpath_element"
+    And I choose "Edit settings" in the open action menu
     And I expand all fieldsets
     And I set the field "Annotation system" to "Yes"
-    When I press "Save and display"
+    And I press "Save and display"
+    When I am on the "W.X" "ouwiki activity" page
     Then I should see "Annotate"
     And I add a ouwiki page with the following data:
       | Create new page | Vampires |
-      | Content | A1 A2 |
+      | Content         | A1 A2    |
     Given I click on "Annotate" "link"
     And "span.ouwiki-annotation-marker" "css_element" should exist
     When I click on "#marker0" "css_element"
     Then I set the field "Add annotation:" to "web"
-    And I press "Add"
+    And I click on "Add" "button" in the "annotationdialog" "region"
     And I should see "web"
     When I click on "#marker3" "css_element"
     Then I set the field "Add annotation:" to "spider"
-    And I press "Add"
+    And I click on "Add" "button" in the "annotationdialog" "region"
     And I should see "spider"
     When I press "Save changes"
     Then "Hide annotations" "link" should be visible
@@ -698,3 +700,82 @@ Feature: Test Post and Comment on OUwiki entry
     And I should see "spider"
     And I should see "Teacher 1"
     And I log out
+
+  Scenario: Wiki completion - icons
+    Given I log in as "student1"
+    And the following "activity" exists:
+      | activity        | ouwiki |
+      | course          | C1     |
+      | name            | W.WC   |
+      | section         | 1      |
+      | completion      | 2      |
+      | completionpages | 1      |
+    And the following "activity" exists:
+      | activity        | ouwiki |
+      | course          | C1     |
+      | name            | W.WC2  |
+      | section         | 1      |
+      | completion      | 2      |
+      | completionpages | 1      |
+      | completionedits | 1      |
+    And I am on "Course 1" course homepage
+    And I follow "W.WC"
+    And "Create page" "button" should exist
+    And I press "Create page"
+    And I set the field "Content" to "C1 no groups wiki"
+    And I press "Save changes"
+    # Confirm start page set up
+    Then I should see "C1 no groups wiki" in the ".ouwiki_content" "css_element"
+    And I am on "Course 1" course homepage
+    And I log out
+    # Check edit and preview page (though we can not test to see whether altered content in preview mode can be seen by otherusers)
+    Given I log in as "student2"
+    And I am on "Course 1" course homepage
+    And I follow "W.WC2"
+    And "Create page" "button" should exist
+    And I press "Create page"
+    And I set the field "Content" to "C1 no groups wiki"
+    And I press "Save changes"
+    Then I should see "C1 no groups wiki" in the ".ouwiki_content" "css_element"
+    When I click on "Edit" "link"
+    Then I should see "C1 no groups wiki"
+    And I set the field "Content" to "C7 no groups wiki"
+    When I press "Preview"
+    Then I should see "C7 no groups wiki" in the ".ouwiki_content" "css_element"
+    And I press "Save changes"
+    And I log out
+    When I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I navigate to "Reports" in current page administration
+    And I click on "Activity completion" "link"
+    And "Completed" "icon" should exist in the "Student 1" "table_row"
+    And "Completed" "icon" should exist in the "Student 2" "table_row"
+    And "Completed" "icon" should not exist in the "Student 3" "table_row"
+
+  @javascript
+  Scenario: Wiki completion - percentage
+    Given the following "courses" exist:
+      | fullname | shortname | format      | enablecompletion |
+      | Course 2 | C2        | oustudyplan | 1                |
+    And the following "course enrolments" exist:
+      | user     | course | role    |
+      | student1 | C2     | student |
+    And the following "activities" exist:
+      | activity | name                   | introduction            | course | idnumber | completion | completionview | completionpagesenabled | completionpages |
+      | ouwiki   | Test ouwiki completion | Test ouwiki description | C2     | ouwiki2  | 2          | 1              | 1                      | 1               |
+    And I log in as "student1"
+    And I am on "Course 2" course homepage
+    Then I should see "0%"
+    And I should not see "100%"
+    And I follow "Test ouwiki completion"
+    And I am on "Course 2" course homepage
+    # Check activity is not completed because we haven't see the second session.
+    Then I should see "0%"
+    And I should not see "100%"
+    And I follow "Test ouwiki completion"
+    And "Create page" "button" should exist
+    And I press "Create page"
+    And I set the field "Content" to "C1 no groups wiki"
+    And I press "Save changes"
+    When I am on "Course 2" course homepage
+    Then I should see "100%"

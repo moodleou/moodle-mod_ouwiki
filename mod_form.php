@@ -26,14 +26,15 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         global $CFG, $COURSE;
 
         $mform =& $this->_form;
-        $data    = $this->_customdata['data'];
+        $data = $this->_customdata['data'] ?? null;
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
         // Name and intro
-        $mform->addElement('text', 'name', get_string('name'));
+        $mform->addElement('text', 'name', get_string('name'), array('size' => '64'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', get_string('required'), 'required', null, 'client');
+        $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
         $this->standard_intro_elements(get_string('wikiintro', 'wiki'));
 
@@ -88,6 +89,10 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         $filepickeroptions['maxbytes'] = $COURSE->maxbytes;
         $mform->addElement('filepicker', 'template_file', get_string('template', 'ouwiki'), null, $filepickeroptions);
         $mform->addHelpButton('template_file', 'template', 'ouwiki');
+
+        $lockstartpagesoptions = array('0' => get_string('no'), '1' => get_string('yes'));
+        $mform->addElement('select', 'lockstartpages', get_string('lockstartpages', 'ouwiki'), $lockstartpagesoptions);
+        $mform->addHelpButton('lockstartpages', 'lockstartpages', 'ouwiki');
 
         // Wordcount
         $wordcountoptions = array('0' => get_string('no'), '1' => get_string('yes'));
@@ -146,12 +151,14 @@ class mod_ouwiki_mod_form extends moodleform_mod {
             return false;
         }
         // Turn off completion settings if the checkboxes aren't ticked
-        $autocompletion = !empty($data->completion) && $data->completion == COMPLETION_TRACKING_AUTOMATIC;
-        if (empty($data->completionpagesenabled) || !$autocompletion) {
-            $data->completionpages = 0;
-        }
-        if (empty($data->completioneditsenabled) || !$autocompletion) {
-            $data->completionedits = 0;
+        if (!empty($data->completionunlocked)) {
+            $autocompletion = !empty($data->completion) && $data->completion == COMPLETION_TRACKING_AUTOMATIC;
+            if (empty($data->completionpagesenabled) || !$autocompletion) {
+                $data->completionpages = 0;
+            }
+            if (empty($data->completioneditsenabled) || !$autocompletion) {
+                $data->completionedits = 0;
+            }
         }
 
         if (empty($data->allowimport)) {
