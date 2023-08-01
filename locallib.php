@@ -4058,7 +4058,7 @@ function ouwiki_get_completion_state_lib($cm, $userid, $type) {
     if ($ouwiki->completionpages) {
         $value = $ouwiki->completionpages <=
                 $DB->get_field_sql($countsql .
-                        ' AND (SELECT MIN (id)
+                        ' AND (SELECT MIN(id)
                                  FROM {ouwiki_versions}
                                 WHERE pageid = p.id AND deletedat IS NULL) = v.id',
                         [$userid, $ouwiki->id]);
