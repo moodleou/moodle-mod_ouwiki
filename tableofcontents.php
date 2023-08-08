@@ -73,7 +73,7 @@ class TableOfContents
         foreach ($this->headings as $heading) {
             $lvls[] = $heading->lvl;
         }
-        $min = min($lvls);
+        $min = empty($lvls) ? 0 : min($lvls);
         foreach ($this->headings as $heading) {
                 $heading->lvl = $heading->lvl - $min + 1;
         }
