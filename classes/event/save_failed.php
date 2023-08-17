@@ -77,18 +77,6 @@ class save_failed extends \core\event\base {
     }
 
     /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        global $SITE;
-        $url = str_replace('/mod/ouwiki/', '', $this->other['page']);
-        return array($SITE->id, 'ouwiki', 'error editpage', $this->other['page'], 'session error',
-                $this->contextinstanceid);
-    }
-
-    /**
      * Custom validation.
      *
      * @throws \coding_exception

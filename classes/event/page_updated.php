@@ -75,17 +75,6 @@ class page_updated extends \core\event\base {
     }
 
     /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        $logurl = substr($this->other['logurl'], strlen('/mod/ouwiki/'));
-        return array($this->courseid, 'ouwiki', 'page updated', $logurl,
-                $this->other['info'], $this->contextinstanceid);
-    }
-
-    /**
      * Custom validation.
      *
      * @throws \coding_exception
