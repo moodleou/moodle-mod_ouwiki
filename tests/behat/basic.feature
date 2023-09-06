@@ -642,11 +642,11 @@ Feature: Test Post and Comment on OUwiki entry
       | Content         | A1 A2    |
     Given I click on "Annotate" "link"
     And "span.ouwiki-annotation-marker" "css_element" should exist
-    When I click on "#marker0" "css_element"
+    When I click on "#marker3" "css_element"
     Then I set the field "Add annotation:" to "web"
     And I click on "Add" "button" in the "annotationdialog" "region"
     And I should see "web"
-    When I click on "#marker3" "css_element"
+    When I click on "#marker6" "css_element"
     Then I set the field "Add annotation:" to "spider"
     And I click on "Add" "button" in the "annotationdialog" "region"
     And I should see "spider"
