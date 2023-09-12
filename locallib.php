@@ -187,8 +187,7 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
             $othergroup = !groups_is_member($groupid);
 
             // Place get subwiki here to facilitate checking agaimst magic number below.
-            $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid = ?
-                    AND userid IS NULL', array($ouwiki->id, $groupid));
+            $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid = ?', array($ouwiki->id, $groupid));
 
             if ($othergroup && $cm->groupmode == SEPARATEGROUPS) {
                 // Ignore if in feed,
