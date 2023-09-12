@@ -76,17 +76,6 @@ class page_created extends \core\event\base {
     }
 
     /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        $logurl = substr($this->other['logurl'], strlen('/mod/ouwiki/'));
-        return array($this->courseid, 'ouwiki', 'page created', $logurl,
-                $this->other['info'], $this->contextinstanceid);
-    }
-
-    /**
      * Custom validation.
      *
      * @throws \coding_exception
