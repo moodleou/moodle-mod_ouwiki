@@ -231,6 +231,7 @@ $string['timelocked_before']='This wiki is currently locked. It can be edited fr
 $string['timelocked_after']='This wiki is currently locked and can no longer be edited.';
 
 $string['returntopage']='Return to wiki page';
+$string['returntolabel'] = 'Return to ';
 
 $string['savetemplate']='Save wiki as template';
 $string['template']='Template';
