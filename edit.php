@@ -438,9 +438,7 @@ ouwiki_highlight_existing_annotations($existing, $annotations, 'edit');
 print get_string('advice_edit', 'ouwiki', $OUTPUT->help_icon('createlinkedwiki', 'ouwiki'));
 if ($ouwiki->timeout) {
     $countdowntext = get_string('countdowntext', 'ouwiki', $ouwiki->timeout/60);
-    print "<script type='text/javascript'>
-                document.write('<p><div id=\"ouw_countdown\"></div>$countdowntext<span id=\"ouw_countdownurgent\"></span></p>');
-        </script>";
+    print("<p><div id=\"ouw_countdown\" ></div>$countdowntext<span id=\"ouw_countdownurgent\" aria-live=\"polite\"></span><span id=\"ouw_countdownurgent_sr\" aria-live=\"polite\" class=\"sr-only\"></span></p>");
 }
 
 // Set up basic form data

@@ -125,7 +125,7 @@ $string['jsajaxrequired'] = ' This Annotate page requires Javascript to be enabl
 
 $string['countdowntext'] = 'This wiki allows only {$a} minutes for editing. Make your changes and click Save or Cancel before the remaining time (to right) reaches zero.';
 $string['countdownurgent'] = 'Please finish or cancel your edit now. If you do not save before time runs out, your changes will be saved automatically.';
-
+$string['countdownurgent_sr'] = 'one minute remaining';
 
 $string['advice_history']='<p>The table below displays all changes that have been made to <a href="{$a}">the current page</a>.</p>
 <p>You can view old versions or see what changed in a particular version. If you want to compare any two versions, select the relevant checkboxes and click \'Compare selected\'.</p>';
