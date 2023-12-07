@@ -779,3 +779,24 @@ Feature: Test Post and Comment on OUwiki entry
     And I press "Save changes"
     When I am on "Course 2" course homepage
     Then I should see "100%"
+
+  Scenario: Check description on course page
+    Given the following "activity" exists:
+      | activity        | ouwiki              |
+      | course          | C1                  |
+      | name            | W.WC                |
+      | intro           | Test wiki desc show |
+      | showdescription | 1                   |
+      | groupmode       | 0                   |
+      | section         | 1                   |
+    And the following "activity" exists:
+      | activity        | ouwiki            |
+      | course          | C1                |
+      | name            | W.WC2             |
+      | intro           | Test wiki no show |
+      | showdescription | 0                 |
+      | groupmode       | 0                 |
+      | section         | 1                 |
+    When I am on the "Course 1" "course" page logged in as "teacher1"
+    Then I should see "Test wiki desc show"
+    And I should not see "Test wiki no show"
