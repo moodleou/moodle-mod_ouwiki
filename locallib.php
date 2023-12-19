@@ -1051,7 +1051,7 @@ function ouwiki_print_tabs($selected, $pagename, $subwiki, $cm, $context, $pagee
     print_tabs($tabs, $selected, $pageexists ? '' : array('edit', 'annotate'));
 
     print '<div id="ouwiki_belowtabs">';
-    print get_accesshide(ucfirst($selected) . '.', 'h1');
+    print get_accesshide(ucfirst($selected) . '.', 'h3');
 }
 
 /**
