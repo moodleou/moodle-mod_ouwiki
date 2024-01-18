@@ -481,6 +481,8 @@ echo $ouwikioutput->get_bottom_buttons($subwiki, $cm, $context, $pageversion, fa
 $stringlist = array(
         array('savefailnetwork', 'ouwiki'),
         array('savefailtitle', 'ouwiki'),
+        array('savefailsession', 'ouwiki'),
+        array('savefailtext', 'ouwiki'),
 );
 $jsmodule = array(
         'name' => 'mod_ouwiki_edit',

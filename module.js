@@ -488,10 +488,12 @@ M.mod_ouwiki_edit = {
             // Trap edit saving and test server is up.
             var btns = Y.all('#save, #preview');
             btns.on('click', function(e) {
-                function savefail() {
+                function savefail(stringname, info) {
                     // Save failed, alert of network or session issue.
                     btns.set('disabled', true);
-                    var content = M.util.get_string('savefailnetwork', 'ouwiki');
+                    var content = M.util.get_string('savefailtext', 'ouwiki',
+                        M.util.get_string(stringname, 'ouwiki'));
+                    content += '[' + info + ']';
                     var panel = new M.core.alert({
                         title: M.util.get_string('savefailtitle', 'ouwiki'),
                         message: content,
@@ -518,20 +520,24 @@ M.mod_ouwiki_edit = {
                 }
                 function checksave(transactionid, response, args) {
                     // Check response OK.
-                    if (response.responseText != 'ok') {
+                    if (response.responseText.search('ok') === -1) {
                         // Send save failed due to login/session error.
-                        savefail();
+                        savefail('savefailsession', response.responseText);
                     }
+                }
+                function checkfailure(transactionid, response, args) {
+                    // Send save failed due to response error/timeout.
+                    savefail('savefailnetwork', response.statusText);
                 }
                 var cfg = {
                     method: 'POST',
                     data: 'sesskey=' + M.cfg.sesskey + '&contextid=' + args,
                     on: {
                         success: checksave,
-                        failure: savefail
+                        failure: checkfailure
                     },
                     sync: true,// Wait for result so we can cancel submit.
-                    timeout: 10000
+                    timeout: 30000
                 };
                 Y.io('confirmloggedin.php', cfg);
             });
