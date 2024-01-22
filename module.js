@@ -508,9 +508,9 @@ M.mod_ouwiki_edit = {
                     }
                     e.preventDefault();
                     // Trap cancel and make it a GET - so works with login.
-                    var cancel = Y.one('#cancel');
+                    var cancel = Y.one('input#cancel');
                     cancel.on('click', function(e) {
-                        var form = Y.one('#ouwiki_belowtabs #mform1');
+                        var form = Y.one('#ouwiki_belowtabs .mform');
                         var text = form.one('#fitem_id_content');
                         var attach = form.one('#fitem_id_attachments');
                         text.remove();
