@@ -37,7 +37,8 @@ try {
     $PAGE->set_context($context);
     require_login($course, false, $cm);
     require_sesskey();
-} catch (moodle_exception $e) {
+} catch (Exception $e) {
+    echo str_replace('ok', 'OK', $e->getMessage());
     $pid = 0;
     $url = '/mod/ouwiki/edit.php';
     if (!empty($_SERVER['HTTP_REFERER'])) {
@@ -50,7 +51,7 @@ try {
     }
     $params = array(
             'context' => context_system::instance(),
-            'other' => array('page' => $url, 'pid' => $pid)
+            'other' => array('page' => $url, 'pid' => $pid, 'msg' => $e->getMessage())
     );
     $event = \mod_ouwiki\event\save_failed::create($params);
     $event->trigger();
