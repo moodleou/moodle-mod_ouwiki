@@ -635,3 +635,6 @@ $string['privacy:annotationdeleted'] = '[Annotation deleted at user request]';
 $string['privacy:xhtmlcontentdeleted'] = '[Contributor information deleted at user request]';
 
 $string['wiki_content_mask'] = 'Replace with fake text of a similar length, retaining HTML tags and [[wiki page]] links';
+
+$string['savecheck'] = 'Enable save check';
+$string['savecheck_desc'] = 'Enable checking of session etc on submitting the edit form.';

@@ -14,16 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Version.
- *
- * @package mod_ouwiki
- * @copyright 2014 The Open University
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-$plugin->version  = 2024020100;
-$plugin->requires = 2022041900;
-$plugin->component = 'mod_ouwiki';
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '4.0 r1';
+$settings->add(new admin_setting_configcheckbox('mod_ouwiki/savecheck',
+        get_string('savecheck', 'ouwiki'),
+        get_string('savecheck_desc', 'ouwiki'), 1));
