@@ -198,7 +198,7 @@ class mod_ouwiki_import_confirm_form extends moodleform {
                 }
                 $mform->addElement($select);
                 $mform->addHelpButton('linkfrom', 'import_confirm_linkfrom', 'ouwiki');
-                $mform->addRule('linkfrom', get_string('required'), 'required');
+                $mform->addRule('linkfrom', null, 'required');
                 // Set default to page we originally came from, or start page, or just leave at new page.
                 if (!empty($params['page']) && in_array($params['page'], $confirmdata['wikipages'])) {
                     $mform->setDefault('linkfrom', array_search($params['page'], $confirmdata['wikipages']));
