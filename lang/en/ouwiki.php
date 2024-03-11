@@ -125,7 +125,7 @@ $string['jsajaxrequired'] = ' This Annotate page requires Javascript to be enabl
 
 $string['countdowntext'] = 'This wiki allows only {$a} minutes for editing. Make your changes and click Save or Cancel before the remaining time (to right) reaches zero.';
 $string['countdownurgent'] = 'Please finish or cancel your edit now. If you do not save before time runs out, your changes will be saved automatically.';
-
+$string['countdownurgent_sr'] = 'one minute remaining';
 
 $string['advice_history']='<p>The table below displays all changes that have been made to <a href="{$a}">the current page</a>.</p>
 <p>You can view old versions or see what changed in a particular version. If you want to compare any two versions, select the relevant checkboxes and click \'Compare selected\'.</p>';
@@ -231,6 +231,7 @@ $string['timelocked_before']='This wiki is currently locked. It can be edited fr
 $string['timelocked_after']='This wiki is currently locked and can no longer be edited.';
 
 $string['returntopage']='Return to wiki page';
+$string['returntolabel'] = 'Return to ';
 
 $string['savetemplate']='Save wiki as template';
 $string['template']='Template';
@@ -634,3 +635,6 @@ $string['privacy:annotationdeleted'] = '[Annotation deleted at user request]';
 $string['privacy:xhtmlcontentdeleted'] = '[Contributor information deleted at user request]';
 
 $string['wiki_content_mask'] = 'Replace with fake text of a similar length, retaining HTML tags and [[wiki page]] links';
+
+$string['savecheck'] = 'Enable save check';
+$string['savecheck_desc'] = 'Enable checking of session etc on submitting the edit form.';

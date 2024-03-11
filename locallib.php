@@ -1051,7 +1051,7 @@ function ouwiki_print_tabs($selected, $pagename, $subwiki, $cm, $context, $pagee
     print_tabs($tabs, $selected, $pageexists ? '' : array('edit', 'annotate'));
 
     print '<div id="ouwiki_belowtabs">';
-    print get_accesshide(ucfirst($selected) . '.', 'h1');
+    print get_accesshide(ucfirst($selected) . '.', 'h3');
 }
 
 /**
@@ -2791,6 +2791,7 @@ function ouwiki_print_editlock($lock, $ouwiki) {
         $timeoutscript = '';
         if ($ouwiki->timeout) {
             $countdownurgent = ouwiki_javascript_escape(get_string('countdownurgent', 'ouwiki'));
+            $countdownurgent_sr = ouwiki_javascript_escape(get_string('countdownurgent_sr', 'ouwiki'));
             $timeoutscript = "var ouw_countdownto = (new Date()).getTime()+1000*{$ouwiki->timeout};
                     var ouw_countdowninterval=setInterval(function() {
                     var countdown=document.getElementById('ouw_countdown');
@@ -2804,8 +2805,10 @@ function ouwiki_print_editlock($lock, $ouwiki) {
                     }
                     if(timeleft<2*60*1000) {
                         var urgent=document.getElementById('ouw_countdownurgent');
+                        var urgent_sr=document.getElementById('ouw_countdownurgent_sr');
                         if(!urgent.firstChild) {
                             urgent.appendChild(document.createTextNode(\"".$countdownurgent."\"));
+                            urgent_sr.appendChild(document.createTextNode(\"".$countdownurgent_sr."\"));
                             countdown.style.fontWeight='bold';
                             countdown.style.color='red';
                         }
@@ -2818,7 +2821,7 @@ function ouwiki_print_editlock($lock, $ouwiki) {
                     while(countdown.firstChild) {
                         countdown.removeChild(countdown.firstChild);
                     }
-                    countdown.appendChild(document.createTextNode(text));
+                    countdown.appendChild(document.createTextNode(text)); 
                 },500);
             ";
         }

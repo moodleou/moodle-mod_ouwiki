@@ -30,6 +30,8 @@ class restore_ouwiki_activity_structure_step extends restore_activity_structure_
 
     protected $elementsids; // Array to store last oldid and newid as a key/value pair used for each annotation.
 
+    private $ouwikiid;
+
     protected function define_structure() {
 
         $paths = array();
