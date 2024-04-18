@@ -158,11 +158,6 @@ function ouwiki_delete_instance($id) {
     $fs = get_file_storage();
     $fs->delete_area_files($context->id, 'mod_ouwiki', 'template', $id);
 
-    // Delete search data
-    if (ouwiki_search_installed()) {
-        local_ousearch_document::delete_module_instance_data($cm);
-    }
-
     // Delete grade
     $ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance));
     ouwiki_grade_item_delete($ouwiki);
@@ -215,165 +210,6 @@ function ouwiki_get_extra_capabilities() {
     return array('moodle/site:accessallgroups', 'moodle/site:viewfullnames',
             'moodle/course:manageactivities', 'report/restrictuser:view',
             'report/restrictuser:restrict', 'report/restrictuser:removerestrict');
-}
-
-/**
- * Update all wiki documents for ousearch.
- *
- * @param bool $feedback If true, prints feedback as HTML list items
- * @param int $courseid If specified, restricts to particular courseid
- */
-function ouwiki_ousearch_update_all($feedback = null, $courseid = 0) {
-    global $CFG, $DB;
-    if (get_config('local_ousearch', 'ousearchindexingdisabled')) {
-        // Do nothing if the OU Search system is turned off.
-        return;
-    }
-    require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
-    // Get list of all wikis. We need the coursemodule data plus
-    // the type of subwikis
-    $coursecriteria = $courseid === 0 ? '' : 'AND cm.course = '.$courseid;
-    $sql = "SELECT cm.id, cm.course, cm.instance, w.subwikis
-                                            FROM {modules} m
-                                            INNER JOIN {course_modules} cm ON cm.module = m.id
-                                            INNER JOIN {ouwiki} w ON cm.instance = w.id
-                                        WHERE m.name = 'ouwiki' {$coursecriteria}";
-    $coursemodules = $DB->get_records_sql($sql, array());
-
-    if (!$coursemodules) {
-        return;
-    }
-
-    if ($feedback) {
-        print '<li><strong>'.count($coursemodules).'</strong> wikis to process.</li>';
-        $dotcount = 0;
-    }
-
-    $count = 0;
-    foreach ($coursemodules as $coursemodule) {
-
-        // This condition is needed because if somebody creates some stuff
-        // then changes the wiki type, it actually keeps the old bits
-        // in the database. Maybe it shouldn't, not sure.
-        switch($coursemodule->subwikis) {
-            case OUWIKI_SUBWIKIS_SINGLE:
-                $where = "sw.userid IS NULL AND sw.groupid IS NULL";
-                break;
-
-            case OUWIKI_SUBWIKIS_GROUPS:
-                $where = "sw.userid IS NULL AND sw.groupid IS NOT NULL";
-                break;
-
-            case OUWIKI_SUBWIKIS_INDIVIDUAL:
-                $where = "sw.userid IS NOT NULL AND sw.groupid IS NULL";
-                break;
-        }
-
-        // Get all pages in that wiki
-        $sql = "SELECT p.id, p.title, v.xhtml, v.timecreated, sw.groupid, sw.userid
-            FROM {ouwiki_subwikis} sw
-            INNER JOIN {ouwiki_pages} p ON p.subwikiid = sw.id
-            INNER JOIN {ouwiki_versions} v ON v.id = p.currentversionid
-            WHERE sw.wikiid = ? AND $where";
-        $rs = $DB->get_recordset_sql($sql, array($coursemodule->instance));
-
-        foreach ($rs as $result) {
-
-            // Update the page for search
-            $doc = new local_ousearch_document();
-            $doc->init_module_instance('ouwiki', $coursemodule);
-            if ($result->groupid) {
-                $doc->set_group_id($result->groupid);
-            }
-            if ($result->title) {
-                $doc->set_string_ref($result->title);
-            }
-            if ($result->userid) {
-                $doc->set_user_id($result->userid);
-            }
-            $title = $result->title ? $result->title : '';
-            $doc->update($title, $result->xhtml, $result->timecreated);
-        }
-        $rs->close();
-
-        $count++;
-        if ($feedback) {
-            if ($dotcount == 0) {
-                print '<li>';
-            }
-            print '.';
-            $dotcount++;
-            if ($dotcount == 20 || $count == count($coursemodules)) {
-                print 'done '.$count.'</li>';
-                $dotcount = 0;
-            }
-            flush();
-        }
-    }
-}
-
-/**
- * Obtains a search document given the ousearch parameters.
- * @param object $document Object containing fields from the ousearch documents table
- * @return mixed False if object can't be found, otherwise object containing the following
- *   fields: ->content, ->title, ->url, ->activityname, ->activityurl
- */
-function ouwiki_ousearch_get_document($document) {
-    global $CFG, $DB;
-
-    $params = array($document->coursemoduleid);
-
-    $titlecondition = 'AND p.title =  \'\'';
-    if (!empty($document->stringref)) {
-        $titlecondition = ' AND p.title = ?';
-        $params[] = $document->stringref;
-    }
-
-    $groupconditions = '';
-    if (is_null($document->groupid)) {
-        $groupconditions .= ' AND sw.groupid IS NULL';
-    } else {
-        $groupconditions .= ' AND sw.groupid = ?';
-        $params[] = $document->groupid;
-    }
-    if (is_null($document->userid)) {
-        $groupconditions .= ' AND sw.userid IS NULL';
-    } else {
-        $groupconditions .= ' AND sw.userid = ?';
-        $params[] = $document->userid;
-    }
-
-    $sql = "SELECT w.name AS activityname, p.title AS title, v.xhtml AS content
-        FROM {course_modules} cm
-        INNER JOIN {ouwiki} w ON cm.instance = w.id
-        INNER JOIN {ouwiki_subwikis} sw ON sw.wikiid = w.id
-        INNER JOIN {ouwiki_pages} p ON p.subwikiid = sw.id
-        INNER JOIN {ouwiki_versions} v ON v.id = p.currentversionid
-            WHERE cm.id = ?
-            $titlecondition
-            $groupconditions";
-
-    $result = $DB->get_record_sql($sql, $params);
-
-    if (!$result) {
-        return false;
-    }
-
-    if ($result->title == '') {
-        $result->title = get_string('startpage', 'ouwiki');
-    }
-    $result->activityurl = new moodle_url('/mod/ouwiki/view.php', array('id' => $document->coursemoduleid));
-    $result->url = $result->activityurl;
-    if ($document->stringref !== '') {
-        $result->url .= '&page='.urlencode($document->stringref);
-    }
-    if ($document->groupid) {
-        $result->url .= '&group='.$document->groupid;
-    }
-    if ($document->userid) {
-        $result->url .= '&user='.$document->userid;
-    }
-    return $result;
 }
 
 /**
@@ -854,8 +690,8 @@ function ouwiki_get_ourecent_activity($course) {
  * @return array
  */
 function ouwiki_get_view_actions() {
-    return array('view', 'view all', 'viewold', 'wikihistory', 'wikiindex', 'history',
-            'entirewiki', 'search');
+    return ['view', 'view all', 'viewold', 'wikihistory', 'wikiindex', 'history',
+            'entirewiki'];
 }
 
 /**

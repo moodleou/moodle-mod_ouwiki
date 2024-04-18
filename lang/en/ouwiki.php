@@ -355,13 +355,6 @@ $string['viewwikistartpage'] = 'View {$a}';
 $string['viewwikichanges'] = 'Changes for {$a}';
 
 $string['search'] = 'Search this wiki';
-$string['search_help'] = 'Type your search term and press Enter or click the button.
-
-To search for exact phrases use quote marks.
-
-To exclude a word insert a hyphen immediately before the word.
-
-Example: the search term <tt>picasso -sculpture &quot;early works&quot;</tt> will return results for &lsquo;picasso&rsquo; or the phrase &lsquo;early works&rsquo; but will exclude items containing &lsquo;sculpture&rsquo;.';
 
 $string['sizewarning'] = 'This wiki page is very large and may operate slowly.
 If possible, please split the content into logical chunks and
