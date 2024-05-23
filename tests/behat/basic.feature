@@ -630,7 +630,7 @@ Feature: Test Post and Comment on OUwiki entry
     Then "empty.txt" "link" should exist
     # Check for annotations (and test edit settings at the same time) - note we can not test for locking
     And I am on "Course 1" course homepage
-    When I open the action menu in "//div[contains(@class, 'activity-item') and contains(., 'W.X')]" "xpath_element"
+    When I open "W.X" actions menu
     And I choose "Edit settings" in the open action menu
     And I expand all fieldsets
     And I set the field "Annotation system" to "Yes"
