@@ -522,8 +522,8 @@ they are very determined. They could edit a page and wait until the timeout is a
 saving changes then very quickly editing it again.
 </p>';
 $string['endannotation'] = 'End of annotation';
-$string['expandallannotations'] = 'Expand annotations';
-$string['collapseallannotations'] = 'Collapse annotations';
+$string['expandallannotations'] = 'Expand all annotations';
+$string['collapseallannotations'] = 'Collapse all annotations';
 $string['showannotationicons'] = 'Show annotations';
 $string['hideannotationicons'] = 'Hide annotations';
 $string['errorcoursesubwiki'] = 'Must be &lsquo;No groups&rsquo; unless sub-wikis option is &lsquo;One wiki per group&rsquo;';
