@@ -1053,7 +1053,7 @@ function ouwiki_print_tabs($selected, $pagename, $subwiki, $cm, $context, $pagee
     print_tabs($tabs, $selected, $pageexists ? '' : array('edit', 'annotate'));
 
     print '<div id="ouwiki_belowtabs">';
-    print get_accesshide(ucfirst($selected) . '.', 'h1');
+    print get_accesshide(ucfirst($selected) . '.', 'h3');
 }
 
 /**
@@ -1072,7 +1072,6 @@ function ouwiki_print_header($ouwiki, $cm, $subwiki, $pagename, $afterpage = nul
     global $OUTPUT, $PAGE;
 
     $wikiname = format_string(htmlspecialchars($ouwiki->name));
-    $buttontext = ouwiki_get_search_form($subwiki, $cm->id);
 
     if ($afterpage && $pagename !== '') {
         $PAGE->navbar->add(htmlspecialchars($pagename), new moodle_url('/mod/ouwiki/view.php',
@@ -1087,7 +1086,6 @@ function ouwiki_print_header($ouwiki, $cm, $subwiki, $pagename, $afterpage = nul
             $PAGE->navbar->add($element['name'], $element['link']);
         }
     }
-    $PAGE->set_button($buttontext);
 
     if (empty($title)) {
         $title = $wikiname;
@@ -2021,21 +2019,6 @@ function ouwiki_save_new_version($course, $cm, $ouwiki, $subwiki, $pagename, $co
         }
     }
 
-    // Inform search, if installed
-    if (ouwiki_search_installed()) {
-        $doc = new local_ousearch_document();
-        $doc->init_module_instance('ouwiki', $cm);
-        if ($subwiki->groupid) {
-            $doc->set_group_id($subwiki->groupid);
-        }
-        $doc->set_string_ref($pageversion->title === '' ? null : $pageversion->title);
-        if ($subwiki->userid) {
-            $doc->set_user_id($subwiki->userid);
-        }
-        $title = $pageversion->title;
-        $doc->update($title, $content);
-    }
-
     // Check and remove any files not included in new version.
     $unknownfiles = array();
     $versioncontent = $DB->get_field('ouwiki_versions', 'xhtml', array('id' => $versionid));
@@ -2130,12 +2113,6 @@ function ouwiki_get_wiki_link_details($wikilink) {
                         'rawtitle' => $rawtitle,
                         'rawpage' => $rawpage
                     );
-}
-
-/** @return True if OU search extension is installed */
-function ouwiki_search_installed() {
-    global $CFG;
-    return @include_once($CFG->dirroot.'/local/ousearch/searchlib.php');
 }
 
 /**
@@ -2793,6 +2770,7 @@ function ouwiki_print_editlock($lock, $ouwiki) {
         $timeoutscript = '';
         if ($ouwiki->timeout) {
             $countdownurgent = ouwiki_javascript_escape(get_string('countdownurgent', 'ouwiki'));
+            $countdownurgent_sr = ouwiki_javascript_escape(get_string('countdownurgent_sr', 'ouwiki'));
             $timeoutscript = "var ouw_countdownto = (new Date()).getTime()+1000*{$ouwiki->timeout};
                     var ouw_countdowninterval=setInterval(function() {
                     var countdown=document.getElementById('ouw_countdown');
@@ -2806,8 +2784,10 @@ function ouwiki_print_editlock($lock, $ouwiki) {
                     }
                     if(timeleft<2*60*1000) {
                         var urgent=document.getElementById('ouw_countdownurgent');
+                        var urgent_sr=document.getElementById('ouw_countdownurgent_sr');
                         if(!urgent.firstChild) {
                             urgent.appendChild(document.createTextNode(\"".$countdownurgent."\"));
+                            urgent_sr.appendChild(document.createTextNode(\"".$countdownurgent_sr."\"));
                             countdown.style.fontWeight='bold';
                             countdown.style.color='red';
                         }
@@ -2820,7 +2800,7 @@ function ouwiki_print_editlock($lock, $ouwiki) {
                     while(countdown.firstChild) {
                         countdown.removeChild(countdown.firstChild);
                     }
-                    countdown.appendChild(document.createTextNode(text));
+                    countdown.appendChild(document.createTextNode(text)); 
                 },500);
             ";
         }
@@ -2969,45 +2949,6 @@ function ouwiki_get_last_modified($cm, $course, $userid = 0) {
     $result = $DB->get_field_sql($sql, $params);
     $results[$userid][$cm->id] = $result;
     return $result;
-}
-
-/**
- * Returns html for a search form for the nav bar
- * @param object $subwiki wiki to be searched
- * @param int $cmid wiki to be searched
- * @return string html
- */
-function ouwiki_get_search_form($subwiki, $cmid) {
-    if (!ouwiki_search_installed()) {
-        return '';
-    }
-    global $OUTPUT, $CFG;
-    $query = optional_param('query', '', PARAM_RAW);
-    $out = html_writer::start_tag('form', array('action' => 'search.php', 'method' => 'get'));
-    $out .= html_writer::start_tag('div');
-    $out .= html_writer::tag('label', get_string('search', 'ouwiki'),
-            array('for' => 'ouwiki_searchquery'));
-    $out .= $OUTPUT->help_icon('search', 'ouwiki');
-    $out .= html_writer::empty_tag('input',
-            array('type' => 'hidden', 'name' => 'id', 'value' => $cmid));
-    if (!$subwiki->defaultwiki) {
-        if ($subwiki->groupid) {
-            $out .= html_writer::empty_tag('input',
-                    array('type' => 'hidden', 'name' => 'group', 'value' => $subwiki->groupid));
-        }
-        if ($subwiki->userid) {
-            $out .= html_writer::empty_tag('input',
-                    array('type' => 'hidden', 'name' => 'user', 'value' => $subwiki->userid));
-        }
-    }
-    $out .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'query',
-            'id' => 'ouwiki_searchquery', 'value' => $query));
-    $out .= html_writer::empty_tag('input', array('type' => 'image',
-            'id' => 'ousearch_searchbutton', 'alt' => get_string('search'),
-            'title' => get_string('search'), 'src' => $OUTPUT->image_url('i/search')));
-    $out .= html_writer::end_tag('div');
-    $out .= html_writer::end_tag('form');
-    return $out;
 }
 
 /**
@@ -4060,7 +4001,7 @@ function ouwiki_get_completion_state_lib($cm, $userid, $type) {
     if ($ouwiki->completionpages) {
         $value = $ouwiki->completionpages <=
                 $DB->get_field_sql($countsql .
-                        ' AND (SELECT MIN (id)
+                        ' AND (SELECT MIN(id)
                                  FROM {ouwiki_versions}
                                 WHERE pageid = p.id AND deletedat IS NULL) = v.id',
                         [$userid, $ouwiki->id]);

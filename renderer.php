@@ -1407,7 +1407,7 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         global $CFG;
         $label = $cm->name;
         $url = $CFG->wwwroot . '/mod/ouwiki/view.php?id=' . $cm->id;
-        return html_writer::tag('div', link_arrow_left($label, $url), array('id' => 'ouwiki-arrowback'));
+        return html_writer::tag('div', link_arrow_left(html_writer::span(get_string('returntolabel', 'ouwiki'), 'sr-only') . $label, $url), array('id' => 'ouwiki-arrowback'));
     }
 
 }

@@ -33,7 +33,7 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         // Name and intro
         $mform->addElement('text', 'name', get_string('name'), array('size' => '64'));
         $mform->setType('name', PARAM_TEXT);
-        $mform->addRule('name', get_string('required'), 'required', null, 'client');
+        $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
         $this->standard_intro_elements(get_string('wikiintro', 'wiki'));
@@ -122,27 +122,43 @@ class mod_ouwiki_mod_form extends moodleform_mod {
     public function add_completion_rules() {
         $mform =& $this->_form;
 
-        $group = array();
-        $group[] =& $mform->createElement('checkbox', 'completionpagesenabled', ' ', get_string('completionpages', 'ouwiki'));
-        $group[] =& $mform->createElement('text', 'completionpages', ' ', array('size' => 3));
-        $mform->setType('completionpages', PARAM_INT);
-        $mform->addGroup($group, 'completionpagesgroup', get_string('completionpagesgroup', 'ouwiki'), array(' '), false);
-        $mform->disabledIf('completionpages', 'completionpagesenabled', 'notchecked');
+        $group = [];
+        $completionpagesenabledel = $this->get_suffixed_name('completionpagesenabled');
+        $group[] =& $mform->createElement(
+                'checkbox',
+                $completionpagesenabledel,
+                ' ',
+                get_string('completionpages', 'ouwiki'));
+        $completionpagesel = $this->get_suffixed_name('completionpages');
+        $group[] =& $mform->createElement('text', $completionpagesel, ' ', ['size' => 3]);
+        $mform->setType($completionpagesel, PARAM_INT);
+        $completionpagesgroupel = $this->get_suffixed_name('completionpagesgroup');
+        $mform->addGroup($group, 'completionpagesgroup', get_string('completionpagesgroup', 'ouwiki'), [' '], false);
+        $mform->disabledIf($completionpagesel, $completionpagesenabledel, 'notchecked');
 
-        $group = array();
-        $group[] =& $mform->createElement('checkbox', 'completioneditsenabled', ' ', get_string('completionedits', 'ouwiki'));
-        $group[] =& $mform->createElement('text', 'completionedits', ' ', array('size' => 3));
-        $mform->setType('completionedits', PARAM_INT);
-        $mform->addGroup($group, 'completioneditsgroup', get_string('completioneditsgroup', 'ouwiki'), array(' '), false);
+        $group = [];
+        $completioneditsenabledel = $this->get_suffixed_name('completioneditsenabled');
+        $group[] =& $mform->createElement(
+                'checkbox',
+                $completioneditsenabledel,
+                ' ',
+                get_string('completionedits', 'ouwiki'));
+        $completioneditsel = $this->get_suffixed_name('completionedits');
+        $group[] =& $mform->createElement('text', $completioneditsel, ' ', ['size' => 3]);
+        $mform->setType($completioneditsel, PARAM_INT);
+        $completioneditsgroupel = $this->get_suffixed_name('completioneditsgroup');
+        $mform->addGroup($group, $completioneditsgroupel, get_string('completioneditsgroup', 'ouwiki'), [' '], false);
         $mform->disabledIf('completionedits', 'completioneditsenabled', 'notchecked');
 
-        return array('completionpagesgroup', 'completioneditsgroup');
+        return [$completionpagesgroupel, $completioneditsgroupel];
     }
 
     public function completion_rule_enabled($data) {
         return
-            ((!empty($data['completionpagesenabled']) && $data['completionpages'] != 0)) ||
-            ((!empty($data['completioneditsenabled']) && $data['completionedits'] != 0));
+            ((!empty($data[$this->get_suffixed_name('completionpagesenabled')]) &&
+                    $data[$this->get_suffixed_name('completionpages')] != 0)) ||
+            ((!empty($data[$this->get_suffixed_name('completioneditsenabled')]) &&
+                    $data[$this->get_suffixed_name('completionedits')] != 0));
     }
 
     public function get_data() {
@@ -152,12 +168,13 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         }
         // Turn off completion settings if the checkboxes aren't ticked
         if (!empty($data->completionunlocked)) {
-            $autocompletion = !empty($data->completion) && $data->completion == COMPLETION_TRACKING_AUTOMATIC;
-            if (empty($data->completionpagesenabled) || !$autocompletion) {
-                $data->completionpages = 0;
+            $completion = $data->{$this->get_suffixed_name('completion')};
+            $autocompletion = !empty($completion) && $completion == COMPLETION_TRACKING_AUTOMATIC;
+            if (empty($data->{$this->get_suffixed_name('completionpagesenabled')}) || !$autocompletion) {
+                $data->{$this->get_suffixed_name('completionpages')} = 0;
             }
-            if (empty($data->completioneditsenabled) || !$autocompletion) {
-                $data->completionedits = 0;
+            if (empty($data->{$this->get_suffixed_name('completioneditsenabled')}) || !$autocompletion) {
+                $data->{$this->get_suffixed_name('completionedits')} = 0;
             }
         }
 
@@ -172,13 +189,17 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         // Set up the completion checkboxes which aren't part of standard data.
         // We also make the default value (if you turn on the checkbox) for those
         // numbers to be 1, this will not apply unless checkbox is ticked.
-        $default_values['completionpagesenabled'] = !empty($default_values['completionpages']) ? 1 : 0;
-        if (empty($default_values['completionpages'])) {
-            $default_values['completionpages'] = 1;
+        $completionpagesenabledel = $this->get_suffixed_name('completionpagesenabled');
+        $completionpagesel = $this->get_suffixed_name('completionpages');
+        $default_values[$completionpagesenabledel] = !empty($default_values[$completionpagesel]) ? 1 : 0;
+        if (empty($default_values[$completionpagesel])) {
+            $default_values[$completionpagesel] = 1;
         }
-        $default_values['completioneditsenabled'] = !empty($default_values['completionedits']) ? 1 : 0;
-        if (empty($default_values['completionedits'])) {
-            $default_values['completionedits'] = 1;
+        $completioneditsenabledel = $this->get_suffixed_name('completioneditsenabled');
+        $completioneditsel = $this->get_suffixed_name('completionedits');
+        $default_values[$completioneditsenabledel] = !empty($default_values[$completioneditsel]) ? 1 : 0;
+        if (empty($default_values[$completioneditsel])) {
+            $default_values[$completioneditsel] = 1;
         }
     }
 
@@ -191,5 +212,15 @@ class mod_ouwiki_mod_form extends moodleform_mod {
             $errors['groupmode'] = get_string('errorgroupssubwiki', 'ouwiki');
         }
         return $errors;
+    }
+
+    /**
+     * Get the suffix of name.
+     *
+     * @param string $fieldname The field name of the completion element.
+     * @return string The suffixed name.
+     */
+    protected function get_suffixed_name(string $fieldname): string {
+        return $fieldname . $this->get_suffix();
     }
 }

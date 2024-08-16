@@ -14,16 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_ouwiki;
+
 /**
- * Version.
+ * Hook callbacks.
  *
  * @package mod_ouwiki
- * @copyright 2014 The Open University
+ * @copyright 2024 The Open University
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class hook_callbacks {
 
-$plugin->version  = 2024020100;
-$plugin->requires = 2022041900;
-$plugin->component = 'mod_ouwiki';
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '4.0 r1';
+    /**
+     * Called when the system wants to find out if an activity is searchable, to decide whether to
+     * display a search box in the header.
+     *
+     * @param \local_moodleglobalsearch\hook\activity_search_info $hook
+     */
+    public static function activity_search_info(\local_moodleglobalsearch\hook\activity_search_info $hook) {
+        // For ouwiki, we do the search on basically all pages within wiki.
+        if ($hook->is_modname('ouwiki') && preg_match('~^mod-ouwiki-~', $hook->get_page_type())) {
+            $hook->enable_search(get_string('search', 'ouwiki'));
+        }
+    }
+
+}

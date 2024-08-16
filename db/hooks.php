@@ -15,15 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version.
+ * Hook callbacks.
  *
  * @package mod_ouwiki
- * @copyright 2014 The Open University
+ * @copyright 2024 The Open University
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version  = 2024020100;
-$plugin->requires = 2022041900;
-$plugin->component = 'mod_ouwiki';
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '4.0 r1';
+defined('MOODLE_INTERNAL') || die();
+
+$callbacks = [
+    [
+        'hook' => \local_moodleglobalsearch\hook\activity_search_info::class,
+        'callback' => \mod_ouwiki\hook_callbacks::class . '::activity_search_info',
+        'priority' => 500,
+    ],
+];

@@ -109,8 +109,10 @@ $string['savefailcontent']='Your version of the page is shown below so that you 
 the relevant parts into another program. If you put your changes back on the wiki later, be careful
 you don\'t overwrite somebody else\'s work.';
 $string['returntoview']='View current page';
-$string['savefailnetwork'] = '<p>Unfortunately, your changes cannot be saved at this time. This is due to a
-network error; the website is temporarily unavailable or you have been signed out. </p><p>Saving has been disabled
+
+$string['savefailnetwork'] = 'a network error; the website is temporarily unavailable or cannot be reached';
+$string['savefailsession'] = 'a session error; your session has expired due to inactivity or you are no longer logged in';
+$string['savefailtext'] = '<p>Unfortunately, your changes cannot be saved at this time. This is due to {$a}. </p><p>Saving has been disabled
 on this page. In order to retain any changes you must copy the edited page content, access the Edit page again and then paste in your changes.</p>';
 
 $string['lockcancelled'] = 'Your editing lock has been overridden and somebody else is now editing this page. If you wish to keep your changes, please select and copy them before clicking Cancel; then try to edit again.';
@@ -123,7 +125,7 @@ $string['jsajaxrequired'] = ' This Annotate page requires Javascript to be enabl
 
 $string['countdowntext'] = 'This wiki allows only {$a} minutes for editing. Make your changes and click Save or Cancel before the remaining time (to right) reaches zero.';
 $string['countdownurgent'] = 'Please finish or cancel your edit now. If you do not save before time runs out, your changes will be saved automatically.';
-
+$string['countdownurgent_sr'] = 'one minute remaining';
 
 $string['advice_history']='<p>The table below displays all changes that have been made to <a href="{$a}">the current page</a>.</p>
 <p>You can view old versions or see what changed in a particular version. If you want to compare any two versions, select the relevant checkboxes and click \'Compare selected\'.</p>';
@@ -229,6 +231,7 @@ $string['timelocked_before']='This wiki is currently locked. It can be edited fr
 $string['timelocked_after']='This wiki is currently locked and can no longer be edited.';
 
 $string['returntopage']='Return to wiki page';
+$string['returntolabel'] = 'Return to ';
 
 $string['savetemplate']='Save wiki as template';
 $string['template']='Template';
@@ -352,13 +355,6 @@ $string['viewwikistartpage'] = 'View {$a}';
 $string['viewwikichanges'] = 'Changes for {$a}';
 
 $string['search'] = 'Search this wiki';
-$string['search_help'] = 'Type your search term and press Enter or click the button.
-
-To search for exact phrases use quote marks.
-
-To exclude a word insert a hyphen immediately before the word.
-
-Example: the search term <tt>picasso -sculpture &quot;early works&quot;</tt> will return results for &lsquo;picasso&rsquo; or the phrase &lsquo;early works&rsquo; but will exclude items containing &lsquo;sculpture&rsquo;.';
 
 $string['sizewarning'] = 'This wiki page is very large and may operate slowly.
 If possible, please split the content into logical chunks and
@@ -526,8 +522,8 @@ they are very determined. They could edit a page and wait until the timeout is a
 saving changes then very quickly editing it again.
 </p>';
 $string['endannotation'] = 'End of annotation';
-$string['expandallannotations'] = 'Expand annotations';
-$string['collapseallannotations'] = 'Collapse annotations';
+$string['expandallannotations'] = 'Expand all annotations';
+$string['collapseallannotations'] = 'Collapse all annotations';
 $string['showannotationicons'] = 'Show annotations';
 $string['hideannotationicons'] = 'Hide annotations';
 $string['errorcoursesubwiki'] = 'Must be &lsquo;No groups&rsquo; unless sub-wikis option is &lsquo;One wiki per group&rsquo;';
@@ -639,3 +635,6 @@ $string['print_pdf_alphabetic'] = 'PDF (Alphabetic)';
 $string['print_pdf_tree_structure'] = 'PDF (Tree)';
 $string['print_html_alphabetic'] = 'HTML (Alphabetic)';
 $string['print_html_tree_structure'] = 'HTML (Tree)';
+
+$string['savecheck'] = 'Enable save check';
+$string['savecheck_desc'] = 'Enable checking of session etc on submitting the edit form.';

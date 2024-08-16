@@ -630,7 +630,7 @@ Feature: Test Post and Comment on OUwiki entry
     Then "empty.txt" "link" should exist
     # Check for annotations (and test edit settings at the same time) - note we can not test for locking
     And I am on "Course 1" course homepage
-    When I open the action menu in "//div[contains(@class, 'activity-item') and contains(., 'W.X')]" "xpath_element"
+    When I open "W.X" actions menu
     And I choose "Edit settings" in the open action menu
     And I expand all fieldsets
     And I set the field "Annotation system" to "Yes"
@@ -642,17 +642,17 @@ Feature: Test Post and Comment on OUwiki entry
       | Content         | A1 A2    |
     Given I click on "Annotate" "link"
     And "span.ouwiki-annotation-marker" "css_element" should exist
-    When I click on "#marker0" "css_element"
+    When I click on "#marker3" "css_element"
     Then I set the field "Add annotation:" to "web"
     And I click on "Add" "button" in the "annotationdialog" "region"
     And I should see "web"
-    When I click on "#marker3" "css_element"
+    When I click on "#marker6" "css_element"
     Then I set the field "Add annotation:" to "spider"
     And I click on "Add" "button" in the "annotationdialog" "region"
     And I should see "spider"
     When I press "Save changes"
     Then "Hide annotations" "link" should be visible
-    And "Expand annotations" "link" should be visible
+    And "Expand all annotations" "link" should be visible
     When I click on "span.ouwiki-annotation-tag:nth-of-type(1)" "css_element"
     Then I should see "web"
     And I should see "Teacher 1"
@@ -660,13 +660,13 @@ Feature: Test Post and Comment on OUwiki entry
     Then I should see "spider"
     And I should see "Teacher 1"
     # Can not test for photos
-    And "Collapse annotations" "link" should be visible
+    And "Collapse all annotations" "link" should be visible
     When I click on "span.ouwiki-annotation-tag:nth-of-type(1)" "css_element"
     Then I should not see "web"
-    And "Collapse annotations" "link" should not be visible
+    And "Collapse all annotations" "link" should not be visible
     And "Hide annotations" "link" should be visible
-    And "Expand annotations" "link" should be visible
-    When I click on "Expand annotations" "link"
+    And "Expand all annotations" "link" should be visible
+    When I click on "Expand all annotations" "link"
     Then I should see "web"
     And I should see "Teacher 1"
     And I should see "spider"
@@ -683,8 +683,8 @@ Feature: Test Post and Comment on OUwiki entry
     When I click on "span.ouwiki-annotation-tag:nth-of-type(1)" "css_element"
     Then I should not see "web"
     And I should see "spider"
-    And "Expand annotations" "link" should be visible
-    When I click on "Expand annotations" "link"
+    And "Expand all annotations" "link" should be visible
+    When I click on "Expand all annotations" "link"
     Then I should see "web"
     And I should see "Teacher 1"
     And I should see "spider"
@@ -779,3 +779,24 @@ Feature: Test Post and Comment on OUwiki entry
     And I press "Save changes"
     When I am on "Course 2" course homepage
     Then I should see "100%"
+
+  Scenario: Check description on course page
+    Given the following "activity" exists:
+      | activity        | ouwiki              |
+      | course          | C1                  |
+      | name            | W.WC                |
+      | intro           | Test wiki desc show |
+      | showdescription | 1                   |
+      | groupmode       | 0                   |
+      | section         | 1                   |
+    And the following "activity" exists:
+      | activity        | ouwiki            |
+      | course          | C1                |
+      | name            | W.WC2             |
+      | intro           | Test wiki no show |
+      | showdescription | 0                 |
+      | groupmode       | 0                 |
+      | section         | 1                 |
+    When I am on the "Course 1" "course" page logged in as "teacher1"
+    Then I should see "Test wiki desc show"
+    And I should not see "Test wiki no show"

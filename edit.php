@@ -438,9 +438,7 @@ ouwiki_highlight_existing_annotations($existing, $annotations, 'edit');
 print get_string('advice_edit', 'ouwiki', $OUTPUT->help_icon('createlinkedwiki', 'ouwiki'));
 if ($ouwiki->timeout) {
     $countdowntext = get_string('countdowntext', 'ouwiki', $ouwiki->timeout/60);
-    print "<script type='text/javascript'>
-                document.write('<p><div id=\"ouw_countdown\"></div>$countdowntext<span id=\"ouw_countdownurgent\"></span></p>');
-        </script>";
+    print("<p><div id=\"ouw_countdown\" ></div>$countdowntext<span id=\"ouw_countdownurgent\" aria-live=\"polite\"></span><span id=\"ouw_countdownurgent_sr\" aria-live=\"polite\" class=\"sr-only\"></span></p>");
 }
 
 // Set up basic form data
@@ -481,6 +479,8 @@ echo $ouwikioutput->get_bottom_buttons($subwiki, $cm, $context, $pageversion, fa
 $stringlist = array(
         array('savefailnetwork', 'ouwiki'),
         array('savefailtitle', 'ouwiki'),
+        array('savefailsession', 'ouwiki'),
+        array('savefailtext', 'ouwiki'),
 );
 $jsmodule = array(
         'name' => 'mod_ouwiki_edit',
@@ -488,7 +488,9 @@ $jsmodule = array(
         'requires' => array('base', 'event', 'io', 'node', 'anim', 'moodle-core-notification-alert', 'button'),
         'strings'  => $stringlist
 );
-$PAGE->requires->js_init_call('M.mod_ouwiki_edit.init', array($context->id), true, $jsmodule);
+if (get_config('mod_ouwiki', 'savecheck')) {
+    $PAGE->requires->js_init_call('M.mod_ouwiki_edit.init', array($context->id), true, $jsmodule);
+}
 
 // Footer
 ouwiki_print_footer($course, $cm, $subwiki, $pagename);
