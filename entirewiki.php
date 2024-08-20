@@ -24,9 +24,9 @@
  */
 
 require_once(dirname(__FILE__) . '/../../config.php');
-require($CFG->dirroot.'/mod/ouwiki/basicpage.php');
+require($CFG->dirroot . '/mod/ouwiki/basicpage.php');
 
-$id = required_param('id', PARAM_INT); // Course Module ID
+$id = required_param('id', PARAM_INT); // Course Module ID.
 $pagename = optional_param('page', '', PARAM_TEXT);
 $filesexist = optional_param('filesexist', 0, PARAM_INT);
 
@@ -38,7 +38,7 @@ if ($id) {
         throw new moodle_exception('invalidcoursemodule');
     }
 
-    // Checking course instance
+    // Checking course instance.
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
     if (!$ouwiki = $DB->get_record('ouwiki', array('id' => $cm->instance))) {
@@ -54,13 +54,14 @@ require_course_login($course, true, $cm);
 $ouwikioutput = $PAGE->get_renderer('mod_ouwiki');
 
 $format = required_param('format', PARAM_ALPHA);
-if ($format !== OUWIKI_FORMAT_HTML && $format !== OUWIKI_FORMAT_RTF && $format !== OUWIKI_FORMAT_TEMPLATE) {
+if ($format !== OUWIKI_FORMAT_HTML && $format !== OUWIKI_FORMAT_PDF
+    && $format !== OUWIKI_FORMAT_TEMPLATE && $format !== OUWIKI_FORMAT_HTML_PRINT) {
     throw new moodle_exception('Unexpected format');
 }
 
-// Get basic wiki details for filename
-$filename = $course->shortname.'.'.$ouwiki->name;
-$filename = preg_replace('/[^A-Za-z0-9.-]/' , '_', $filename);
+// Get basic wiki details for filename.
+$filename = $course->shortname . '.' . $ouwiki->name;
+$filename = preg_replace('/[^A-Za-z0-9.-]/', '_', $filename);
 
 $markup = '';
 $fs = null;
@@ -71,12 +72,31 @@ switch ($format) {
         $files = array();
         $fs = get_file_storage();
         break;
-    case OUWIKI_FORMAT_RTF:
-        require_once($CFG->dirroot.'/local/rtf.php');
-        $markup = '<root><p>'.get_string('savedat', 'ouwiki', userdate(time())).'</p><hr />';
+    case OUWIKI_FORMAT_HTML_PRINT:
+
+        $urlobjectarray = $PAGE->theme->css_urls($PAGE);
+        $urlobject = $urlobjectarray[0];
+        $cssurl = $urlobject->out();
+
+        $markup = '<html>';
+        $markup .= '<head>';
+        $markup .= '<link rel="stylesheet" href="' . $cssurl . '">';
+        $markup .= '</head>';
+        $markup .= '<body>';
+
+        break;
+    case OUWIKI_FORMAT_PDF:
+
+        $markup = '<html>';
+        $css = file_get_contents(dirname(__FILE__) . '/style/pdf.css');
+        $markup .= '<head>';
+        $markup .= '<style>' . $css . '</style>';
+        $markup .= '</head>';
+        $markup .= '<body>';
+
         break;
     case OUWIKI_FORMAT_HTML:
-        // Do header
+        // Do header.
         echo $ouwikioutput->ouwiki_print_start($ouwiki, $cm, $course, $subwiki, get_string('entirewiki', 'ouwiki'), $context, null, false, true);
         print '<div class="ouwiki_content">';
         break;
@@ -98,30 +118,48 @@ foreach ($index as $indexitem) {
     }
 }
 
+
 // If tree view specified.
-if (($treemode) && ($format == OUWIKI_FORMAT_HTML) ) {
+if (($treemode) && ($format == OUWIKI_FORMAT_HTML || $format == OUWIKI_FORMAT_PDF || $format == OUWIKI_FORMAT_HTML_PRINT)) {
+
     ouwiki_build_tree($index);
     // Print out in hierarchical form...
-    print '<ul class="ouw_indextree">';
+
+    $treeoutput = '<ul class="ouw_indextree">';
+
     $functionname = 'ouwiki_display_entirewiki_page_in_index';
-    print ouwiki_tree_index($functionname, reset($index)->pageid, $index, $subwiki, $cm, $context);
-    print '</ul>';
+    $treeoutput .= ouwiki_tree_index($functionname, reset($index)->pageid, $index, $subwiki, $cm, $context);
+    $treeoutput .= '</ul>';
 
     if ($orphans) {
-        print '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
-        print '<ul class="ouw_indextree">';
+        $treeoutput .= '<h2 class="ouw_orphans">' . get_string('orphanpages', 'ouwiki') . '</h2>';
+        $treeoutput .= '<ul class="ouw_indextree">';
         foreach ($index as $indexitem) {
             if (count($indexitem->linksfrom) == 0 && $indexitem->title !== '') {
                 $orphanindex = ouwiki_get_sub_tree_from_index($indexitem->pageid, $index);
                 ouwiki_build_tree($orphanindex);
-                print ouwiki_tree_index($functionname, $indexitem->pageid, $orphanindex, $subwiki, $cm, $context);
+                $treeoutput .= ouwiki_tree_index($functionname, $indexitem->pageid, $orphanindex, $subwiki, $cm, $context);
             }
         }
-        print '</ul>';
+        $treeoutput .= '</ul>';
     }
+
+    if ($format == OUWIKI_FORMAT_HTML) {
+        print $treeoutput;
+    }
+
+    if ($format == OUWIKI_FORMAT_PDF || $format == OUWIKI_FORMAT_HTML_PRINT) {
+
+        if ($format == OUWIKI_FORMAT_PDF) {
+            $treeoutput = replace_image_urls($context, $treeoutput, 0, true);
+        }
+
+        $markup .= $treeoutput;
+    }
+
 } else {
     foreach ($index as $pageinfo) {
-        if (count($pageinfo->linksfrom)!= 0 || $pageinfo->title === '') {
+        if (count($pageinfo->linksfrom) != 0 || $pageinfo->title === '') {
             // Get page details.
             $pageversion = ouwiki_get_current_page($subwiki, $pageinfo->title);
             // If the page hasn't really been created yet, skip it.
@@ -129,7 +167,16 @@ if (($treemode) && ($format == OUWIKI_FORMAT_HTML) ) {
                 continue;
             }
 
-            $markup .= get_online_display_content($format, $pageversion, $context, $subwiki, $cm, $index, $fs, $files);
+
+            $output = get_online_display_content($format, $pageversion, $context, $subwiki, $cm, $index, $fs, $files);
+
+            if ($format == OUWIKI_FORMAT_HTML) {
+                print $output;
+            }
+
+            if ($format == OUWIKI_FORMAT_PDF || $format == OUWIKI_FORMAT_HTML_PRINT) {
+                $markup .= $output;
+            }
 
             if ($first) {
                 $first = false;
@@ -139,9 +186,9 @@ if (($treemode) && ($format == OUWIKI_FORMAT_HTML) ) {
 
     if ($orphans) {
         if ($format == OUWIKI_FORMAT_HTML) {
-            print '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
+            print '<h2 class="ouw_orphans">' . get_string('orphanpages', 'ouwiki') . '</h2>';
         } else if ($format != OUWIKI_FORMAT_TEMPLATE) {
-            $markup .= '<h2 class="ouw_orphans">'.get_string('orphanpages', 'ouwiki').'</h2>';
+            $markup .= '<h2 class="ouw_orphans">' . get_string('orphanpages', 'ouwiki') . '</h2>';
         }
 
         foreach ($index as $indexitem) {
@@ -184,9 +231,28 @@ switch ($format) {
         exit;
         break;
 
-    case OUWIKI_FORMAT_RTF:
-        $markup .= '</root>';
-        rtf_from_html($filename.'.rtf', $markup);
+    case OUWIKI_FORMAT_HTML_PRINT:
+
+        $markup .= '</body></html>';
+
+        echo $markup;
+        break;
+
+    case OUWIKI_FORMAT_PDF:
+        $markup .= '</body></html>';
+
+        require_once($CFG->libdir . '/pdflib.php');
+
+        $doc = new pdf;
+        $doc->setFont('helvetica');
+        $doc->setPrintHeader(false);
+        $doc->setPrintFooter(false);
+        $doc->AddPage();
+        $doc->writeHTML($markup);
+        $doc->Output(explode('.', $filename)[1] . '.pdf');
+
+        clean_up($markup);
+
         break;
 
     case OUWIKI_FORMAT_HTML:
@@ -200,7 +266,7 @@ function get_online_display_content($format, $pageversion, $context, $subwiki, $
 
     if ($format != OUWIKI_FORMAT_TEMPLATE) {
         $pageversion->xhtml = file_rewrite_pluginfile_urls($pageversion->xhtml, 'pluginfile.php',
-                $context->id, 'mod_ouwiki', 'content', $pageversion->versionid);
+            $context->id, 'mod_ouwiki', 'content', $pageversion->versionid);
     }
 
     switch ($format) {
@@ -213,25 +279,25 @@ function get_online_display_content($format, $pageversion, $context, $subwiki, $
             $markup .= '<versionid>' . $pageversion->versionid . '</versionid>';
             // Copy images found in content.
             preg_match_all('#<img.*?src="@@PLUGINFILE@@/(.*?)".*?/?>#', $pageversion->xhtml, $matches);
-            if (! empty($matches)) {
+            if (!empty($matches)) {
                 // Extract the file names from the matches.
                 foreach ($matches[1] as $key => $match) {
                     // Get file name and copy to zip.
                     $match = urldecode($match);
                     // Copy image - on fail swap tag with string.
                     if ($file = $fs->get_file($context->id, 'mod_ouwiki', 'content',
-                            $pageversion->versionid, '/', $match)) {
+                        $pageversion->versionid, '/', $match)) {
                         $files["/$pageversion->versionid/$match/"] = $file;
                     } else {
                         $pageversion->xhtml = str_replace($matches[0][$key], $brokenimagestr,
-                                $pageversion->xhtml);
+                            $pageversion->xhtml);
                     }
                 }
             }
             $markup .= '<xhtml>' . htmlspecialchars($pageversion->xhtml) . '</xhtml>';
             // Add attachments.
             if ($attachments = $fs->get_area_files($context->id, 'mod_ouwiki', 'attachment',
-                    $pageversion->versionid, 'itemid', false)) {
+                $pageversion->versionid, 'itemid', false)) {
                 // We have attachements.
                 $markup .= '<attachments>';
                 $attachmentsarray = array();
@@ -245,15 +311,23 @@ function get_online_display_content($format, $pageversion, $context, $subwiki, $
             }
             $markup .= '</page>';
             break;
-        case OUWIKI_FORMAT_RTF:
-            $markup .= '<h1>' . htmlspecialchars($visibletitle) . '</h1>';
-            $markup .= trim($pageversion->xhtml);
-            $markup .= '<br /><br /><hr />';
+        case OUWIKI_FORMAT_PDF || OUWIKI_FORMAT_HTML_PRINT:
+
+            $markup .= '<div class="ouw_entry"><a name="' . $pageversion->pageid . '"></a><h1 class="ouw_entry_heading">' .
+                '<a href="view.php?' . ouwiki_display_wiki_parameters($pageversion->title, $subwiki, $cm) .
+                '">' . htmlspecialchars($visibletitle) . '</a></h1>';
+            $markup .= ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, $index, $pageversion->xhtmlformat);
+            $markup .= '</div>';
+
+            if ($format === OUWIKI_FORMAT_PDF) {
+                $markup = replace_image_urls($context, $markup, $pageversion->versionid);
+            }
+
             break;
         case OUWIKI_FORMAT_HTML:
             print '<div class="ouw_entry"><a name="' . $pageversion->pageid . '"></a><h1 class="ouw_entry_heading">' .
-                    '<a href="view.php?' . ouwiki_display_wiki_parameters($pageversion->title, $subwiki, $cm) .
-                    '">' . htmlspecialchars($visibletitle) . '</a></h1>';
+                '<a href="view.php?' . ouwiki_display_wiki_parameters($pageversion->title, $subwiki, $cm) .
+                '">' . htmlspecialchars($visibletitle) . '</a></h1>';
             print ouwiki_convert_content($pageversion->xhtml, $subwiki, $cm, $index, $pageversion->xhtmlformat);
             print '</div>';
             break;
@@ -261,4 +335,66 @@ function get_online_display_content($format, $pageversion, $context, $subwiki, $
 
     return $markup;
 
+}
+
+
+/**
+ * @param $context
+ * @param $xhtml
+ * @param $itemid
+ * @param bool $treemode
+ * @return mixed
+ */
+function replace_image_urls($context, $xhtml, $itemid, $treemode = false) {
+    $content = $xhtml;
+    preg_match_all('#<img.+?src="(.+?)".+?>#', $content, $matches);
+
+    $fs = get_file_storage();
+    $tmpdir = create_dir(dirname(__FILE__) . '/pdf_images');
+
+    if (!empty($matches)) {
+        // Extract the file names from the matches.
+
+        foreach ($matches[1] as $match) {
+            $urlinfo = pathinfo($match);
+            $image = urldecode($urlinfo['basename']);
+
+            if ($treemode) {
+                $tmp = explode('/', $urlinfo['dirname']);
+                $itemid = $tmp[count($tmp) - 1];
+            }
+
+            if (!$file = $fs->get_file($context->id, 'mod_ouwiki', 'content', $itemid, '/', $image)) {
+                continue;
+            }
+
+            $filename = $file->get_filename();
+            $filepath = "$tmpdir/$filename";
+            if (file_exists($filepath) || $file->copy_content_to($filepath)) {
+                $content = str_replace($match, $filepath, $content);
+            }
+
+        }
+    }
+    return $content;
+}
+
+function create_dir($path) {
+    if (!file_exists($path)) {
+        mkdir($path, 0777, true);
+    }
+    return $path;
+}
+
+/**
+ * Removes the temporary local image files used for creating the pdf
+ * @param $html
+ */
+function clean_up($html) {
+    preg_match_all('#<img.+?src="(.+?)".+?>#', $html, $matches);
+    if (!empty($matches)) {
+        foreach ($matches[1] as $filepath) {
+            unlink($filepath);
+        }
+    }
 }
