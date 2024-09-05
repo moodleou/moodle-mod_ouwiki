@@ -23,7 +23,7 @@ Feature: Test view details against a user
     And I log in as "admin"
     And I am on "Course 1" course homepage
     And I turn editing mode on
-    When I add a "OU wiki" to section "1" and I fill the form with:
+    When I add an ouwiki activity to course "Course 1" section "1" and I fill the form with:
       | Name | Test 1 |
       | Description | Test ouwiki description |
       | grade[modgrade_type] | Point |

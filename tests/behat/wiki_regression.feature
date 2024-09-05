@@ -27,7 +27,7 @@ Feature: Test OUwiki regressions
     And I am on homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on
-    And I add a "OU wiki" to section "1"
+    And I add a "OU wiki" to section "0" using the activity chooser
     And I set the following fields to these values:
       | Name        | W.T                |
       | Description | Separate groups    |
@@ -53,13 +53,11 @@ Feature: Test OUwiki regressions
     And I am on homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on
-    When I add a "OU wiki" to section "1"
-    And I set the following fields to these values:
+    When I add an ouwiki activity to course "Course 1" section "1" and I fill the form with:
       | Name                  | W.WC                    |
       | Description           | wiki with no groups     |
       | Group mode            | No groups               |
       | Time allowed for edit | 3 minutes (for testing) |
-    And I press "Save and display"
     And I am on "Course 1" course homepage
     And I am on the "W.WC" "ouwiki activity" page
     And I press "Create page"
@@ -81,7 +79,7 @@ Feature: Test OUwiki regressions
     And I am on homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on
-    And I add a "OU wiki" to section "1"
+    And I add a "OU wiki" to section "1" using the activity chooser
     # Values for Future.
     And I set the following fields to these values:
       | Name               | W.SG                                |
@@ -92,7 +90,7 @@ Feature: Test OUwiki regressions
     And I press "Save and display"
     Then I should see "This wiki is currently locked."
     And I am on "Course 1" course homepage
-    And I add a "OU wiki" to section "1"
+    And I add a "OU wiki" to section "1" using the activity chooser
     # Values for Past.
     And I set the following fields to these values:
       | Name                 | W.SG                                |
@@ -103,7 +101,7 @@ Feature: Test OUwiki regressions
     And I press "Save and display"
     Then I should see "This wiki is currently locked and can no longer be edited."
     And I am on "Course 1" course homepage
-    And I add a "OU wiki" to section "1"
+    And I add a "OU wiki" to section "1" using the activity chooser
     # Values for Past and Future.
     And I set the following fields to these values:
       | Name                 | W.SG                                |
