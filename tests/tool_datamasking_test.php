@@ -54,6 +54,8 @@ class tool_datamasking_test extends \advanced_testcase {
                 'xhtml' => 'Q.']);
         $DB->insert_record('ouwiki_versions', ['pageid' => $p1, 'timecreated' => 0,
                 'xhtml' => '']);
+        $itemid = $DB->insert_record('ouwiki_versions', ['pageid' => $p1, 'timecreated' => 0,
+                'xhtml' => '<img src="d.txt"/>']);
 
         $DB->insert_record('ouwiki_annotations', ['pageid' => $p1, 'timemodified' => 0,
                 'content' => 'Q.']);
@@ -68,12 +70,14 @@ class tool_datamasking_test extends \advanced_testcase {
                 'b.txt', 'bb');
         $fileids[] = \tool_datamasking\testing_utils::add_file('mod_ouwiki', 'intro',
                 'c.txt', 'ccc');
+        $fileids[] = \tool_datamasking\testing_utils::add_file('mod_ouwiki', 'content',
+                'd.txt', 'dddd', $itemid);
 
         // Before checks.
         $ouwikipagessql = 'SELECT title FROM {ouwiki_pages} ORDER BY id';
         $this->assertEquals(['First', ''], $DB->get_fieldset_sql($ouwikipagessql));
         $ouwikiversionssql = 'SELECT xhtml FROM {ouwiki_versions} ORDER BY id';
-        $this->assertEquals(['Q.', ''], $DB->get_fieldset_sql($ouwikiversionssql));
+        $this->assertEquals(['Q.', '', '<img src="d.txt"/>'], $DB->get_fieldset_sql($ouwikiversionssql));
         $ouwikiannotationssql = 'SELECT content FROM {ouwiki_annotations} ORDER BY id';
         $this->assertEquals(['Q.', ''], $DB->get_fieldset_sql($ouwikiannotationssql));
 
@@ -89,7 +93,7 @@ class tool_datamasking_test extends \advanced_testcase {
 
         // After checks.
         $this->assertEquals(['Masked page ' . $p1, ''], $DB->get_fieldset_sql($ouwikipagessql));
-        $this->assertEquals(['X.', ''], $DB->get_fieldset_sql($ouwikiversionssql));
+        $this->assertEquals(['X.', '', '<img src="masked.txt"/>'], $DB->get_fieldset_sql($ouwikiversionssql));
         $this->assertEquals(['X.', ''], $DB->get_fieldset_sql($ouwikiannotationssql));
 
         \tool_datamasking\testing_utils::check_file($this, $fileids[0], 'masked.txt', 224);
