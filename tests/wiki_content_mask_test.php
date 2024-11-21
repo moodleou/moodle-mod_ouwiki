@@ -28,7 +28,11 @@ class wiki_content_mask_test extends \advanced_testcase {
      * Tests executing the mask, including retaining the wiki links.
      */
     public function test_execute(): void {
-        global $DB;
+        global $DB, $CFG;
+
+        if (!file_exists("{$CFG->dirroot}/admin/tool/datamasking/version.php")) {
+            $this->markTestSkipped('This test uses tool_datamasking, which is not installed. Skipping.');
+        }
 
         $this->resetAfterTest();
 
@@ -65,6 +69,10 @@ class wiki_content_mask_test extends \advanced_testcase {
      * Tests the get_affected_fields function.
      */
     public function test_get_affected_fields(): void {
+        global $CFG;
+        if (!file_exists("{$CFG->dirroot}/admin/tool/datamasking/version.php")) {
+            $this->markTestSkipped('This test uses tool_datamasking, which is not installed. Skipping.');
+        }
         $mask = new wiki_content_mask();
         $this->assertEquals(['xhtml'], $mask->get_affected_fields());
     }
@@ -73,6 +81,10 @@ class wiki_content_mask_test extends \advanced_testcase {
      * Tests the description text.
      */
     public function test_get_description_text(): void {
+        global $CFG;
+        if (!file_exists("{$CFG->dirroot}/admin/tool/datamasking/version.php")) {
+            $this->markTestSkipped('This test uses tool_datamasking, which is not installed. Skipping.');
+        }
         $mask = new wiki_content_mask();
         $this->assertEquals('Replace with fake text of a similar length, retaining HTML tags and '.
                 '[[wiki page]] links', $mask->get_description_text());

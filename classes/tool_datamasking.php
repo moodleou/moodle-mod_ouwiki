@@ -35,6 +35,6 @@ class tool_datamasking implements \tool_datamasking\plugin {
                 'content', false, \tool_datamasking\similar_text_mask::MODEL_POST));
 
         $plan->table('files')->add(new \tool_datamasking\files_mask('mod_ouwiki', 'attachment'));
-        $plan->table('files')->add(new \tool_datamasking\files_mask('mod_ouwiki', 'content'));
+        $plan->table('files')->add(new \tool_datamasking\files_mask('mod_ouwiki', 'content', 'ouwiki_versions', 'xhtml'));
     }
 }

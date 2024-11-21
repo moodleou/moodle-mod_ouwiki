@@ -652,7 +652,7 @@ Feature: Test Post and Comment on OUwiki entry
     And I should see "spider"
     When I press "Save changes"
     Then "Hide annotations" "link" should be visible
-    And "Expand annotations" "link" should be visible
+    And "Expand all annotations" "link" should be visible
     When I click on "span.ouwiki-annotation-tag:nth-of-type(1)" "css_element"
     Then I should see "web"
     And I should see "Teacher 1"
@@ -660,13 +660,13 @@ Feature: Test Post and Comment on OUwiki entry
     Then I should see "spider"
     And I should see "Teacher 1"
     # Can not test for photos
-    And "Collapse annotations" "link" should be visible
+    And "Collapse all annotations" "link" should be visible
     When I click on "span.ouwiki-annotation-tag:nth-of-type(1)" "css_element"
     Then I should not see "web"
-    And "Collapse annotations" "link" should not be visible
+    And "Collapse all annotations" "link" should not be visible
     And "Hide annotations" "link" should be visible
-    And "Expand annotations" "link" should be visible
-    When I click on "Expand annotations" "link"
+    And "Expand all annotations" "link" should be visible
+    When I click on "Expand all annotations" "link"
     Then I should see "web"
     And I should see "Teacher 1"
     And I should see "spider"
@@ -683,8 +683,8 @@ Feature: Test Post and Comment on OUwiki entry
     When I click on "span.ouwiki-annotation-tag:nth-of-type(1)" "css_element"
     Then I should not see "web"
     And I should see "spider"
-    And "Expand annotations" "link" should be visible
-    When I click on "Expand annotations" "link"
+    And "Expand all annotations" "link" should be visible
+    When I click on "Expand all annotations" "link"
     Then I should see "web"
     And I should see "Teacher 1"
     And I should see "spider"
