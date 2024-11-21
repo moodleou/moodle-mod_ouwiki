@@ -644,11 +644,11 @@ Feature: Test Post and Comment on OUwiki entry
     And "span.ouwiki-annotation-marker" "css_element" should exist
     When I click on "#marker3" "css_element"
     Then I set the field "Add annotation:" to "web"
-    And I click on "Add" "button" in the "annotationdialog" "region"
+    And I click on "Add" "button" in the ".annotate-modal" "css_element"
     And I should see "web"
     When I click on "#marker6" "css_element"
     Then I set the field "Add annotation:" to "spider"
-    And I click on "Add" "button" in the "annotationdialog" "region"
+    And I click on "Add" "button" in the ".annotate-modal" "css_element"
     And I should see "spider"
     When I press "Save changes"
     Then "Hide annotations" "link" should be visible
@@ -800,3 +800,47 @@ Feature: Test Post and Comment on OUwiki entry
     When I am on the "Course 1" "course" page logged in as "teacher1"
     Then I should see "Test wiki desc show"
     And I should not see "Test wiki no show"
+
+  @javascript
+  Scenario: Check session on saving a page edit
+    Given I log in as "teacher1"
+    And I am on homepage
+    And I am on "Course 1" course homepage
+    And I turn editing mode on
+    When I add an ouwiki activity to course "Course 1" section "1" and I fill the form with:
+      | Name        | W.X              |
+      | Description | wiki description |
+    And I am on "Course 1" course homepage
+    And I am on the "W.X" "ouwiki activity" page
+    And "Create page" "button" should exist
+    And I press "Create page"
+    And I set the field "Content" to "C71 no groups wiki"
+    And I clear the session cookie in ouwiki
+    And I press "Save changes"
+    Then I should see "[Course or activity not accessible. (You are not logged in)]" in the "Page cannot be saved" "dialogue"
+
+  @javascript
+  Scenario: Check disable and enable page and section creation fields.
+    Given I log in as "teacher1"
+    And I am on homepage
+    And I am on "Course 1" course homepage
+    And I turn editing mode on
+    When I add an ouwiki activity to course "Course 1" section "1" and I fill the form with:
+      | Name        | W.X              |
+      | Description | wiki description |
+    And I am on "Course 1" course homepage
+    And I am on the "W.X" "ouwiki activity" page
+    And "Create page" "button" should exist
+    And I press "Create page"
+    And I set the field "Content" to "C71 no groups wiki"
+    And I press "Save changes"
+    And the "Add" "button" should be disabled
+    And the "Create" "button" should be disabled
+    And I set the field "Create new page" to "frog"
+    And the "Create" "button" should be enabled
+    And I set the field "Create new page" to ""
+    And the "Create" "button" should be disabled
+    And I set the field "Add new section to this page" to "frog"
+    And the "Add" "button" should be enabled
+    And I set the field "Add new section to this page" to ""
+    Then the "Add" "button" should be disabled

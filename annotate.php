@@ -328,29 +328,8 @@ foreach ($annotations as $annotation) {
 }
 echo '<div id="annotationcount" style="display:none;">'.count($usedannotations).'</div>';
 
-echo '<div class="yui-skin-sam">';
-echo '    <div id="annotationdialog" class="yui-pe-content">';
-echo '        <div class="hd">'.get_string('addannotation', 'ouwiki').'</div>';
-echo '        <div class="bd">';
-echo '            <form method="POST" action="post.php">';
-echo '                <label for="annotationtext">'.get_string('addannotation', 'ouwiki').':</label>';
-echo '                <textarea name="annotationtext" id="annotationtext" rows="4" cols="30"></textarea>';
-echo '            </form>';
-echo '        </div>';
-echo '    </div>';
-echo '</div>';
-
 // init JS module
-$stringlist[] = array('add', 'ouwiki');
-$stringlist[] = array('cancel', 'ouwiki');
-$jsmodule = array('name'     => 'mod_ouwiki_annotate',
-                  'fullpath' => '/mod/ouwiki/module.js',
-                  'requires' => array('base', 'event', 'io', 'node', 'anim', 'panel',
-                                      'yui2-container', 'yui2-dragdrop'),
-                  'strings'  => $stringlist
-                 );
-$PAGE->requires->js_init_call('M.mod_ouwiki_annotate.init', array(), true, $jsmodule);
-
+$PAGE->requires->js_call_amd('mod_ouwiki/annotate', 'init');
 // close <div id="#ouwiki_belowtabs_annotate">
 print '</div>';
 // Footer

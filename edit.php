@@ -31,7 +31,8 @@ if (file_exists($CFG->dirroot.'/local/mobile/ou_lib.php')) {
     require_once($CFG->dirroot.'/local/mobile/ou_lib.php');
 }
 
-$action = optional_param('editoption', '', PARAM_TEXT);
+$actionsave = optional_param('savechanges', '', PARAM_TEXT);
+$actioncancel = optional_param('cancel', '', PARAM_TEXT);
 
 // for creating pages and sections
 $frompage = optional_param('frompage', null, PARAM_TEXT);
@@ -53,8 +54,8 @@ if (!empty($section)) {
 }
 
 // sort out if the action was save or cancel
-$save = $action === get_string('savechanges') ? true : false;
-$cancel = $action === get_string('cancel') ? true : false;
+$save = $actionsave === get_string('savechanges') ? true : false;
+$cancel = $actioncancel === get_string('cancel') ? true : false;
 
 if (!$cm = get_coursemodule_from_id('ouwiki', $id)) {
     throw new moodle_exception('invalidcoursemodule');
@@ -476,20 +477,8 @@ $mform->display();
 
 echo $ouwikioutput->get_bottom_buttons($subwiki, $cm, $context, $pageversion, false);
 
-$stringlist = array(
-        array('savefailnetwork', 'ouwiki'),
-        array('savefailtitle', 'ouwiki'),
-        array('savefailsession', 'ouwiki'),
-        array('savefailtext', 'ouwiki'),
-);
-$jsmodule = array(
-        'name' => 'mod_ouwiki_edit',
-        'fullpath' => '/mod/ouwiki/module.js',
-        'requires' => array('base', 'event', 'io', 'node', 'anim', 'moodle-core-notification-alert', 'button'),
-        'strings'  => $stringlist
-);
 if (get_config('mod_ouwiki', 'savecheck')) {
-    $PAGE->requires->js_init_call('M.mod_ouwiki_edit.init', array($context->id), true, $jsmodule);
+    $PAGE->requires->js_call_amd('mod_ouwiki/edit', 'init', [$context->id]);
 }
 
 // Footer

@@ -2789,7 +2789,7 @@ function ouwiki_print_editlock($lock, $ouwiki) {
                         clearInterval(ouw_countdowninterval);
                         var mform=document.querySelector('#ouwiki_belowtabs form');
                         var mformid=mform.getAttribute('id');
-                        document.forms[mformid].elements['save'].click();
+                        document.forms[mformid].elements['savechanges'].click();
                         return;
                     }
                     if(timeleft<2*60*1000) {
