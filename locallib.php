@@ -2737,7 +2737,7 @@ function ouwiki_display_lock_page_form($pageversion, $cmid, $pagename) {
 
     $result .= '<div id="ouwiki_lock">'.
     $genericformdetails.
-    '<input type="submit" id="ouw_lock" name="ouw_lock" value="'.$buttonvalue.'" />
+    '<input type="submit" id="ouw_lock" class="osep-smallbutton" name="ouw_lock" value="'.$buttonvalue.'" />
     </div>
     </form>
     </div>';

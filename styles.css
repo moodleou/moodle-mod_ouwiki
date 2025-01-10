@@ -732,10 +732,6 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
     display: block;
 }
 
-#page-mod-ouwiki-annotate .annotate-modal.modal-dialog .modal-content .modal-footer {
-    padding: unset;
-}
-
 .ouwiki_lock_div {margin-top:2em;}
 
 /* Ugh, problems when resized, I can't get it to work */
