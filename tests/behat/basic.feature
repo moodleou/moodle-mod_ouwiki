@@ -604,7 +604,7 @@ Feature: Test Post and Comment on OUwiki entry
     And I am on homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on
-    When I add a "OU wiki" to section "1" and I fill the form with:
+    When I add an ouwiki activity to course "Course 1" section "1" and I fill the form with:
       | Name        | W.X                 |
       | Description | wiki with no groups |
       | Group mode  | No groups           |

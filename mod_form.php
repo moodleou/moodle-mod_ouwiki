@@ -36,9 +36,9 @@ class mod_ouwiki_mod_form extends moodleform_mod {
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
-        $this->standard_intro_elements(get_string('wikiintro', 'wiki'));
+        $this->standard_intro_elements(get_string('wikiintro', 'ouwiki'));
 
-        $mform->addElement('header', 'wikifieldset', get_string('wikisettings', 'wiki'));
+        $mform->addElement('header', 'wikifieldset', get_string('wikisettings', 'ouwiki'));
 
         // Subwikis
         $subwikisoptions = array();

@@ -44,7 +44,7 @@ Feature: Test locking wiki pages
     And I am on homepage
     And I am on "Course 1" course homepage
     And I turn editing mode on in the OSEP theme
-    And I add a "OU wiki" to section "1"
+    And I add a "OU wiki" to section "1" using the activity chooser
     And I set the following fields to these values:
       | Name             | Test Wiki          |
       | Description      | visible groups     |

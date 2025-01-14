@@ -638,3 +638,10 @@ $string['print_html_tree_structure'] = 'HTML (Tree)';
 
 $string['savecheck'] = 'Enable save check';
 $string['savecheck_desc'] = 'Enable checking of session etc on submitting the edit form.';
+
+$string['formathtml'] = 'HTML format';
+$string['formathtml_help'] = 'The HTML editor may be used for formatting content.
+
+To create a new page, type the new page name enclosed in double square brackets, for example [[Page 2]].';
+$string['wikiintro'] = 'Description';
+$string['wikisettings'] = 'Wiki settings';
