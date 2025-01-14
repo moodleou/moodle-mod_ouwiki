@@ -51,8 +51,9 @@ define('OUWIKI_PARAMS_URL', 2);
 define('OUWIKI_PARAMS_ARRAY', 3);
 
 define('OUWIKI_FORMAT_HTML', 'html');
-define('OUWIKI_FORMAT_RTF', 'rtf');
+define('OUWIKI_FORMAT_PDF', 'pdf');
 define('OUWIKI_FORMAT_TEMPLATE', 'template');
+define('OUWIKI_FORMAT_HTML_PRINT', 'print');
 
 // pages
 define('OUWIKI_GETPAGE_REQUIREVERSION', 0);
@@ -151,8 +152,8 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
     switch($ouwiki->subwikis) {
 
         case OUWIKI_SUBWIKIS_SINGLE:
-            $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid IS NULL
-            AND userid IS NULL', array($ouwiki->id));
+			// Removed AND groupid IS NULL AND userid IS NULL
+            $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ?', array($ouwiki->id));
             if ($subwiki) {
                 ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context);
                 return $subwiki;
@@ -186,8 +187,7 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
             $othergroup = !groups_is_member($groupid);
 
             // Place get subwiki here to facilitate checking agaimst magic number below.
-            $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid = ?
-                    AND userid IS NULL', array($ouwiki->id, $groupid));
+            $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid = ?', array($ouwiki->id, $groupid));
 
             if ($othergroup && $cm->groupmode == SEPARATEGROUPS) {
                 // Ignore if in feed,
@@ -247,9 +247,9 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
                     }
                 }
             }
-            // OK now find wiki
-            $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND groupid IS NULL
-                    AND userid = ?', array($ouwiki->id, $userid));
+            // OK now find wiki.
+			// Removed AND groupid IS NULL.
+            $subwiki = $DB->get_record_select('ouwiki_subwikis', 'wikiid = ? AND userid = ?', array($ouwiki->id, $userid));
             if ($subwiki) {
                 ouwiki_set_extra_subwiki_fields($subwiki, $ouwiki, $context, $otheruser, !$otheruser);
                 return $subwiki;
@@ -275,9 +275,11 @@ function ouwiki_create_subwiki($ouwiki, $cm, $course, $userid = null, $groupid =
 
     $subwiki = new StdClass;
     $subwiki->wikiid = $ouwiki->id;
-    $subwiki->userid = $userid;
-    $subwiki->groupid = $groupid;
-    $subwiki->magic = ouwiki_generate_magic_number();
+	$subwiki->magic = ouwiki_generate_magic_number();
+    $subwiki->userid = ($userid) ? $userid : $subwiki->magic;
+    $subwiki->groupid = ($groupid) ? $groupid : $subwiki->magic;
+
+    // Create Wiki!
     try {
         $subwiki->id = $DB->insert_record('ouwiki_subwikis', $subwiki);
     } catch (Exception $e) {
