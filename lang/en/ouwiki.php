@@ -636,5 +636,8 @@ $string['formathtml'] = 'HTML format';
 $string['formathtml_help'] = 'The HTML editor may be used for formatting content.
 
 To create a new page, type the new page name enclosed in double square brackets, for example [[Page 2]].';
+$string['contentshortcut'] ='Keyboard shortcuts';
+$string['contentshortcut_help'] ='Access buttons in the menu bar using Alt + F9 (Windows) or ⌥ + F9 (Mac). <br />
+Access the toolbar using Alt + F10 (Windows) or ⌥ + F10 (Mac) including the help menu which contains a full list of keyboard shortcuts.';
 $string['wikiintro'] = 'Description';
 $string['wikisettings'] = 'Wiki settings';

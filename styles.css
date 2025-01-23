@@ -893,3 +893,9 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
 .ouw-comparebutton-wrapper {
     text-align: right;
 }
+
+@media only screen and (max-width: 767px),(max-width: 1024px) and (orientation: landscape) and (pointer: coarse) {
+    #page-mod-ouwiki-edit div[id^=fitem_id_content] .btn.btn-link[data-content*="help-popover-container"] {
+        display: none;
+    }
+}

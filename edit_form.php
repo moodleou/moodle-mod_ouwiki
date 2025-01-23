@@ -29,7 +29,11 @@ class mod_ouwiki_edit_page_form extends moodleform {
 
         // Editor.
         $mform->addElement('editor', 'content', get_string('content'), null, array('maxfiles' => EDITOR_UNLIMITED_FILES));
-        $mform->addHelpButton('content', 'formathtml', 'ouwiki');
+        if (editors_get_preferred_editor() instanceof \editor_tiny\editor) {
+            $mform->addHelpButton('content', 'contentshortcut', 'ouwiki');
+        } else {
+            $mform->addHelpButton('content', 'formathtml', 'ouwiki');
+        }
 
         // attachments
         if ($this->_customdata->attachments) {
