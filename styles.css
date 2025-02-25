@@ -234,11 +234,6 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
 #page-mod-ouwiki-wikiindex .ouw_index .ouw_index_startpage .ouw_indexinfo {
     border-bottom:1px dotted #888;
 }
-.ie#page-mod-ouwiki-wikiindex .ouw_index_startpage .ouw_title {
-    border-top:2px solid #888;
-}
-
-
 
 #page-mod-ouwiki-wikiindex .ouw_missingfrom {
     font-size:0.85em;
@@ -488,11 +483,6 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
     margin-left:2em;
 }
 
-/* Hack because font-family:inherit doesn't work in IE */
-#page-mod-ouwiki-view.ie textarea {
-    font-family: Verdana,sans-serif;
-}
-
 #page-mod-ouwiki-view .ouw_linkedfrom {
     margin-top:1.5em;
     font-size:0.85em;
@@ -734,11 +724,6 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
 
 .ouwiki_lock_div {margin-top:2em;}
 
-/* Ugh, problems when resized, I can't get it to work */
-.ie7 #wikiselect {
-    font-size:11px;
-}
-
 #annotationdialog label {
     display:block;
     float:left;
@@ -862,9 +847,6 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
     margin-right: 5px;
     position: relative;
     display: inline;
-}
-.ie7 .ouw_indextree input.ouwiki_page_checkbox {
-    margin-top:25px;
 }
 .ouwiki_import.ouwiki_import_step3 div.fstatic ul {
     list-style: none;
