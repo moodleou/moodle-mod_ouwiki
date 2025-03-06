@@ -18,6 +18,7 @@ import {getString} from 'core/str';
 import Notification from 'core/notification';
 import Config from 'core/config';
 import Pending from 'core/pending';
+import * as FormChangeChecker from 'core_form/changechecker';
 
 /**
  * JavaScript to handle ouwiki.
@@ -75,6 +76,7 @@ class Edit {
                 }
 
                 // Manually submit the form.
+                FormChangeChecker.disableAllChecks();
                 form.submit();
             }
         }
