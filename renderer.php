@@ -362,15 +362,18 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                     // Expand and collapse annotations links.
                     $output .= html_writer::start_tag('span', array('id' => 'expandcollapseannotations'));
                     $output .= ' '.html_writer::tag('a', get_string('expandallannotations', 'ouwiki'),
-                        array(
-                            'href' => 'javascript:M.mod_ouwiki_view.ouwikiShowAllAnnotations("block")',
-                            'id' => 'expandallannotations'
-                        ));
+                        [
+                            'href' => '#',
+                            'id' => 'expandallannotations',
+                            'data-action' => 'expand',
+
+                        ]);
                     $output .= html_writer::tag('a', get_string('collapseallannotations', 'ouwiki'),
-                        array(
-                            'href' => 'javascript:M.mod_ouwiki_view.ouwikiShowAllAnnotations("none")',
-                            'id' => 'collapseallannotations'
-                        ));
+                        [
+                            'href' => '#',
+                            'id' => 'collapseallannotations',
+                            'data-action' => 'collapse',
+                        ]);
                     $output .= html_writer::end_tag('span');
                 }
             }

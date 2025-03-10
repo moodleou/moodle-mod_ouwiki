@@ -73,4 +73,13 @@ class behat_mod_ouwiki extends behat_base {
         $this->execute('behat_forms::press_button', array(get_string('savechanges')));
     }
 
+    /**
+     * Ends the user session by clearing the Moodle session.
+     *
+     * @Given /^I clear the session cookie in ouwiki()$/
+     */
+    public function i_clear_the_session_cookie_in_ouwiki() {
+        $this->getSession()->setCookie('MoodleSession', null);
+    }
+
 }

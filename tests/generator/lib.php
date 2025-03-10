@@ -15,17 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * OUWIKI data generator
- *
- * @package    mod_ouwiki
- * @copyright  2014 The Open University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-defined('MOODLE_INTERNAL') || die();
-
-
-/**
  * ouwiki module data generator class
  *
  * @package    mod_ouwiki
@@ -71,7 +60,26 @@ class mod_ouwiki_generator extends testing_module_generator {
         return parent::create_instance($record, (array)$options);
     }
 
-    public function create_content($instance, $record = array()) {
+    /**
+     * For use from Behat generator - creates a page by calling create_content.
+     *
+     * At the moment this is a bit limited and can only create new pages.
+     *
+     * @param array $record Record with data to use for creation.
+     */
+    public function create_page(array $record): void {
+        global $DB, $USER;
+
+        $instance = $DB->get_record('ouwiki', ['id' => $record['ouwiki']], '*', MUST_EXIST);
+        $cm = get_coursemodule_from_instance('ouwiki', $instance->id);
+        $context = context_module::instance($cm->id);
+        $subwiki = ouwiki_get_subwiki($instance->course, $instance, $cm, $context, 0, $USER->id, true);
+
+        ouwiki_create_new_page($instance->course, $cm, $instance, $subwiki, null,
+            $record['page'], $record['content'] ?? 'Test page content', null);
+    }
+
+    public function create_content($instance, $record = []) {
         global $USER, $DB, $CFG;
         require_once($CFG->dirroot . '/mod/ouwiki/locallib.php');
 

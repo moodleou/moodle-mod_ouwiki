@@ -253,7 +253,7 @@ if ($curstep == 1) {
         $pages .= $orphans;
         $pages .= html_writer::end_tag('ul');
     }
-    $PAGE->requires->yui_module('moodle-mod_ouwiki-pageselector', 'M.mod_ouwiki.pageselector.init', array($pagelist));
+    $PAGE->requires->js_call_amd('mod_ouwiki/pageselector', 'init', [$pagelist]);
     // Prepare form parameters.
     $wikiinfo = array('importid' => $selectedact->id , 'subwikiid' => $selectedsubwiki->id);
     $pageparams['step']++;

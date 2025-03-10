@@ -29,7 +29,11 @@ class mod_ouwiki_edit_page_form extends moodleform {
 
         // Editor.
         $mform->addElement('editor', 'content', get_string('content'), null, array('maxfiles' => EDITOR_UNLIMITED_FILES));
-        $mform->addHelpButton('content', 'formathtml', 'ouwiki');
+        if (editors_get_preferred_editor() instanceof \editor_tiny\editor) {
+            $mform->addHelpButton('content', 'contentshortcut', 'ouwiki');
+        } else {
+            $mform->addHelpButton('content', 'formathtml', 'ouwiki');
+        }
 
         // attachments
         if ($this->_customdata->attachments) {
@@ -59,9 +63,9 @@ class mod_ouwiki_edit_page_form extends moodleform {
         $mform->setType('section', PARAM_RAW);
 
         $buttongroup = array();
-        $buttongroup[] =& $mform->createElement('submit', 'editoption', get_string('savechanges'), array('id' => 'save'));
-        $buttongroup[] =& $mform->createElement('submit', 'editoption', get_string('preview'), array('id' => 'preview'));
-        $buttongroup[] =& $mform->createElement('submit', 'editoption', get_string('cancel'), array('id' => 'cancel'));
+        $buttongroup[] =& $mform->createElement('submit', 'savechanges', get_string('savechanges'));
+        $buttongroup[] =& $mform->createElement('submit', 'preview', get_string('preview'));
+        $buttongroup[] =& $mform->createElement('submit', 'cancel', get_string('cancel'));
 
         $mform->addGroup($buttongroup, 'buttonar', '', array(' '), false);
         $mform->closeHeaderBefore('buttonar');

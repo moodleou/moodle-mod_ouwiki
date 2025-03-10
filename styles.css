@@ -724,6 +724,18 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
     margin-left: 140px;
 }
 
+#page-mod-ouwiki-annotate .annotate-modal {
+    width: fit-content;
+}
+
+#page-mod-ouwiki-annotate .annotate-modal label {
+    display: block;
+}
+
+#page-mod-ouwiki-annotate .annotate-modal.modal-dialog .modal-content .modal-footer {
+    padding: unset;
+}
+
 .ouwiki_lock_div {margin-top:2em;}
 
 /* Ugh, problems when resized, I can't get it to work */
@@ -880,4 +892,10 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
 }
 .ouw-comparebutton-wrapper {
     text-align: right;
+}
+
+@media only screen and (max-width: 767px),(max-width: 1024px) and (orientation: landscape) and (pointer: coarse) {
+    #page-mod-ouwiki-edit div[id^=fitem_id_content] .btn.btn-link[data-content*="help-popover-container"] {
+        display: none;
+    }
 }

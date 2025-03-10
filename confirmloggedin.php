@@ -35,7 +35,7 @@ try {
     list($context, $course, $cm) = get_context_info_array($contextid);
     $PAGE->set_url('/mod/ouwiki/confirmloggedin.php');
     $PAGE->set_context($context);
-    require_login($course, false, $cm);
+    require_login($course, false, $cm, true, true);
     require_sesskey();
 } catch (Exception $e) {
     echo str_replace('ok', 'OK', $e->getMessage());
