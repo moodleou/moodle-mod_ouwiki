@@ -77,7 +77,7 @@ class Edit {
 
                 // Manually submit the form.
                 FormChangeChecker.disableAllChecks();
-                form.submit();
+                form.requestSubmit(e.target);
             }
         }
     };
