@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_ouwiki;
+
 /**
  * OUWiki unit tests - test locallib functions
  *
@@ -29,7 +31,7 @@ global $CFG;
 
 require_once($CFG->dirroot . '/mod/ouwiki/difflib.php');
 
-class ouwiki_test_diff extends advanced_testcase {
+class diff_test extends \advanced_testcase {
 
     public $html1 = '
 <p>This is a long paragraph
@@ -71,8 +73,8 @@ line breaks</li>
     public function test_add_markers() {
         $html = '01frog67890zombie789';
         $words = array();
-        $words[] = new ouwiki_word('frog', 2);
-        $words[] = new ouwiki_word('zombie', 11);
+        $words[] = new \ouwiki_word('frog', 2);
+        $words[] = new \ouwiki_word('zombie', 11);
         $result = ouwiki_diff_add_markers($html, $words, 'ouw_marker', '!!', '??');
         $this->assertEquals(
             '01!!<span class="ouw_marker">frog</span>??67890!!<span class="ouw_marker">zombie</span>??789', $result);
@@ -217,7 +219,7 @@ line breaks</li>
             4 => 'A list',
             5 => 'With multiple items',
             6 => 'Some of them have multiple line breaks'
-        ), ouwiki_line::get_as_strings($lines));
+        ), \ouwiki_line::get_as_strings($lines));
         $lines = ouwiki_diff_html_to_lines($this->html2);
         $this->assertEquals(array(
             1 => 'This is a long paragraph split over several lines and including bold and italic and span tags.',
@@ -225,7 +227,7 @@ line breaks</li>
             3 => "This div contain's some greengrocer's apostrophe's.",
             4 => 'A',
             5 => 'Some of them have multiple line breaks'
-        ), ouwiki_line::get_as_strings($lines));
+        ), \ouwiki_line::get_as_strings($lines));
     }
 
     public function test_basic_diff() {
@@ -273,7 +275,7 @@ line breaks</li>
         $ouwiki = $generator->create_instance((object) array('course' => $course->id));
         $cm = get_coursemodule_from_instance('ouwiki', $ouwiki->id);
         $this->assertNotEmpty($cm);
-        $context = context_module::instance($cm->id);
+        $context = \context_module::instance($cm->id);
         $subwiki = ouwiki_get_subwiki($course, $ouwiki, $cm, $context, 0, $USER->id, true);
 
         // Add start page.
