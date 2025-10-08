@@ -28,6 +28,7 @@
 require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 
 use Behat\Gherkin\Node\TableNode;
+use Behat\Mink\Session;
 
 /**
  * wiki-related steps definitions.
@@ -80,6 +81,51 @@ class behat_mod_ouwiki extends behat_base {
      */
     public function i_clear_the_session_cookie_in_ouwiki() {
         $this->getSession()->setCookie('MoodleSession', null);
+    }
+
+    /**
+     * Log in as a user in a specific session in ouwiki.
+     *
+     * @Given /^I log in as "(?P<username_string>(?:[^"]|\\")*)" in session "(?P<sessionname_string>(?:[^"]|\\")*)" in ouwiki$/
+     */
+    public function i_log_in_as_in_session_in_ouwiki(string $username, string $sessionname) {
+        global $CFG;
+
+        // Build login URL with direct auth.
+        $loginurl = new \moodle_url('/auth/tests/behat/login.php', [
+            'username' => $username,
+        ]);
+
+        // Get the default session from Behat (already configured in behat.yml).
+        $defaultSessionName = $this->getMink()->getDefaultSessionName();
+        $defaultSession = $this->getMink()->getSession($defaultSessionName);
+
+        // Clone the driver from the default session.
+        $driver = $defaultSession->getDriver();
+
+        $session = new \Behat\Mink\Session($driver);
+
+        // Register session name.
+        $this->getMink()->registerSession($sessionname, $session);
+
+        // Start session và visit login.
+        $this->getMink()->setDefaultSessionName($sessionname);
+        $session->start();
+        $session->visit($loginurl->out(false));
+    }
+
+    /**
+     * Switch between active sessions.
+     *
+     * @Given /^I switch to session "(?P<sessionname_string>(?:[^"]|\\")*)" in ouwiki$/
+     */
+    public function i_switch_to_session_in_ouwiki(string $sessionname) {
+        $mink = $this->getMink();
+
+        if (!$mink->hasSession($sessionname)) {
+            throw new \Exception("Session {$sessionname} not registered.");
+        }
+        $mink->setDefaultSessionName($sessionname);
     }
 
 }

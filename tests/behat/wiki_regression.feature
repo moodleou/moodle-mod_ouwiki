@@ -8,12 +8,16 @@ Feature: Test OUwiki regressions
     Given the following "users" exist:
       | username | firstname | lastname | email            |
       | student1 | Student   | 1        | student1@asd.com |
+      | student2 | Student   | 2        | student2@asd.com |
+      | teacher1 | Teacher   | 1        | teacher1@asd.com |
     And the following "courses" exist:
       | fullname | shortname | category |
       | Course 1 | C1        | 0        |
     And the following "course enrolments" exist:
       | user     | course | role    |
       | student1 | C1     | student |
+      | student2 | C1     | student |
+      | teacher1 | C1     | editingteacher |
     And the following "groups" exist:
       | name | course | idnumber |
       | G1   | C1     | G1       |
@@ -116,3 +120,97 @@ Feature: Test OUwiki regressions
     And I set the field "Content" to "C17"
     And I press "Save changes"
     Then I should see "C17"
+
+  @javascript @_file_upload
+  Scenario: Images and attachments
+    Given I log in as "student1"
+    And the following "activity" exists:
+      | activity  | ouwiki              |
+      | course    | C1                  |
+      | name      | W.WX                |
+      | intro     | wiki with no groups |
+      | groupmode | 0                   |
+      | section   | 1                   |
+    And I am on "Course 1" course homepage
+    And I follow "W.WX"
+    When I press "Create page"
+    And I set the field "Content" to "C23 no groups wiki"
+    # Upload image 1.
+    And I upload "lib/tests/fixtures/1.jpg" file to "Attachments" filemanager
+    And I press "Save changes"
+    Then I should see "1.jpg" in the ".ouwiki-post-attachments" "css_element"
+    # Edit and Delete the image 1.
+    And I click on "Edit" "link"
+    And I click on "1.jpg" "link"
+    And I click on "Delete" "button" in the ".moodle-dialogue-wrap" "css_element"
+    And I press "Yes"
+    # Upload image 2.
+    And I upload "lib/tests/fixtures/2.jpg" file to "Attachments" filemanager
+    And I press "Save changes"
+    And I should not see "1.jpg" in the ".ouwiki-post-attachments" "css_element"
+    And I should see "2.jpg" in the ".ouwiki-post-attachments" "css_element"
+    # View history page.
+    And I click on "History" "link"
+    # View old version .
+    And I click on "View" "link" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"
+    And I should see "You are viewing an old version of this page."
+    And "1.jpg" "link" should be visible
+    # View current version.
+    And I click on "Next: Current version" "link"
+    And I should see "2.jpg" in the ".ouwiki-post-attachments" "css_element"
+
+  @javascript
+  Scenario: Verify the warning message when the page is edited by another user and the lock is overridden
+    # Login as student 1.
+    Given I log in as "student1" in session "student1" in ouwiki
+    And the following "activity" exists:
+      | activity  | ouwiki              |
+      | course    | C1                  |
+      | name      | W.WX                |
+      | intro     | wiki with no groups |
+      | groupmode | 0                   |
+      | section   | 1                   |
+    And I am on "Course 1" course homepage
+    And I follow "W.WX"
+    When I press "Create page"
+    And I set the field "Content" to "student 1 content"
+    And I press "Save changes"
+    # Click edit link and keep window open without saving changes.
+    And I click on "Edit" "link"
+    # Login as student 2 in new session.
+    And I log in as "student2" in session "student2" in ouwiki
+    And  I switch to session "student2" in ouwiki
+    And I am on "Course 1" course homepage
+    And I follow "W.WX"
+    And I click on "Edit" "link"
+    # Verify warning message when the page is edited by student 1.
+    Then I should see "This page is being edited by somebody else."
+    And I should see "Student 1 started editing this page"
+    And "Override lock" "button" should not be visible
+    And "Try again" "button" should be visible
+    And "Cancel" "button" should be visible
+    And I press "Try again"
+    And I should see "Student 1 started editing this page"
+    And I press "Cancel"
+    And I should see "student 1 content" in the ".ouwiki_content" "css_element"
+    # Login as teacher in new session.
+    And I log in as "teacher1" in session "teacher" in ouwiki
+    And I switch to session "teacher" in ouwiki
+    And I am on "Course 1" course homepage
+    And I follow "W.WX"
+    And I click on "Edit" "link"
+    # Verify warning message when the page is edited by student 1.
+    And I should see "This page is being edited by somebody else."
+    And "Override lock" "button" should be visible
+    And "Try again" "button" should be visible
+    And "Cancel" "button" should be visible
+    # Verify teacher’s ability to override an edit.
+    And I press "Override lock"
+    And I set the field "Content" to "teacher 1 content"
+    And I press "Save changes"
+    And I should see "teacher 1 content" in the ".ouwiki_content" "css_element"
+    # Switch to Student 2 session and verify the teacher’s changes.
+    And I switch to session "student2" in ouwiki
+    And I am on "Course 1" course homepage
+    And I follow "W.WX"
+    And I should see "teacher 1 content" in the ".ouwiki_content" "css_element"
