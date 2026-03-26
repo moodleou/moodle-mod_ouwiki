@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 
+use core\url;
+
 defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot.'/mod/ouwiki/locallib.php');
 
@@ -260,8 +262,10 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
                 $iconimage = html_writer::empty_tag('img',
                         array('src' => $this->output->image_url(file_mimetype_icon($mimetype)),
                                 'alt' => $mimetype, 'class' => 'icon'));
-                $path = file_encode_url($CFG->wwwroot . '/pluginfile.php', '/' . $modcontext->id .
-                        '/mod_ouwiki/attachment/' . $pageversion->versionid . '/' . $filename);
+                $path = new url(
+                    $CFG->wwwroot . '/pluginfile.php' . '/' . $modcontext->id .
+                    '/mod_ouwiki/attachment/' . $pageversion->versionid . '/' . $filename
+                );
                 $output .= html_writer::tag('a', $iconimage, array('href' => $path));
                 $output .= html_writer::tag('a', s($filename), array('href' => $path));
                 $output .= html_writer::end_tag('li');
