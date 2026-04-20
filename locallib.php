@@ -3592,10 +3592,11 @@ abstract class ouwiki_portfolio_caller_base extends portfolio_module_caller_base
         // Format the page body.
         $options = portfolio_format_text_options();
         $options->filter = true;
+        $options->context = $context;
         $formattedtext = portfolio_rewrite_pluginfile_urls($pageversion->xhtml, $context->id,
                 'mod_ouwiki', 'content', $pageversion->versionid, $portfolioformat);
         $formattedtext = format_text($formattedtext, $pageversion->xhtmlformat,
-                $options, $course->id);
+                $options);
 
         // Get annotations - only if using annotation system. prevents unnecessary db access.
         if ($ouwiki->annotation) {
