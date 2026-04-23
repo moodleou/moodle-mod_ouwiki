@@ -3429,6 +3429,9 @@ function ouwiki_build_tree(&$index) {
             continue;
         }
         foreach ($indexitem->linksfrom as $fromid) {
+            if (!isset($index[$fromid])) {
+                continue;
+            }
             $index[$fromid]->linksto[] = $indexitem->pageid;
         }
     }
