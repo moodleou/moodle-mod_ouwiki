@@ -844,3 +844,36 @@ Feature: Test Post and Comment on OUwiki entry
     And the "Add" "button" should be enabled
     And I set the field "Add new section to this page" to ""
     Then the "Add" "button" should be disabled
+
+    Scenario: Check structure view of wiki index when unlinked page links to another linked page
+      Given the following "activity" exists:
+        | activity  | ouwiki              |
+        | course    | C1                  |
+        | name      | W.X                 |
+        | intro     | wiki description    |
+        | groupmode | 0                   |
+        | section   | 1                   |
+      And I log in as "teacher1"
+      And I am on "Course 1" course homepage
+      And I am on the "W.X" "ouwiki activity" page
+      Then "Create page" "button" should exist
+      When I press "Create page"
+      And I set the field "Content" to "[[Page 2]]"
+      And I press "Save changes"
+      When I click on "Page 2" "link"
+      Then I should see "Page 2"
+      And I press "Create page"
+      And I set the field "Content" to "[[Start page]] [[Page 3]]"
+      And I press "Save changes"
+      When I click on "Page 3" "link"
+      And I press "Create page"
+      And I set the field "Content" to "[[Page 2]]"
+      And I press "Save changes"
+      When I click on "Page 2" "link"
+      And I edit a ouwiki page with the following data:
+        | Content | No links |
+      And I click on "Wiki index" "link"
+      And I click on "Structure" "link"
+      Then "Start page" "text" should appear before "Page 2" "text"
+      And "Page 3" "text" should appear after "Page 2" "text"
+      And "Page 3" "text" should appear after "Unlinked pages" "text"
