@@ -19,13 +19,11 @@ Feature: Test locking wiki pages
       | G3   | C1     | G3       |
 
   Scenario: Lock and unlock buttons
-    Given I log in as "admin"
-    And the following "activities" exist:
+    Given the following "activities" exist:
       | activity | name      | intro          | course | idnumber | subwikis | groupmode |
       | ouwiki   | Test Wiki | visible groups | C1     | ouwiki1  | 1        | 2         |
     And I am using the OSEP theme
-    And I am on homepage
-    And I am on "Course 1" course homepage
+    And I am on the "Course 1" course page logged in as admin
     And I follow "Test Wiki"
     And I press "Create page"
     And I set the field "Content" to "This is the start page"
@@ -39,12 +37,9 @@ Feature: Test locking wiki pages
 
   @javascript @_file_upload
   Scenario: Lock start pages setting
-    Given I log in as "admin"
-    And I am using the OSEP theme
-    And I am on homepage
-    And I am on "Course 1" course homepage
-    And I turn editing mode on in the OSEP theme
-    And I add a "OU wiki" to section "1" using the activity chooser
+    Given I am using the OSEP theme
+    And I am on the "Course 1" course page logged in as admin
+    And I add an ouwiki activity to course "C1" section "1"
     And I set the following fields to these values:
       | Name             | Test Wiki          |
       | Description      | visible groups     |
@@ -65,7 +60,7 @@ Feature: Test locking wiki pages
     And I press "Save and display"
     And the "Visible groups" select box should contain "G1"
     And "Unlock page" "button" should exist
-    
+
     # Check new empty pages don't get locked
     And I set the field "Visible groups" to "G2"
     And I press "Create page"

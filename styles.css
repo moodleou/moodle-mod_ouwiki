@@ -510,6 +510,15 @@ body.jsenabled #ouwiki_belowtabs_annotate_nojs {
 .ouwiki_content h6.ouw_fixedheading .ouw_headingtext {
     font-size:0.85em;
 }
+.ouwiki_content h3 {
+    border-bottom:1px dotted #888;
+    padding-bottom:2px;
+}
+.ouwiki_content h5,
+.ouwiki_content h6 {
+    font-weight:normal;
+    font-style:italic;
+}
 
 #ouw_ac_formcontainer {
   margin-top:1.5em;
@@ -851,6 +860,14 @@ a.ouwiki_noshow:link,a.ouwiki_noshow:visited {
     margin-left: 140px;
 }
 
+#page-mod-ouwiki-annotate .annotate-modal {
+    width: fit-content;
+}
+
+#page-mod-ouwiki-annotate .annotate-modal label {
+    display: block;
+}
+
 .ouwiki_lock_div {margin-top:2em;}
 
 /* Ugh, problems when resized, I can't get it to work */
@@ -1024,4 +1041,10 @@ li.toc_element {
 li.toc_element::before {
     content: counters(item, ".") " ";
     counter-increment: item;
+}
+/* Not a standard theme breakpoint. */
+@media only screen and (max-width: 767px),(max-width: 1024px) and (orientation: landscape) and (pointer: coarse) {
+    #page-mod-ouwiki-edit div[id^=fitem_id_content] .btn.btn-link[data-content*="help-popover-container"] {
+        display: none;
+    }
 }

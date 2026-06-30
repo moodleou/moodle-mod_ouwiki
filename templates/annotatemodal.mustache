@@ -1,0 +1,54 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_ouwiki/annotatemodal
+
+    Modal to manage annotate.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+
+    Example context (json):
+    {
+    }
+}}
+{{< core/modal }}
+    {{$classes}}annotate-modal{{/classes}}
+    {{$title}}
+        {{#str}} addannotation, mod_ouwiki {{/str}}
+    {{/title}}
+
+    {{$body}}
+        <div>
+            <form class="mform" method="post">
+                <label for="annotationtext">{{#str}} addannotation, mod_ouwiki {{/str}}:</label>
+                <textarea name="annotationtext" id="annotationtext" rows="4" cols="40"></textarea>
+            </form>
+        </div>
+    {{/body}}
+
+    {{$footer}}
+        <button type="button" class="btn btn-primary" data-action="save">{{#str}} add, mod_ouwiki{{/str}}</button>
+        <button type="button" class="btn btn-secondary" data-action="cancel">{{#str}} cancel, mod_ouwiki {{/str}}</button>
+    {{/footer}}
+
+{{/ core/modal }}
