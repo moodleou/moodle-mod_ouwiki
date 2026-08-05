@@ -71,6 +71,10 @@ if (empty($ouwiki_nologin)) {
     // Make sure they're logged in and check they have permission to view
     require_course_login($course, true, $cm);
     require_capability('mod/ouwiki:view', $context);
+
+    // Update cm after login otherwise uservisible isn't set for some reason.
+    $modinfo = get_fast_modinfo($course);
+    $cm = $modinfo->get_cm($id);
 }
 
 // Get subwiki, creating it if necessary
