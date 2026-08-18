@@ -543,17 +543,19 @@ Feature: Test Post and Comment on OUwiki entry
     And I should see "Zombies"
     # Check deleting pages
     Then I edit a ouwiki page with the following data:
-      | Content | PORNOGRAPHY |
+      | Content | INAPPROPRIATE |
     And I log out
     Given I log in as "admin"
     And I am on "Course 1" course homepage
     And I follow "W.WX"
     When I click on "Frogs" "link"
-    Then I should see "PORNOGRAPHY"
+    Then I should see "INAPPROPRIATE"
     When I click on "History" "link"
     And I should see "Delete" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
+    And the "href" attribute of "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]//a[normalize-space(text())='Delete']" "xpath_element" should contain "sesskey="
     Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
     Then I should see "Undelete" in the "//form[@name='ouw_history']//table//tr[contains(@class, 'ouw_deletedrow')]//td[3]" "xpath_element"
+    And the "href" attribute of "//form[@name='ouw_history']//table//tr[contains(@class, 'ouw_deletedrow')]//td[3]//a[normalize-space(text())='Undelete']" "xpath_element" should contain "sesskey="
     And I should see "changes" in the "//form[@name='ouw_history']//table//tr[contains(@class, 'ouw_deletedrow')]//td[3]" "xpath_element"
     When I click on "W.WX" "link"
     And I click on "Frogs" "link"
@@ -563,7 +565,7 @@ Feature: Test Post and Comment on OUwiki entry
     Given I click on "Undelete" "link" in the "//form[@name='ouw_history']//table//tr[contains(@class, 'ouw_deletedrow')]//td[3]" "xpath_element"
     When I click on "W.WX" "link"
     And I click on "Frogs" "link"
-    Then I should see "PORNOGRAPHY"
+    Then I should see "INAPPROPRIATE"
     When I click on "History" "link"
     Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tbody//tr[1]//td[3]" "xpath_element"
     Given I click on "Delete" "link" in the "//form[@name='ouw_history']//table//tbody//tr[2]//td[3]" "xpath_element"

@@ -51,6 +51,7 @@ $PAGE->set_pagelayout('incourse');
 require_course_login($course, true, $cm);
 
 require_capability('mod/ouwiki:deletepage', $context);
+require_sesskey();
 
 // Get the page version to be [un]deleted
 $pageversion = ouwiki_get_page_version($subwiki, $pagename, $versionid);
