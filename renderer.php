@@ -214,8 +214,17 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
         $cm = $this->params->cm;
         $output = html_writer::start_tag('div', array('class' => 'ouw_topheading'));
         $output .= html_writer::start_tag('div', array('class' => 'ouw_heading'));
+
         $output .= html_writer::tag('h2', format_string($title),
                 array('class' => 'ouw_topheading'));
+
+        // Add table of contents.
+        global $CFG;
+        require_once($CFG->dirroot.'/mod/ouwiki/tableofcontents.php');
+        $toc = new TableOfContents($pageversion->xhtml);
+        $output .= $toc->to_html();
+
+
         if ($gewgaws) {
             $output .= $this->render_heading_bit(1, $pageversion->title, $subwiki,
                     $cm, null, $annotations, $pageversion->locked, $files,
@@ -753,90 +762,225 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
      *
      * @return array
      */
-    public function ouwiki_get_links_content() {
+    public function ouwiki_get_links_content()
+    {
         global $USER;
-        $output = html_writer::start_tag('ul');
+
+        // Horizontal ausgerichtete Button-Gruppe
+        $output = html_writer::start_tag('ul', array('class' => 'd-flex flex-wrap gap-2 list-unstyled'));
+
+        // Index / Übersicht Button
         if ($this->params->page == 'wikiindex.php') {
             $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_index'));
-            $output .= html_writer::start_tag('span');
-            $output .= get_string('index', 'ouwiki');
-            $output .= html_writer::end_tag('span');
+            $output .= html_writer::tag(
+                'span',
+                get_string('index', 'ouwiki'),
+                array('class' => 'btn btn-primary')
+            );
             $output .= html_writer::end_tag('li');
         } else {
             $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_index'));
-            $output .= html_writer::tag('a', get_string('index', 'ouwiki'),
-                    array('href' => 'wikiindex.php?'.
-                            ouwiki_display_wiki_parameters('', $this->params->subwiki,
-                                    $this->params->cm, OUWIKI_PARAMS_URL),
-                            'class' => 'osep-smallbutton'));
+            $output .= html_writer::tag(
+                'a',
+                get_string('index', 'ouwiki'),
+                array(
+                    'href' => 'wikiindex.php?' .
+                        ouwiki_display_wiki_parameters(
+                            '',
+                            $this->params->subwiki,
+                            $this->params->cm,
+                            OUWIKI_PARAMS_URL
+                        ),
+                    'class' => 'btn btn-outline-primary osep-smallbutton'
+                )
+            );
             $output .= html_writer::end_tag('li');
         }
+
+        // History / Änderungen Button
         if ($this->params->page == 'wikihistory.php') {
             $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_history'));
-            $output .= html_writer::start_tag('span');
-            $output .= get_string('wikirecentchanges', 'ouwiki');
-            $output .= html_writer::end_tag('span');
+            $output .= html_writer::tag(
+                'span',
+                get_string('wikirecentchanges', 'ouwiki'),
+                array('class' => 'btn btn-primary')
+            );
             $output .= html_writer::end_tag('li');
         } else {
             $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_history'));
-            $output .= html_writer::tag('a', get_string('wikirecentchanges', 'ouwiki'),
-                    array('href' => 'wikihistory.php?'.
-                            ouwiki_display_wiki_parameters('', $this->params->subwiki,
-                                    $this->params->cm, OUWIKI_PARAMS_URL),
-                            'class' => 'osep-smallbutton'));
+            $output .= html_writer::tag(
+                'a',
+                get_string('wikirecentchanges', 'ouwiki'),
+                array(
+                    'href' => 'wikihistory.php?' .
+                        ouwiki_display_wiki_parameters(
+                            '',
+                            $this->params->subwiki,
+                            $this->params->cm,
+                            OUWIKI_PARAMS_URL
+                        ),
+                    'class' => 'btn btn-outline-primary osep-smallbutton'
+                )
+            );
             $output .= html_writer::end_tag('li');
         }
-        // Check for mod setting and ability to edit that enables this link.
+
+        // Import Button (falls aktiviert)
         if (($this->params->subwiki->canedit) && ($this->params->ouwiki->allowimport)) {
             $output .= html_writer::start_tag('li', array('id' => 'ouwiki_import_pages'));
             if ($this->params->page == 'import.php') {
-                $output .= html_writer::tag('span', get_string('import', 'ouwiki'));
+                $output .= html_writer::tag(
+                    'span',
+                    get_string('import', 'ouwiki'),
+                    array('class' => 'btn btn-primary')
+                );
             } else {
-                $importlink = new moodle_url('/mod/ouwiki/import.php',
-                        ouwiki_display_wiki_parameters($this->params->pagename,
-                                $this->params->subwiki, $this->params->cm, OUWIKI_PARAMS_ARRAY));
-                $output .= html_writer::link($importlink, get_string('import', 'ouwiki'),
-                        array('class' => 'osep-smallbutton'));
+                $importlink = new moodle_url(
+                    '/mod/ouwiki/import.php',
+                    ouwiki_display_wiki_parameters(
+                        $this->params->pagename,
+                        $this->params->subwiki,
+                        $this->params->cm,
+                        OUWIKI_PARAMS_ARRAY
+                    )
+                );
+                $output .= html_writer::link(
+                    $importlink,
+                    get_string('import', 'ouwiki'),
+                    array('class' => 'btn btn-outline-primary osep-smallbutton')
+                );
             }
             $output .= html_writer::end_tag('li');
         }
+
+        // Participation / Meine Mitarbeit Button
         $participationstr = '';
         if ($this->params->canview == OUWIKI_USER_PARTICIPATION) {
             $participationstr = get_string('participationbyuser', 'ouwiki');
             $participationpage = 'participation.php?' .
-                    ouwiki_display_wiki_parameters('', $this->params->subwiki, $this->params->cm,
-                            OUWIKI_PARAMS_URL);
+                ouwiki_display_wiki_parameters(
+                    '',
+                    $this->params->subwiki,
+                    $this->params->cm,
+                    OUWIKI_PARAMS_URL
+                );
         } else if ($this->params->canview == OUWIKI_MY_PARTICIPATION) {
             $participationstr = get_string('myparticipation', 'ouwiki');
             $participationpage = 'userparticipation.php?' .
-                    ouwiki_display_wiki_parameters('', $this->params->subwiki, $this->params->cm,
-                            OUWIKI_PARAMS_URL);
+                ouwiki_display_wiki_parameters(
+                    '',
+                    $this->params->subwiki,
+                    $this->params->cm,
+                    OUWIKI_PARAMS_URL
+                );
             $participationpage .= '&user=' . $USER->id;
         }
         if ($this->params->canview > OUWIKI_NO_PARTICIPATION) {
             if (($this->params->cm->groupmode != 0) && isset($this->params->subwiki->groupid)) {
                 $participationpage .= '&group=' . $this->params->subwiki->groupid;
             }
-            if ($this->params->page == 'participation.php' ||
-                    $this->params->page == 'userparticipation.php') {
-                $output .= html_writer::start_tag('li',
-                        array('id' => 'ouwiki_nav_participation'));
-                $output .= html_writer::start_tag('span');
-                $output .= $participationstr;
-                $output .= html_writer::end_tag('span');
+            if (
+                $this->params->page == 'participation.php' ||
+                $this->params->page == 'userparticipation.php'
+            ) {
+                $output .= html_writer::start_tag(
+                    'li',
+                    array('id' => 'ouwiki_nav_participation')
+                );
+                $output .= html_writer::tag(
+                    'span',
+                    $participationstr,
+                    array('class' => 'btn btn-primary')
+                );
                 $output .= html_writer::end_tag('li');
             } else {
-                $output .= html_writer::start_tag('li',
-                        array('id' => 'ouwiki_nav_participation'));
-                $output .= html_writer::tag('a', $participationstr,
-                        array('href' => $participationpage, 'class' => 'osep-smallbutton'));
+                $output .= html_writer::start_tag(
+                    'li',
+                    array('id' => 'ouwiki_nav_participation')
+                );
+                $output .= html_writer::tag(
+                    'a',
+                    $participationstr,
+                    array('href' => $participationpage, 'class' => 'btn btn-outline-primary osep-smallbutton')
+                );
                 $output .= html_writer::end_tag('li');
             }
         }
+
+        $params = $this->params;
+
+        $wikiparams = function ($format, $istree = false) use ($params) {
+            $subwiki = $params->subwiki;
+            $cm = $params->cm;
+
+            $url = 'entirewiki.php?';
+            $url .= html_entity_decode(ouwiki_display_wiki_parameters('', $subwiki, $cm));
+            $url .= sprintf('&format=%s', $format);
+
+            if ($istree) {
+                $url .= '&type=tree';
+            }
+            return $url;
+        };
+
+        // Dropdown for print functions - Print Wiki Button
+        $output .= html_writer::start_tag('li', array('id' => 'ouwiki_nav_print'));
+        $output .= html_writer::start_tag('div', array('class' => 'dropdown'));
+
+        $output .= html_writer::start_tag('button', array(
+            'class' => 'btn btn-outline-primary dropdown-toggle osep-smallbutton',
+            'type' => 'button',
+            'id' => 'printWikiDropdown',
+            'data-bs-toggle' => 'dropdown',
+            'aria-expanded' => 'false'
+        ));
+        $output .= get_string('printwiki', 'ouwiki');
+        $output .= html_writer::end_tag('button');
+
+        $output .= html_writer::start_tag('ul', array(
+            'class' => 'dropdown-menu',
+            'aria-labelledby' => 'printWikiDropdown'
+        ));
+
+        $output .= html_writer::start_tag('li');
+        $output .= html_writer::tag(
+            'a',
+            get_string('print_pdf_alphabetic', 'ouwiki'),
+            array('class' => 'dropdown-item', 'target' => '_blank', 'href' => $wikiparams(OUWIKI_FORMAT_PDF))
+        );
+        $output .= html_writer::end_tag('li');
+
+        $output .= html_writer::start_tag('li');
+        $output .= html_writer::tag(
+            'a',
+            get_string('print_pdf_tree_structure', 'ouwiki'),
+            array('class' => 'dropdown-item', 'target' => '_blank', 'href' => $wikiparams(OUWIKI_FORMAT_PDF, true))
+        );
+        $output .= html_writer::end_tag('li');
+
+        $output .= html_writer::start_tag('li');
+        $output .= html_writer::tag(
+            'a',
+            get_string('print_html_alphabetic', 'ouwiki'),
+            array('class' => 'dropdown-item', 'target' => '_blank', 'href' => $wikiparams(OUWIKI_FORMAT_HTML_PRINT))
+        );
+        $output .= html_writer::end_tag('li');
+
+        $output .= html_writer::start_tag('li');
+        $output .= html_writer::tag(
+            'a',
+            get_string('print_html_tree_structure', 'ouwiki'),
+            array('class' => 'dropdown-item', 'target' => '_blank', 'href' => $wikiparams(OUWIKI_FORMAT_HTML_PRINT, true))
+        );
+        $output .= html_writer::end_tag('li');
+
+        $output .= html_writer::end_tag('ul');
+        $output .= html_writer::end_tag('div');
+        $output .= html_writer::end_tag('li');
+
         $output .= html_writer::end_tag('ul');
         return array($output, $participationstr);
     }
-
     /**
      * Format the wordcount for display.
      *

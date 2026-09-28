@@ -34,7 +34,7 @@ class mod_ouwiki_generator extends testing_module_generator {
         parent::reset();
     }
 
-    public function create_instance($record = null, array $options = null) {
+    public function create_instance($record = null, ?array $options = null) {
         global $CFG;
         require_once($CFG->dirroot . '/mod/ouwiki/locallib.php');
 

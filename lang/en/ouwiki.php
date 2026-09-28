@@ -629,6 +629,13 @@ $string['privacy:xhtmlcontentdeleted'] = '[Contributor information deleted at us
 
 $string['wiki_content_mask'] = 'Replace with fake text of a similar length, retaining HTML tags and [[wiki page]] links';
 
+$string['tableofcontents'] = 'Table of contents';
+$string['printwiki'] = 'Print Wiki ';
+$string['print_pdf_alphabetic'] = 'PDF (Alphabetic)';
+$string['print_pdf_tree_structure'] = 'PDF (Tree)';
+$string['print_html_alphabetic'] = 'HTML (Alphabetic)';
+$string['print_html_tree_structure'] = 'HTML (Tree)';
+
 $string['savecheck'] = 'Enable save check';
 $string['savecheck_desc'] = 'Enable checking of session etc on submitting the edit form.';
 
