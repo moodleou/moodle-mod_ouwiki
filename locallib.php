@@ -281,20 +281,43 @@ function ouwiki_get_subwiki($course, $ouwiki, $cm, $context, $groupid, $userid, 
 
 // Create a new subwiki instance.
 function ouwiki_create_subwiki($ouwiki, $cm, $course, $userid = null, $groupid = null) {
-    global $DB;
+   global $DB;
 
-    $subwiki = new StdClass;
-    $subwiki->wikiid = $ouwiki->id;
-    $subwiki->userid = $userid;
-    $subwiki->groupid = $groupid;
-    $subwiki->magic = ouwiki_generate_magic_number();
-    try {
-        $subwiki->id = $DB->insert_record('ouwiki_subwikis', $subwiki);
-    } catch (Exception $e) {
-        ouwiki_dberror($e);
-    }
+   // Prüfe, ob bereits ein Subwiki mit dieser wikiid + groupid existiert
+   $conditions = ['wikiid' => $ouwiki->id];
+   if ($groupid !== null) {
+       $conditions['groupid'] = $groupid;
+   } else {
+       // Falls groupid NULL ist, suche explizit nach NULL
+       $conditions['groupid'] = null;
+   }
 
-    return $subwiki;
+   // Falls ein Benutzer-Subwiki ( userid != NULL ) gewünscht ist, prüfe auch userid
+   if ($userid !== null) {
+       $conditions['userid'] = $userid;
+   }
+
+   $existing = $DB->get_record('ouwiki_subwikis', $conditions);
+
+   if ($existing) {
+       // Existierendes Subwiki wird zurückgegeben
+       return $existing;
+   }
+
+   // Erstelle neues Subwiki
+   $subwiki = new StdClass;
+   $subwiki->wikiid = $ouwiki->id;
+   $subwiki->userid = $userid;
+   $subwiki->groupid = $groupid;
+   $subwiki->magic = ouwiki_generate_magic_number();
+   $subwiki->timecreated = time(); // Fehlt im Originalcode!
+
+   try {
+       $subwiki->id = $DB->insert_record('ouwiki_subwikis', $subwiki);
+   } catch (Exception $e) {
+       ouwiki_dberror($e);
+   }
+   return $subwiki;
 }
 
 /**
