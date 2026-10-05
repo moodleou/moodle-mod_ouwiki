@@ -676,9 +676,14 @@ class mod_ouwiki_renderer extends plugin_renderer_base {
 
         // Add group/user selector.
         $showselector = true;
+        $selector = '';
         if (($page == 'userparticipation.php' && $canview != OUWIKI_MY_PARTICIPATION)
             || $page == 'participation.php'
                 && (int)$ouwiki->subwikis == OUWIKI_SUBWIKIS_INDIVIDUAL) {
+            $showselector = false;
+        }
+        // Don't show the selector on the diff page, as it doesn't make sense there.
+        if ($page == 'diff.php') {
             $showselector = false;
         }
         if ($showselector) {
