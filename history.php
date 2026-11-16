@@ -192,10 +192,7 @@ foreach ($changes as $change) {
             $strdelete = get_string('undelete', 'ouwiki');
             $deletedstr = "<span class='ouw_deleted'>$strdeleted</span>";
         }
-        $deletelink = ' <a href="delete.php?' . $wikiparams .
-                '&amp;version=' . $change->versionid .
-                '&amp;sesskey=' . sesskey() .
-                '">' . $strdelete . '</a>';
+        $deletelink = " <a href=delete.php?$wikiparams&amp;version={$change->versionid}>$strdelete</a>";
     }
 
     if ($change->id) {
